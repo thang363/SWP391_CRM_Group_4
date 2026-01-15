@@ -8,10 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 
-/**
- * Servlet controller cho Dashboard
- * URL Pattern: /dashboard
- */
 @WebServlet(name = "DashboardServlet", urlPatterns = {"/dashboard"})
 public class DashboardServlet extends HttpServlet {
 
@@ -19,13 +15,8 @@ public class DashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Có thể thêm logic xử lý dữ liệu ở đây
-        // Ví dụ: lấy thống kê từ database
-        
-        // Set attributes để truyền dữ liệu sang JSP
         request.setAttribute("pageTitle", "Dashboard");
         
-        // Forward đến trang dashboard.jsp
         RequestDispatcher dispatcher = request.getRequestDispatcher("/views/dashboard.jsp");
         dispatcher.forward(request, response);
     }
@@ -33,7 +24,6 @@ public class DashboardServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Xử lý POST request nếu cần
         doGet(request, response);
     }
 }
