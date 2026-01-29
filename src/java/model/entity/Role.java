@@ -1,10 +1,10 @@
 package model.entity;
 
 public enum Role {
-    USER("USER"),
-    ADMIN("ADMIN"),
-    SALES("SALES"),
-    MANAGER("MANAGER");
+    MANAGER("Manager"),
+    MARKETING("Marketing"),
+    SALE("Sale"),
+    SUPPORT("Support");
     
     private final String value;
     

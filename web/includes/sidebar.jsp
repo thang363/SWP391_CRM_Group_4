@@ -55,7 +55,8 @@
                                     </a>
                                     <div class="dropdown-menu bg-transparent border-0">
                                         <a href="${pageContext.request.contextPath}/campaigns"
-                                            class="dropdown-item">Chiến dịch</a>
+                                            class="dropdown-item ${currentPage == 'campaigns' ? 'active' : ''}">Chiến
+                                            dịch</a>
                                         <a href="${pageContext.request.contextPath}/email-marketing"
                                             class="dropdown-item">Email Marketing</a>
                                         <a href="${pageContext.request.contextPath}/lead-sources"

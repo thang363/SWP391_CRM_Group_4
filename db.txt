@@ -1,0 +1,378 @@
+-- =============================================
+-- DATABASE SCHEMA: CRM SYSTEM
+-- PHÂN HỆ 1: QUẢN TRỊ HỆ THỐNG & NGƯỜI DÙNG
+-- =============================================
+create database CRM
+select * from Users
+-- 1. Bảng Users: Quản lý tài khoản
+CREATE TABLE Users (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name NVARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    phone VARCHAR(20), -- Đã bổ sung kiểu dữ liệu thiếu trong file gốc
+    role VARCHAR(20) NOT NULL CHECK (role IN ('Marketing', 'Manager', 'Support', 'Sale')),
+    status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive', 'Locked')),
+    created_at DATETIME DEFAULT GETDATE()
+);
+
+-- 2. Bảng Notifications: Thông báo hệ thống
+CREATE TABLE Notifications (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    title NVARCHAR(255),
+    content NVARCHAR(MAX),
+    is_read BIT DEFAULT 0,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Notifications_User FOREIGN KEY (user_id) REFERENCES Users(id)
+);
+
+-- 3. Bảng AuditLogs: Nhật ký hệ thống
+CREATE TABLE AuditLogs (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT,
+    action NVARCHAR(255),
+    entity NVARCHAR(100),
+    entity_id INT,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Audit_User FOREIGN KEY (user_id) REFERENCES Users(id)
+);
+
+-- =============================================
+-- PHÂN HỆ 2: MARKETING (CAMPAIGN & LANDING PAGE)
+-- =============================================
+
+-- 4. Bảng Campaigns: Chiến dịch Marketing
+CREATE TABLE Campaigns (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    budget DECIMAL(18,2) DEFAULT 0,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    manager_id INT,
+    status VARCHAR(20) CHECK (status IN ('Draft', 'Pending', 'Approved', 'Active', 'Finished', 'Rejected')),
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Campaigns_Manager FOREIGN KEY (manager_id) REFERENCES Users(id)
+);
+
+-- 5. Bảng LandingPages: Trang đích
+CREATE TABLE LandingPages (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    campaign_id INT,
+    content_html NVARCHAR(MAX),
+    status VARCHAR(20) CHECK (status IN ('Draft', 'Approved', 'Rejected')),
+    manager_comment NVARCHAR(MAX),
+    approved_by INT,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_LandingPages_Campaign FOREIGN KEY (campaign_id) REFERENCES Campaigns(id),
+    CONSTRAINT FK_LandingPages_Approver FOREIGN KEY (approved_by) REFERENCES Users(id)
+);
+
+-- 6. Bảng LeadSources: Nguồn Lead (Facebook, Google...)
+CREATE TABLE LeadSources (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    description NVARCHAR(255),
+    is_active BIT DEFAULT 1,
+    created_at DATETIME DEFAULT GETDATE()
+);
+
+-- 7. Bảng ScoringRules: Quy tắc chấm điểm
+CREATE TABLE ScoringRules (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    event_type VARCHAR(50),
+    points INT,
+    is_active BIT DEFAULT 1
+);
+
+-- 8. Bảng ActivityTypes: Loại tương tác (Click, View...)
+CREATE TABLE ActivityTypes (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    description NVARCHAR(255),
+    is_active BIT DEFAULT 1
+);
+
+-- =============================================
+-- PHÂN HỆ 3: QUẢN LÝ LEAD (KHÁCH HÀNG TIỀM NĂNG)
+-- =============================================
+
+-- 9. Bảng Leads: Khách hàng tiềm năng
+CREATE TABLE Leads (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    campaign_id INT,
+    source_id INT,
+    full_name NVARCHAR(255) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    current_score INT DEFAULT 0,
+    status VARCHAR(20) CHECK (status IN ('New', 'Nurturing', 'Qualified', 'Assigned', 'Junk')),
+    is_converted BIT DEFAULT 0,
+    assigned_to INT, -- Sales phụ trách
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Leads_Campaign FOREIGN KEY (campaign_id) REFERENCES Campaigns(id),
+    CONSTRAINT FK_Leads_Source FOREIGN KEY (source_id) REFERENCES LeadSources(id),
+    CONSTRAINT FK_Leads_Sales FOREIGN KEY (assigned_to) REFERENCES Users(id)
+);
+
+-- 10. Bảng LeadScoreHistory: Lịch sử điểm số
+CREATE TABLE LeadScoreHistory (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    lead_id INT NOT NULL,
+    rule_id INT,
+    score_change INT,
+    total_score INT,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_LeadScore_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
+    CONSTRAINT FK_LeadScore_Rule FOREIGN KEY (rule_id) REFERENCES ScoringRules(id)
+);
+
+-- 11. Bảng LeadInteractions: Nhật ký tương tác Lead
+CREATE TABLE LeadInteractions (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    lead_id INT,
+    campaign_id INT,
+    activity_type_id INT,
+    reference_url NVARCHAR(MAX),
+    score_change INT,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Interactions_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
+    CONSTRAINT FK_Interactions_Campaign FOREIGN KEY (campaign_id) REFERENCES Campaigns(id),
+    CONSTRAINT FK_Interactions_Type FOREIGN KEY (activity_type_id) REFERENCES ActivityTypes(id)
+);
+
+-- 12. Bảng LeadStatusHistory: Lịch sử thay đổi trạng thái
+CREATE TABLE LeadStatusHistory (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    lead_id INT NOT NULL,
+    old_status VARCHAR(20),
+    new_status VARCHAR(20),
+    changed_by INT,
+    changed_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_StatusHistory_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
+    CONSTRAINT FK_StatusHistory_User FOREIGN KEY (changed_by) REFERENCES Users(id)
+);
+
+-- 13. Bảng LeadAssignments: Lịch sử bàn giao Lead (Manager -> Sales)
+CREATE TABLE LeadAssignments (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    lead_id INT,
+    manager_id INT,
+    sales_id INT,
+    assigned_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Assignments_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
+    CONSTRAINT FK_Assignments_Manager FOREIGN KEY (manager_id) REFERENCES Users(id),
+    CONSTRAINT FK_Assignments_Sales FOREIGN KEY (sales_id) REFERENCES Users(id)
+);
+
+-- 14. Bảng SalesFeedback: Đánh giá chất lượng Lead từ Sales
+CREATE TABLE SalesFeedback (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    lead_id INT,
+    sales_id INT,
+    quality_rating TINYINT CHECK (quality_rating BETWEEN 1 AND 5),
+    comment NVARCHAR(MAX),
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Feedback_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
+    CONSTRAINT FK_Feedback_Sales FOREIGN KEY (sales_id) REFERENCES Users(id)
+);
+
+-- =============================================
+-- PHÂN HỆ 4: KHÁCH HÀNG & CHĂM SÓC (CUSTOMERS)
+-- =============================================
+
+-- 15. Bảng Customers: Khách hàng chính thức (B2B)
+CREATE TABLE Customers (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    lead_id INT NULL,
+    assigned_to INT,
+    company_name NVARCHAR(255) NOT NULL,
+    tax_code VARCHAR(50) UNIQUE,
+    website VARCHAR(255),
+    industry NVARCHAR(100),
+    number_of_employees INT,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    billing_address NVARCHAR(MAX),
+    shipping_address NVARCHAR(MAX),
+    city NVARCHAR(100),
+    country NVARCHAR(100) DEFAULT 'Vietnam',
+    tier VARCHAR(20) DEFAULT 'Standard' CHECK (tier IN ('Standard', 'Silver', 'Gold', 'Platinum', 'VIP')),
+    status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive', 'Churned', 'Blacklisted')),
+    founded_date DATE,
+    last_care_date DATETIME,
+    total_revenue DECIMAL(18,2) DEFAULT 0,
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME,
+    CONSTRAINT FK_Customers_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
+    CONSTRAINT FK_Customers_User FOREIGN KEY (assigned_to) REFERENCES Users(id)
+);
+
+-- 16. Bảng Contacts: Người liên hệ của Khách hàng
+CREATE TABLE Contacts (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    customer_id INT NOT NULL,
+    full_name NVARCHAR(255) NOT NULL,
+    gender NVARCHAR(10),
+    position NVARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    is_primary BIT DEFAULT 0,
+    is_active BIT DEFAULT 1,
+    birthday DATE,
+    note NVARCHAR(MAX),
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Contacts_Customer FOREIGN KEY (customer_id) REFERENCES Customers(id)
+);
+
+-- 17. Bảng CarePrograms: Chương trình chăm sóc
+CREATE TABLE CarePrograms (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX),
+    frequency_type VARCHAR(20) CHECK (frequency_type IN ('Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly', 'OnDate')),
+    frequency_value INT DEFAULT 1,
+    target_tier VARCHAR(20),
+    default_action_type VARCHAR(50) DEFAULT 'Call',
+    is_active BIT DEFAULT 1,
+    created_at DATETIME DEFAULT GETDATE()
+);
+
+-- 18. Bảng Tasks: Công việc & Lịch hẹn
+CREATE TABLE Tasks (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    title NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX),
+    due_date DATETIME,
+    status VARCHAR(20) CHECK (status IN ('Pending', 'Completed', 'Overdue')),
+    assigned_to INT,
+    related_to_entity VARCHAR(50),
+    related_record_id INT,
+    care_program_id INT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Tasks_User FOREIGN KEY (assigned_to) REFERENCES Users(id),
+    CONSTRAINT FK_Tasks_CareProgram FOREIGN KEY (care_program_id) REFERENCES CarePrograms(id)
+);
+
+-- =============================================
+-- PHÂN HỆ 5: BÁN HÀNG (SALES & ORDERS)
+-- =============================================
+
+-- 19. Bảng Products: Sản phẩm/Dịch vụ
+CREATE TABLE Products (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    product_code VARCHAR(50) UNIQUE,
+    name NVARCHAR(255) NOT NULL,
+    category NVARCHAR(100),
+    unit_price DECIMAL(18,2) DEFAULT 0,
+    description NVARCHAR(MAX),
+    is_active BIT DEFAULT 1
+);
+
+-- 20. Bảng Opportunities: Cơ hội bán hàng
+CREATE TABLE Opportunities (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    lead_id INT NULL,
+    customer_id INT NULL,
+    type VARCHAR(20) CHECK (type IN ('New Business', 'Existing Business')),
+    expected_value DECIMAL(18,2),
+    stage VARCHAR(30) CHECK (stage IN ('Prospecting', 'Proposal', 'Negotiation', 'Won', 'Lost')),
+    probability INT DEFAULT 0,
+    sales_id INT,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Opp_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
+    CONSTRAINT FK_Opp_Customer FOREIGN KEY (customer_id) REFERENCES Customers(id),
+    CONSTRAINT FK_Opp_Sales FOREIGN KEY (sales_id) REFERENCES Users(id),
+    CONSTRAINT CHK_Opp_Owner CHECK (lead_id IS NOT NULL OR customer_id IS NOT NULL)
+);
+
+-- 21. Bảng OpportunityProducts: Chi tiết sản phẩm trong Cơ hội
+CREATE TABLE OpportunityProducts (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    opportunity_id INT,
+    product_id INT,
+    quantity INT DEFAULT 1,
+    sales_price DECIMAL(18,2),
+    total_amount AS (quantity * sales_price), -- Cột tính toán tự động
+    CONSTRAINT FK_OppProd_Opp FOREIGN KEY (opportunity_id) REFERENCES Opportunities(id),
+    CONSTRAINT FK_OppProd_Prod FOREIGN KEY (product_id) REFERENCES Products(id)
+);
+
+-- 22. Bảng Quotes: Báo giá
+CREATE TABLE Quotes (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    opportunity_id INT NOT NULL,
+    quote_number VARCHAR(50) UNIQUE,
+    subject NVARCHAR(255),
+    subtotal DECIMAL(18,2),
+    discount_amount DECIMAL(18,2) DEFAULT 0,
+    tax_amount DECIMAL(18,2) DEFAULT 0,
+    grand_total DECIMAL(18,2),
+    status VARCHAR(20) CHECK (status IN ('Draft', 'Sent', 'Accepted', 'Rejected', 'Expired')),
+    valid_until DATETIME,
+    created_by INT,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Quotes_Opp FOREIGN KEY (opportunity_id) REFERENCES Opportunities(id),
+    CONSTRAINT FK_Quotes_User FOREIGN KEY (created_by) REFERENCES Users(id)
+);
+
+-- 23. Bảng QuoteDetails: Chi tiết báo giá
+CREATE TABLE QuoteDetails (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    quote_id INT,
+    product_id INT,
+    quantity INT DEFAULT 1,
+    unit_price DECIMAL(18,2),
+    discount DECIMAL(18,2) DEFAULT 0,
+    line_total AS ((quantity * unit_price) - discount), -- Cột tính toán tự động
+    CONSTRAINT FK_QuoteDetails_Quote FOREIGN KEY (quote_id) REFERENCES Quotes(id),
+    CONSTRAINT FK_QuoteDetails_Prod FOREIGN KEY (product_id) REFERENCES Products(id)
+);
+
+-- =============================================
+-- PHÂN HỆ 6: HỖ TRỢ (SUPPORT & OTHERS)
+-- =============================================
+
+-- 24. Bảng Tickets: Yêu cầu hỗ trợ
+CREATE TABLE Tickets (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    customer_id INT,
+    title NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX),
+    status VARCHAR(20) CHECK (status IN ('Open', 'In Progress', 'Resolved', 'Closed')),
+    priority VARCHAR(20) CHECK (priority IN ('Low', 'Medium', 'High', 'Critical')),
+    assigned_to INT,
+    created_at DATETIME DEFAULT GETDATE(),
+    updated_at DATETIME,
+    CONSTRAINT FK_Tickets_Support FOREIGN KEY (assigned_to) REFERENCES Users(id),
+    CONSTRAINT FK_Tickets_Customer FOREIGN KEY (customer_id) REFERENCES Customers(id)
+);
+
+-- 25. Bảng TicketActivities: Trao đổi trong Ticket
+CREATE TABLE TicketActivities (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    ticket_id INT,
+    user_id INT,
+    message NVARCHAR(MAX),
+    activity_type VARCHAR(20) DEFAULT 'Comment',
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_TicketAct_Ticket FOREIGN KEY (ticket_id) REFERENCES Tickets(id),
+    CONSTRAINT FK_TicketAct_User FOREIGN KEY (user_id) REFERENCES Users(id)
+);
+
+-- 26. Bảng Attachments: File đính kèm
+CREATE TABLE Attachments (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    file_name NVARCHAR(255),
+    file_path NVARCHAR(MAX),
+    file_size INT,
+    uploaded_by INT,
+    related_to_entity VARCHAR(50),
+    related_record_id INT,
+    created_at DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Attachments_User FOREIGN KEY (uploaded_by) REFERENCES Users(id)
+);
+
+

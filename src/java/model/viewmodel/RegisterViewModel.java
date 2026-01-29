@@ -7,19 +7,21 @@ public class RegisterViewModel {
     private String email;
     private String fullName;
     private String phone;
+    private String role;
     private String errorMessage;
     
-    public RegisterViewModel() {
+    public RegisterViewModel(String username1, String password1, String confirmPassword1, String email1, String fullName1, String phone1) {
     }
     
     public RegisterViewModel(String username, String password, String confirmPassword, 
-                             String email, String fullName, String phone) {
+                             String email, String fullName, String phone, String role) {
         this.username = username;
         this.password = password;
         this.confirmPassword = confirmPassword;
         this.email = email;
         this.fullName = fullName;
         this.phone = phone;
+        this.role = role;
     }
     
     public String getUsername() {
@@ -70,6 +72,14 @@ public class RegisterViewModel {
         this.phone = phone;
     }
     
+    public String getRole() {
+        return role;
+    }
+    
+    public void setRole(String role) {
+        this.role = role;
+    }
+    
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -80,55 +90,53 @@ public class RegisterViewModel {
     
     public boolean validate() {
         if (username == null || username.trim().isEmpty()) {
-            errorMessage = "TÃªn Ä‘Äƒng nháº­p khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
+            errorMessage = "Tên đăng nhập không được để trống";
             return false;
         }
         
         if (username.length() < 3 || username.length() > 50) {
-            errorMessage = "TÃªn Ä‘Äƒng nháº­p pháº£i tá»« 3 Ä‘áº¿n 50 kÃ½ tá»±";
+            errorMessage = "Tên đăng nhập phải từ 3 đến 50 ký tự";
             return false;
         }
         
         if (!username.matches("^[a-zA-Z0-9_]+$")) {
-            errorMessage = "TÃªn Ä‘Äƒng nháº­p chá»‰ Ä‘Æ°á»£c chá»©a chá»¯ cÃ¡i, sá»‘ vÃ  dáº¥u gáº¡ch dÆ°á»›i";
+            errorMessage = "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới";
             return false;
         }
         
         if (fullName == null || fullName.trim().isEmpty()) {
-            errorMessage = "Há» vÃ  tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
+            errorMessage = "Họ và tên không được để trống";
             return false;
         }
         
         if (password == null || password.trim().isEmpty()) {
-            errorMessage = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
+            errorMessage = "Mật khẩu không được để trống";
             return false;
         }
         
         if (password.length() < 6) {
-            errorMessage = "Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±";
+            errorMessage = "Mật khẩu phải có ít nhất 6 ký tự";
             return false;
         }
         
         if (confirmPassword == null || !confirmPassword.equals(password)) {
-            errorMessage = "Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p";
+            errorMessage = "Mật khẩu xác nhận không khớp";
             return false;
         }
         
         if (email == null || email.trim().isEmpty()) {
-            errorMessage = "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
+            errorMessage = "Email không được để trống";
             return false;
         }
         
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-            errorMessage = "Email khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng";
+            errorMessage = "Email không đúng định dạng";
             return false;
         }
         
-        if (phone != null && !phone.trim().isEmpty()) {
-            if (!phone.matches("^[0-9]{10,11}$")) {
-                errorMessage = "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 10-11 chá»¯ sá»‘";
-                return false;
-            }
+        if (role == null || role.trim().isEmpty()) {
+            errorMessage = "Vui lòng chọn vai trò";
+            return false;
         }
         
         return true;
@@ -140,7 +148,7 @@ public class RegisterViewModel {
                 "username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", fullName='" + fullName + '\'' +
-                ", phone='" + phone + '\'' +
+                ", role='" + role + '\'' +
                 ", errorMessage='" + errorMessage + '\'' +
                 '}';
     }

@@ -19,7 +19,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public User findByUsername(String username) throws SQLException {
-        String sql = "SELECT id, username, password, email, full_name, phone, role, is_active, created_at, updated_at FROM users WHERE username = ?";
+        String sql = "SELECT id, username, password_hash, email, full_name, phone, role, status, created_at FROM users WHERE username = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -42,7 +42,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public User findById(Long id) throws SQLException {
-        String sql = "SELECT id, username, password, email, full_name, phone, role, is_active, created_at, updated_at FROM users WHERE id = ?";
+        String sql = "SELECT id, username, password_hash, email, full_name, phone, role, status, created_at FROM users WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -65,7 +65,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public User findByEmail(String email) throws SQLException {
-        String sql = "SELECT id, username, password, email, full_name, phone, role, is_active, created_at, updated_at FROM users WHERE email = ?";
+        String sql = "SELECT id, username, password_hash, email, full_name, phone, role, status, created_at FROM users WHERE email = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -88,7 +88,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public List<User> findAll() throws SQLException {
-        String sql = "SELECT id, username, password, email, full_name, phone, role, is_active, created_at, updated_at FROM users ORDER BY created_at DESC";
+        String sql = "SELECT id, username, password_hash, email, full_name, phone, role, status, created_at FROM users ORDER BY created_at DESC";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -111,7 +111,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public List<User> findAllActive() throws SQLException {
-        String sql = "SELECT id, username, password, email, full_name, phone, role, is_active, created_at, updated_at FROM users WHERE is_active = 1 ORDER BY created_at DESC";
+        String sql = "SELECT id, username, password_hash, email, full_name, phone, role, status, created_at FROM users WHERE status = 'Active' ORDER BY created_at DESC";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -134,7 +134,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public User create(User user) throws SQLException {
-        String sql = "INSERT INTO users (username, password, email, full_name, phone, role, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        String sql = "INSERT INTO users (username, password_hash, email, full_name, phone, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -148,7 +148,7 @@ public class UserDAOImpl implements UserDAO {
             stmt.setString(4, user.getFullName());
             stmt.setString(5, user.getPhone());
             stmt.setString(6, user.getRole().getValue());
-            stmt.setBoolean(7, user.getIsActive() != null ? user.getIsActive() : true);
+            stmt.setString(7, user.getStatus() != null ? user.getStatus() : "Active");
             
             int affectedRows = stmt.executeUpdate();
             
@@ -170,7 +170,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public boolean update(User user) throws SQLException {
-        String sql = "UPDATE users SET username = ?, password = ?, email = ?, full_name = ?, phone = ?, role = ?, is_active = ?, updated_at = GETDATE() WHERE id = ?";
+        String sql = "UPDATE users SET username = ?, password_hash = ?, email = ?, full_name = ?, phone = ?, role = ?, status = ? WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
         
@@ -183,7 +183,7 @@ public class UserDAOImpl implements UserDAO {
             stmt.setString(4, user.getFullName());
             stmt.setString(5, user.getPhone());
             stmt.setString(6, user.getRole().getValue());
-            stmt.setBoolean(7, user.getIsActive() != null ? user.getIsActive() : true);
+            stmt.setString(7, user.getStatus() != null ? user.getStatus() : "Active");
             stmt.setLong(8, user.getId());
             
             int affectedRows = stmt.executeUpdate();
@@ -196,7 +196,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public boolean delete(Long id) throws SQLException {
-        String sql = "UPDATE users SET is_active = 0, updated_at = GETDATE() WHERE id = ?";
+        String sql = "UPDATE users SET status = 'Inactive' WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
         
@@ -302,7 +302,7 @@ public class UserDAOImpl implements UserDAO {
     
     @Override
     public int countActive() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM users WHERE is_active = 1";
+        String sql = "SELECT COUNT(*) FROM users WHERE status = 'Active'";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -326,14 +326,13 @@ public class UserDAOImpl implements UserDAO {
         User user = new User();
         user.setId(rs.getLong("id"));
         user.setUsername(rs.getString("username"));
-        user.setPassword(rs.getString("password"));
+        user.setPassword(rs.getString("password_hash"));
         user.setEmail(rs.getString("email"));
         user.setFullName(rs.getString("full_name"));
         user.setPhone(rs.getString("phone"));
         user.setRole(Role.fromString(rs.getString("role")));
-        user.setIsActive(rs.getBoolean("is_active"));
+        user.setStatus(rs.getString("status"));
         user.setCreatedAt(rs.getTimestamp("created_at"));
-        user.setUpdatedAt(rs.getTimestamp("updated_at"));
         return user;
     }
     

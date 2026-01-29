@@ -9,22 +9,21 @@ public class UserViewModel {
     private String fullName;
     private String phone;
     private Role role;
-    private Boolean isActive;
+    private String status;
     private String createdAt;
-    private String updatedAt;
     
     public UserViewModel() {
     }
     
-    public UserViewModel(Long id, String username, String email, String fullName, 
-                         String phone, Role role, Boolean isActive) {
+    public UserViewModel(Long id, String username, String email, String fullName, String phone, 
+                         Role role, String status) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.fullName = fullName;
         this.phone = phone;
         this.role = role;
-        this.isActive = isActive;
+        this.status = status;
     }
     
     public Long getId() {
@@ -75,12 +74,12 @@ public class UserViewModel {
         this.role = role;
     }
     
-    public Boolean getIsActive() {
-        return isActive;
+    public String getStatus() {
+        return status;
     }
     
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setStatus(String status) {
+        this.status = status;
     }
     
     public String getCreatedAt() {
@@ -91,14 +90,6 @@ public class UserViewModel {
         this.createdAt = createdAt;
     }
     
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
     public String getDisplayName() {
         return (fullName != null && !fullName.isEmpty()) ? fullName : username;
     }
@@ -106,16 +97,20 @@ public class UserViewModel {
     public String getRoleDisplayName() {
         if (role == null) return "";
         switch (role) {
-            case ADMIN: return "Quáº£n trá»‹ viÃªn";
-            case MANAGER: return "Quáº£n lÃ½";
-            case SALES: return "NhÃ¢n viÃªn kinh doanh";
-            case USER: return "NgÆ°á»i dÃ¹ng";
+            case MANAGER: return "Quản lý";
+            case MARKETING: return "Tiếp thị";
+            case SALE: return "Kinh doanh";
+            case SUPPORT: return "Hỗ trợ";
             default: return role.getValue();
         }
     }
     
     public String getStatusDisplayName() {
-        return (isActive != null && isActive) ? "Äang hoáº¡t Ä‘á»™ng" : "Ngá»«ng hoáº¡t Ä‘á»™ng";
+        if (status == null) return "Không xác định";
+        if (status.equalsIgnoreCase("Active")) return "Đang hoạt động";
+        if (status.equalsIgnoreCase("Inactive")) return "Ngừng hoạt động";
+        if (status.equalsIgnoreCase("Locked")) return "Đã khóa";
+        return status;
     }
     
     @Override
@@ -126,7 +121,7 @@ public class UserViewModel {
                 ", email='" + email + '\'' +
                 ", fullName='" + fullName + '\'' +
                 ", role=" + role +
-                ", isActive=" + isActive +
+                ", status='" + status + '\'' +
                 '}';
     }
 }

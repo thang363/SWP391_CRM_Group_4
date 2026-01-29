@@ -1,0 +1,68 @@
+package dao;
+
+import model.entity.Campaign;
+import java.sql.Timestamp;
+import java.util.List;
+
+/**
+ * Data Access Object interface for Campaign entity
+ */
+public interface CampaignDAO {
+    
+    /**
+     * Find campaign by ID
+     * @param id Campaign ID
+     * @return Campaign object or null if not found
+     */
+    Campaign findById(Long id);
+    
+    /**
+     * Find all campaigns
+     * @return List of all campaigns
+     */
+    List<Campaign> findAll();
+    
+    /**
+     * Find campaigns by filters
+     * @param name Campaign name (partial match, can be null)
+     * @param status Campaign status (can be null)
+     * @param startDate Filter by start date (can be null)
+     * @param endDate Filter by end date (can be null)
+     * @return List of filtered campaigns
+     */
+    List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate);
+    
+    /**
+     * Create new campaign
+     * @param campaign Campaign object to create
+     * @return Created campaign with generated ID
+     */
+    Campaign create(Campaign campaign);
+    
+    /**
+     * Update existing campaign
+     * @param campaign Campaign object with updated data
+     * @return true if update successful, false otherwise
+     */
+    boolean update(Campaign campaign);
+    
+    /**
+     * Delete campaign by ID
+     * @param id Campaign ID to delete
+     * @return true if delete successful, false otherwise
+     */
+    boolean delete(Long id);
+    
+    /**
+     * Count total campaigns
+     * @return Total number of campaigns
+     */
+    int countAll();
+    
+    /**
+     * Count campaigns by status
+     * @param status Campaign status
+     * @return Number of campaigns with given status
+     */
+    int countByStatus(String status);
+}

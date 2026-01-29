@@ -48,17 +48,17 @@ public class LoginViewModel {
     
     public boolean validate() {
         if (username == null || username.trim().isEmpty()) {
-            errorMessage = "TÃªn Ä‘Äƒng nháº­p khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
+            errorMessage = "Tên đăng nhập không được để trống";
             return false;
         }
         
         if (password == null || password.trim().isEmpty()) {
-            errorMessage = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng";
+            errorMessage = "Mật khẩu không được để trống";
             return false;
         }
         
         if (username.length() < 3) {
-            errorMessage = "TÃªn Ä‘Äƒng nháº­p pháº£i cÃ³ Ã­t nháº¥t 3 kÃ½ tá»±";
+            errorMessage = "Tên đăng nhập phải có ít nhất 3 ký tự";
             return false;
         }
         
