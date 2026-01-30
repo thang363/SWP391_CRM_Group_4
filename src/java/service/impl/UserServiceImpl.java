@@ -1,7 +1,7 @@
 package service.impl;
 
 import dao.UserDAO;
-import dao.impl.InMemoryUserDAO;
+import dao.impl.UserDAOImpl;
 import model.entity.Role;
 import model.entity.User;
 import model.viewmodel.RegisterViewModel;
@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     
     public UserServiceImpl() {
-        this.userDAO = new InMemoryUserDAO();
+        this.userDAO = new UserDAOImpl();
     }
     
     public UserServiceImpl(UserDAO userDAO) {
@@ -35,12 +35,12 @@ public class UserServiceImpl implements UserService {
         
         try {
             if (userDAO.usernameExists(registerViewModel.getUsername())) {
-                registerViewModel.setErrorMessage("TÃªn Ä‘Äƒng nháº­p Ä‘Ã£ tá»“n táº¡i");
+                registerViewModel.setErrorMessage("Tên đăng nhập đã tồn tại");
                 return null;
             }
             
             if (userDAO.emailExists(registerViewModel.getEmail())) {
-                registerViewModel.setErrorMessage("Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
+                registerViewModel.setErrorMessage("Email đã được sử dụng");
                 return null;
             }
             
@@ -52,8 +52,8 @@ public class UserServiceImpl implements UserService {
             user.setEmail(registerViewModel.getEmail());
             user.setFullName(registerViewModel.getFullName());
             user.setPhone(registerViewModel.getPhone());
-            user.setRole(Role.USER);
-            user.setIsActive(true);
+            user.setRole(Role.fromString(registerViewModel.getRole()));
+            user.setStatus("Active");
             
             User createdUser = userDAO.create(user);
             
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
         } catch (SQLException e) {
             System.err.println("Database error during registration: " + e.getMessage());
             e.printStackTrace();
-            registerViewModel.setErrorMessage("Lá»—i há»‡ thá»‘ng. Vui lÃ²ng thá»­ láº¡i sau.");
+            registerViewModel.setErrorMessage("Lỗi hệ thống. Vui lòng thử lại sau.");
             return null;
         }
     }
@@ -137,6 +137,31 @@ public class UserServiceImpl implements UserService {
             
         } catch (SQLException e) {
             System.err.println("Database error while fetching active users: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public List<User> getUsersByRole(Role role) {
+        if (role == null) {
+            return new ArrayList<>();
+        }
+        
+        try {
+            List<User> allUsers = userDAO.findAll();
+            List<User> filteredUsers = new ArrayList<>();
+            
+            for (User user : allUsers) {
+                if (user.getRole() == role && "Active".equals(user.getStatus())) {
+                    filteredUsers.add(user);
+                }
+            }
+            
+            return filteredUsers;
+            
+        } catch (SQLException e) {
+            System.err.println("Database error while fetching users by role: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -242,7 +267,7 @@ public class UserServiceImpl implements UserService {
                 return false;
             }
             
-            user.setIsActive(isActive);
+            user.setStatus(isActive ? "Active" : "Inactive");
             return userDAO.update(user);
             
         } catch (SQLException e) {
@@ -265,13 +290,10 @@ public class UserServiceImpl implements UserService {
         viewModel.setFullName(user.getFullName());
         viewModel.setPhone(user.getPhone());
         viewModel.setRole(user.getRole());
-        viewModel.setIsActive(user.getIsActive());
+        viewModel.setStatus(user.getStatus());
         
         if (user.getCreatedAt() != null) {
             viewModel.setCreatedAt(dateFormat.format(user.getCreatedAt()));
-        }
-        if (user.getUpdatedAt() != null) {
-            viewModel.setUpdatedAt(dateFormat.format(user.getUpdatedAt()));
         }
         
         return viewModel;

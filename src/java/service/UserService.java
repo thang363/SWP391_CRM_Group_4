@@ -5,6 +5,7 @@ import model.viewmodel.RegisterViewModel;
 import model.viewmodel.UserViewModel;
 
 import java.util.List;
+import model.entity.Role;
 
 public interface UserService {
     
@@ -19,6 +20,8 @@ public interface UserService {
     List<UserViewModel> getAllUsers();
     
     List<UserViewModel> getAllActiveUsers();
+    
+    List<User> getUsersByRole(Role role);
     
     boolean updateUser(User user);
     

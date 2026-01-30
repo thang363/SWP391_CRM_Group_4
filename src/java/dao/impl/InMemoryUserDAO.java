@@ -1,3 +1,14 @@
+/*
+ * ============================================================================
+ * DEPRECATED: This in-memory implementation is no longer used.
+ * The application now uses UserDAOImpl which connects to a real database.
+ * Database: testCRM
+ * 
+ * This file is kept for reference purposes only.
+ * ============================================================================
+ */
+
+/*
 package dao.impl;
 
 import dao.UserDAO;
@@ -35,7 +46,7 @@ public class InMemoryUserDAO implements UserDAO {
         admin.setUsername("admin");
         admin.setPassword(PasswordUtil.hashPassword("admin123"));
         admin.setEmail("admin@crm.com");
-        admin.setFullName("Quáº£n trá»‹ viÃªn");
+        admin.setFullName("Quản trị viên");
         admin.setRole(Role.ADMIN);
         admin.setIsActive(true);
         admin.setCreatedAt(new Timestamp(System.currentTimeMillis()));
@@ -47,7 +58,7 @@ public class InMemoryUserDAO implements UserDAO {
         testUser.setUsername("user");
         testUser.setPassword(PasswordUtil.hashPassword("user123"));
         testUser.setEmail("user@crm.com");
-        testUser.setFullName("NgÆ°á»i dÃ¹ng test");
+        testUser.setFullName("Người dùng test");
         testUser.setPhone("0123456789");
         testUser.setRole(Role.USER);
         testUser.setIsActive(true);
@@ -176,3 +187,4 @@ public class InMemoryUserDAO implements UserDAO {
         return users;
     }
 }
+*/

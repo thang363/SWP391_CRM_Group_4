@@ -10,24 +10,25 @@ public class User {
     private String fullName;
     private String phone;
     private Role role;
-    private Boolean isActive;
+    private String status;
     private Timestamp createdAt;
-    private Timestamp updatedAt;
     
     public User() {
-        this.isActive = true;
+        this.status = "Active";
     }
     
-    public User(String username, String password, String email, Role role) {
+    public User(String username, String password, String email, String fullName, String phone, Role role) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.fullName = fullName;
+        this.phone = phone;
         this.role = role;
-        this.isActive = true;
+        this.status = "Active";
     }
     
-    public User(Long id, String username, String password, String email, String fullName, 
-                String phone, Role role, Boolean isActive, Timestamp createdAt, Timestamp updatedAt) {
+    public User(Long id, String username, String password, String email, String fullName, String phone, 
+                Role role, String status, Timestamp createdAt) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -35,9 +36,8 @@ public class User {
         this.fullName = fullName;
         this.phone = phone;
         this.role = role;
-        this.isActive = isActive;
+        this.status = status;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
     
     public Long getId() {
@@ -96,12 +96,12 @@ public class User {
         this.role = role;
     }
     
-    public Boolean getIsActive() {
-        return isActive;
+    public String getStatus() {
+        return status;
     }
     
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setStatus(String status) {
+        this.status = status;
     }
     
     public Timestamp getCreatedAt() {
@@ -112,14 +112,6 @@ public class User {
         this.createdAt = createdAt;
     }
     
-    public Timestamp getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(Timestamp updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
     @Override
     public String toString() {
         return "User{" +
@@ -127,8 +119,9 @@ public class User {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", fullName='" + fullName + '\'' +
+                ", phone='" + phone + '\'' +
                 ", role=" + role +
-                ", isActive=" + isActive +
+                ", status='" + status + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
     }

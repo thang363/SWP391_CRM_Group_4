@@ -23,8 +23,8 @@ public class RoleFilter implements Filter {
         System.out.println("RoleFilter initialized");
         
         roleRequirements = new HashMap<>();
-        roleRequirements.put("/admin", Set.of(Role.ADMIN));
-        roleRequirements.put("/users", Set.of(Role.ADMIN));
+        roleRequirements.put("/admin", Set.of(Role.MANAGER));
+        roleRequirements.put("/users", Set.of(Role.MANAGER));
     }
     
     @Override

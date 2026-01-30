@@ -1,7 +1,7 @@
 package service.impl;
 
 import dao.UserDAO;
-import dao.impl.InMemoryUserDAO;
+import dao.impl.UserDAOImpl;
 import model.entity.User;
 import model.viewmodel.LoginViewModel;
 import service.AuthService;
@@ -14,7 +14,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserDAO userDAO;
     
     public AuthServiceImpl() {
-        this.userDAO = new InMemoryUserDAO();
+        this.userDAO = new UserDAOImpl();
     }
     
     public AuthServiceImpl(UserDAO userDAO) {
@@ -31,17 +31,17 @@ public class AuthServiceImpl implements AuthService {
             User user = userDAO.findByUsername(loginViewModel.getUsername());
             
             if (user == null) {
-                loginViewModel.setErrorMessage("TÃªn Ä‘Äƒng nháº­p khÃ´ng tá»“n táº¡i");
+                loginViewModel.setErrorMessage("Tên đăng nhập không tồn tại");
                 return null;
             }
             
-            if (user.getIsActive() == null || !user.getIsActive()) {
-                loginViewModel.setErrorMessage("TÃ i khoáº£n Ä‘Ã£ bá»‹ vÃ´ hiá»‡u hÃ³a");
+            if (!"Active".equalsIgnoreCase(user.getStatus())) {
+                loginViewModel.setErrorMessage("Tài khoản đã bị vô hiệu hóa hoặc bị khóa");
                 return null;
             }
             
             if (!PasswordUtil.verifyPassword(loginViewModel.getPassword(), user.getPassword())) {
-                loginViewModel.setErrorMessage("Máº­t kháº©u khÃ´ng chÃ­nh xÃ¡c");
+                loginViewModel.setErrorMessage("Mật khẩu không chính xác");
                 return null;
             }
             
@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
         } catch (SQLException e) {
             System.err.println("Database error during login: " + e.getMessage());
             e.printStackTrace();
-            loginViewModel.setErrorMessage("Lá»—i há»‡ thá»‘ng. Vui lÃ²ng thá»­ láº¡i sau.");
+            loginViewModel.setErrorMessage("Lỗi hệ thống. Vui lòng thử lại sau.");
             return null;
         }
     }
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             User user = userDAO.findById(userId);
             
-            if (user != null && user.getIsActive() != null && user.getIsActive()) {
+            if (user != null && "Active".equalsIgnoreCase(user.getStatus())) {
                 return user;
             }
             
@@ -93,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
         
         try {
             User user = userDAO.findById(userId);
-            return user != null && user.getIsActive() != null && user.getIsActive();
+            return user != null && "Active".equalsIgnoreCase(user.getStatus());
             
         } catch (SQLException e) {
             System.err.println("Database error while checking account status: " + e.getMessage());
