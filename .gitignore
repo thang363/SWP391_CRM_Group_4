@@ -1,1 +1,21 @@
-/nbproject/private/
+
+# ===== Build folders =====
+build/
+build_tmp_script/
+dist/
+
+# ===== Compiled files =====
+*.class
+
+# ===== NetBeans =====
+nbproject/private/
+nbproject/build-impl.xml
+nbproject/genfiles.properties
+
+# ===== Logs =====
+*.log
+
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+
