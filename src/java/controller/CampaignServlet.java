@@ -46,11 +46,7 @@ public class CampaignServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Check if user is Manager
-        if (!isManager(request)) {
-            response.sendRedirect(request.getContextPath() + Constants.SERVLET_DASHBOARD);
-            return;
-        }
+
 
         // Handle AJAX GET requests (e.g., fetch particular campaign for edit)
         String action = request.getParameter("action");
@@ -96,11 +92,13 @@ public class CampaignServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Check if user is Manager
+        // Check if user is Manager (Only Manager can CUD)
         if (!isManager(request)) {
             sendJsonResponse(response, false, "Bạn không có quyền thực hiện thao tác này", null);
             return;
         }
+
+
 
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
