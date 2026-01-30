@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(filterName = "AuthFilter", urlPatterns = {"/dashboard/*", "/profile/*", "/sales-pipeline/*", "/customers/*", "/users/*", "/api/*"})
+@WebFilter(filterName = "AuthFilter", urlPatterns = {"/dashboard/*", "/profile/*", "/sales-pipeline/*", "/customers/*", "/users/*", "/api/*", "/campaigns/*"})
 public class AuthFilter implements Filter {
     
     private static final String[] EXCLUDED_URLS = {
