@@ -356,10 +356,13 @@
                                     const userId = selectElement.value;
                                     console.log('Selected userId:', userId);
 
+
+                                    let confirmMsg = 'Phân công ticket cho nhân viên này?';
                                     if (!userId) {
-                                        alert('Vui lòng chọn nhân viên để Assign.');
-                                        return;
+                                        confirmMsg = 'Bạn có chắc muốn hủy phân công (Unassign) ticket này?';
                                     }
+
+                                    if (!confirm(confirmMsg)) return;
 
                                     // Disable button
                                     if (btnElement) btnElement.disabled = true;
@@ -380,7 +383,11 @@
                                         }
                                     }).fail(function (xhr, status, error) {
                                         console.error('AJAX error:', xhr, status, error);
-                                        alert('Lỗi kết nối server: ' + error);
+                                        let msg = 'Lỗi kết nối server: ' + error;
+                                        if (xhr.status === 200) {
+                                            msg = 'Lỗi xử lý phản hồi (Invalid JSON). Xem console để biết thêm chi tiết.';
+                                        }
+                                        alert(msg);
                                         if (btnElement) btnElement.disabled = false;
                                     });
                                 }

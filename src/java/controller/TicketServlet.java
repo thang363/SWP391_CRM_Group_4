@@ -379,9 +379,9 @@ public class TicketServlet extends HttpServlet {
 
     private void handleUpdatePriority(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
-        String role = (String) session.getAttribute(Constants.SESSION_ROLE);
+        Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
-        if (!"Manager".equals(role)) {
+        if (!Role.MANAGER.equals(role)) {
             sendJsonResponse(response, false, "Bạn không có quyền thay đổi độ ưu tiên.");
             return;
         }
@@ -393,23 +393,41 @@ public class TicketServlet extends HttpServlet {
     }
 
     private void handleAssign(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        System.out.println("DEBUG: handleAssign started");
         HttpSession session = request.getSession(false);
-        Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
 
         if (!Role.MANAGER.equals(role)) {
+            System.out.println("DEBUG: Permission denied. Role: " + role);
             sendJsonResponse(response, false, "Bạn không có quyền phân công ticket.");
             return;
         }
 
-        int id = Integer.parseInt(request.getParameter("id"));
-        String userIdStr = request.getParameter("userId");
-        Integer userId = (userIdStr != null && !userIdStr.isEmpty()) ? Integer.parseInt(userIdStr) : null;
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String userIdStr = request.getParameter("userId");
+            System.out.println("DEBUG: Assigning Ticket ID: " + id + ", User ID Str: '" + userIdStr + "'");
 
-        boolean success = ticketService.assignTicket(id, userId);
-        if (success) {
-            logSystemActivity(request, id, "Assigned ticket to User ID: " + (userId != null ? userId : "Unassigned"));
+            Integer userId = (userIdStr != null && !userIdStr.trim().isEmpty()) ? Integer.parseInt(userIdStr) : null;
+            System.out.println("DEBUG: Parsed User ID: " + userId);
+
+            boolean success = ticketService.assignTicket(id, userId);
+            System.out.println("DEBUG: ticketService.assignTicket result: " + success);
+
+            if (success) {
+                logSystemActivity(request, id,
+                        "Assigned ticket to User ID: " + (userId != null ? userId : "Unassigned"));
+            }
+            sendJsonResponse(response, success, success ? "Phân công thành công" : "Lỗi phân công");
+        } catch (NumberFormatException e) {
+            System.out.println("DEBUG: Invalid number format: " + e.getMessage());
+            e.printStackTrace();
+            sendJsonResponse(response, false, "Dữ liệu không hợp lệ.");
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception in handleAssign: " + e.getMessage());
+            e.printStackTrace();
+            sendJsonResponse(response, false, "Lỗi server: " + e.getMessage());
         }
-        sendJsonResponse(response, success, success ? "Phân công thành công" : "Lỗi phân công");
     }
 
     private void handleClaim(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -505,6 +523,7 @@ public class TicketServlet extends HttpServlet {
     private void sendJsonResponse(HttpServletResponse response, boolean success, String message) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().print(String.format("{\"success\": %b, \"message\": \"%s\"}", success, message));
+        response.getWriter()
+                .print(String.format("{\"success\": %b, \"message\": \"%s\"}", success, escapeJson(message)));
     }
 }

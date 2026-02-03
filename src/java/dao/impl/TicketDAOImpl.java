@@ -187,19 +187,48 @@ public class TicketDAOImpl implements TicketDAO {
 
     @Override
     public boolean assignTicket(int ticketId, Integer userId) {
-        String sql = "UPDATE Tickets SET assigned_to = ?, updated_at = GETDATE() WHERE id = ?";
-        try (Connection conn = dbUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+        System.out.println("DEBUG: DAO assignTicket called. TicketId: " + ticketId + ", UserId: " + userId);
+
+        String statusToUpdate = (userId != null) ? "In Progress" : "Open";
+        String sql = "UPDATE Tickets SET assigned_to = ?, status = ?, updated_at = GETDATE() WHERE id = ?";
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+
             if (userId != null) {
                 stmt.setInt(1, userId);
             } else {
                 stmt.setNull(1, Types.INTEGER);
             }
-            stmt.setInt(2, ticketId);
-            return stmt.executeUpdate() > 0;
+
+            stmt.setString(2, statusToUpdate);
+            stmt.setInt(3, ticketId);
+
+            System.out.println("DEBUG: Executing UPDATE: " + sql + " [Params: " + userId + ", " + statusToUpdate + ", "
+                    + ticketId + "]");
+
+            int rows = stmt.executeUpdate();
+            System.out.println("DEBUG: Rows affected: " + rows);
+
+            return rows > 0;
+
         } catch (SQLException e) {
+            System.out.println("DEBUG: SQLException in assignTicket: " + e.getMessage());
             e.printStackTrace();
             return false;
+        } finally {
+            if (conn != null) {
+                dbUtil.closeConnection(conn);
+            }
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (SQLException e) {
+            }
         }
     }
 

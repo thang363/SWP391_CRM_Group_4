@@ -26,12 +26,15 @@ public class TicketActivityDAOImpl implements TicketActivityDAO {
                 "ORDER BY ta.created_at ASC"; // Oldest first for chat history
 
         List<TicketActivity> activities = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
 
-        try (Connection conn = dbUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
             stmt.setInt(1, ticketId);
-            ResultSet rs = stmt.executeQuery();
+            rs = stmt.executeQuery();
 
             while (rs.next()) {
                 TicketActivity activity = new TicketActivity();
@@ -47,6 +50,20 @@ public class TicketActivityDAOImpl implements TicketActivityDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                dbUtil.closeConnection(conn);
+            }
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (SQLException e) {
+            }
+            try {
+                if (rs != null)
+                    rs.close();
+            } catch (SQLException e) {
+            }
         }
 
         return activities;
@@ -56,9 +73,12 @@ public class TicketActivityDAOImpl implements TicketActivityDAO {
     public boolean addActivity(TicketActivity activity) {
         String sql = "INSERT INTO TicketActivities (ticket_id, user_id, message, activity_type) VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = dbUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
 
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
             stmt.setInt(1, activity.getTicketId());
             stmt.setInt(2, activity.getUserId());
             stmt.setString(3, activity.getMessage());
@@ -70,6 +90,15 @@ public class TicketActivityDAOImpl implements TicketActivityDAO {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        } finally {
+            if (conn != null) {
+                dbUtil.closeConnection(conn);
+            }
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (SQLException e) {
+            }
         }
     }
 }
