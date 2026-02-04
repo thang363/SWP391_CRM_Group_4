@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 
+import util.Constants;
+
 @WebServlet(name = "DashboardServlet", urlPatterns = {"/dashboard"})
 public class DashboardServlet extends HttpServlet {
 
@@ -17,7 +19,7 @@ public class DashboardServlet extends HttpServlet {
         
         request.setAttribute("pageTitle", "Dashboard");
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/dashboard.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher(Constants.PAGE_DASHBOARD);
         dispatcher.forward(request, response);
     }
 

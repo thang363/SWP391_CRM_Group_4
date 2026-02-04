@@ -83,7 +83,7 @@ public class CampaignDAOImpl implements CampaignDAO {
     }
     
     @Override
-    public List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate) {
+    public List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -123,7 +123,15 @@ public class CampaignDAOImpl implements CampaignDAO {
                 params.add(endDate);
             }
             
-            sql.append(" ORDER BY c.created_at DESC");
+            // Filter by manager ID (for manager-level access control)
+            if (managerId != null) {
+                sql.append(" AND c.manager_id = ?");
+                params.add(managerId);
+            }
+            
+            sql.append(" ORDER BY c.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            params.add(offset);
+            params.add(limit);
             
             stmt = conn.prepareStatement(sql.toString());
             
@@ -134,6 +142,10 @@ public class CampaignDAOImpl implements CampaignDAO {
                     stmt.setString(i + 1, (String) param);
                 } else if (param instanceof Timestamp) {
                     stmt.setTimestamp(i + 1, (Timestamp) param);
+                } else if (param instanceof Integer) {
+                    stmt.setInt(i + 1, (Integer) param);
+                } else if (param instanceof Long) {
+                    stmt.setLong(i + 1, (Long) param);
                 }
             }
             
@@ -151,6 +163,75 @@ public class CampaignDAOImpl implements CampaignDAO {
         }
         
         return campaigns;
+    }
+
+    @Override
+    public int countByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = dbUtil.getConnection();
+            StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM Campaigns c WHERE 1=1"
+            );
+            
+            List<Object> params = new ArrayList<>();
+            
+            if (name != null && !name.trim().isEmpty()) {
+                sql.append(" AND c.name LIKE ?");
+                params.add("%" + name.trim() + "%");
+            }
+            
+            if (status != null && !status.trim().isEmpty()) {
+                sql.append(" AND c.status = ?");
+                params.add(status);
+            }
+            
+            if (startDate != null) {
+                sql.append(" AND c.start_date >= ?");
+                params.add(startDate);
+            }
+            
+            if (endDate != null) {
+                sql.append(" AND c.end_date <= ?");
+                params.add(endDate);
+            }
+            
+            // Filter by manager ID (for manager-level access control)
+            if (managerId != null) {
+                sql.append(" AND c.manager_id = ?");
+                params.add(managerId);
+            }
+            
+            stmt = conn.prepareStatement(sql.toString());
+            
+            for (int i = 0; i < params.size(); i++) {
+                Object param = params.get(i);
+                if (param instanceof String) {
+                    stmt.setString(i + 1, (String) param);
+                } else if (param instanceof Timestamp) {
+                    stmt.setTimestamp(i + 1, (Timestamp) param);
+                } else if (param instanceof Long) {
+                    stmt.setLong(i + 1, (Long) param);
+                }
+            }
+            
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error counting filtered campaigns: " + e.getMessage());
+            e.printStackTrace();
+            return 0;
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
     }
     
     @Override

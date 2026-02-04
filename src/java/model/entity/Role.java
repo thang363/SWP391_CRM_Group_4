@@ -15,6 +15,9 @@ public enum Role {
     public String getValue() {
         return value;
     }
+    public String getName() {
+        return name(); 
+    }
     
     public static Role fromString(String value) {
         if (value == null) {
