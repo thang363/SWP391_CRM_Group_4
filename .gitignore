@@ -1,3 +1,4 @@
+
 # ===== Build folders =====
 build/
 build_tmp_script/
@@ -16,6 +17,5 @@ nbproject/genfiles.properties
 
 # ===== OS files =====
 .DS_Store
-
 Thumbs.db
 
