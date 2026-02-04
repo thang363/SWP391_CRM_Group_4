@@ -23,14 +23,28 @@ public interface CampaignDAO {
     List<Campaign> findAll();
     
     /**
-     * Find campaigns by filters
+     * Find campaigns by filters with pagination
      * @param name Campaign name (partial match, can be null)
      * @param status Campaign status (can be null)
      * @param startDate Filter by start date (can be null)
      * @param endDate Filter by end date (can be null)
+     * @param managerId Filter by manager ID (can be null)
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      * @return List of filtered campaigns
      */
-    List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate);
+    List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit);
+    
+    /**
+     * Count campaigns matching filters
+     * @param name Campaign name (partial match, can be null)
+     * @param status Campaign status (can be null)
+     * @param startDate Filter by start date (can be null)
+     * @param endDate Filter by end date (can be null)
+     * @param managerId Filter by manager ID (can be null)
+     * @return Count of matching campaigns
+     */
+    int countByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId);
     
     /**
      * Create new campaign

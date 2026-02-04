@@ -39,8 +39,15 @@ public class CampaignServiceImpl implements CampaignService {
     }
     
     @Override
-    public List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate) {
-        return campaignDAO.findByFilters(name, status, startDate, endDate);
+    public List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit) {
+        if (offset < 0) offset = 0;
+        if (limit <= 0) limit = 10;
+        return campaignDAO.findByFilters(name, status, startDate, endDate, managerId, offset, limit);
+    }
+
+    @Override
+    public int countCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId) {
+        return campaignDAO.countByFilters(name, status, startDate, endDate, managerId);
     }
     
     @Override

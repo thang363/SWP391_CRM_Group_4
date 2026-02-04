@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-@WebFilter(filterName = "RoleFilter", urlPatterns = {"/admin/*", "/users/*"})
+@WebFilter(filterName = "RoleFilter", urlPatterns = {"/admin/*", "/users/*", "/campaigns/*"})
 public class RoleFilter implements Filter {
     
     private Map<String, Set<Role>> roleRequirements;
@@ -25,6 +25,7 @@ public class RoleFilter implements Filter {
         roleRequirements = new HashMap<>();
         roleRequirements.put("/admin", Set.of(Role.MANAGER));
         roleRequirements.put("/users", Set.of(Role.MANAGER));
+        roleRequirements.put("/campaigns", Set.of(Role.MANAGER, Role.MARKETING));
     }
     
     @Override

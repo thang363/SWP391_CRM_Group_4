@@ -23,14 +23,28 @@ public interface CampaignService {
     List<Campaign> getAllCampaigns();
     
     /**
-     * Search campaigns with filters
+     * Search campaigns with filters and pagination
      * @param name Campaign name (partial match)
      * @param status Campaign status
      * @param startDate Filter by start date
      * @param endDate Filter by end date
+     * @param managerId Filter by manager ID (null = no filter)
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      * @return List of filtered campaigns
      */
-    List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate);
+    List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit);
+    
+    /**
+     * Count campaigns with filters
+     * @param name Campaign name (partial match)
+     * @param status Campaign status
+     * @param startDate Filter by start date
+     * @param endDate Filter by end date
+     * @param managerId Filter by manager ID (null = no filter)
+     * @return Count of matching campaigns
+     */
+    int countCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId);
     
     /**
      * Create new campaign
