@@ -176,6 +176,11 @@ public class CampaignServlet extends HttpServlet {
         try {
             Campaign campaign = extractCampaignFromRequest(request);
 
+            // Auto-assign current user as campaign manager
+            HttpSession session = request.getSession(false);
+            Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            campaign.setManagerId(currentUserId);
+
             // Validate
             String validationError = campaignService.validateCampaign(campaign);
             if (validationError != null) {

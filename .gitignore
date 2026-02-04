@@ -18,4 +18,9 @@ nbproject/genfiles.properties
 # ===== OS files =====
 .DS_Store
 Thumbs.db
+# Chặn các thư viện tải về (nếu dùng Maven/Gradle thì nên chặn thư mục lib local)
+lib/
+nblib/
 
+# Chặn các file tạm của server (Tomcat/Glassfish)
+nbproject/ant-deploy.xml
