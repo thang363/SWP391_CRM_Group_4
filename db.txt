@@ -1,378 +1,1042 @@
--- =============================================
--- DATABASE SCHEMA: CRM SYSTEM
--- PHÂN HỆ 1: QUẢN TRỊ HỆ THỐNG & NGƯỜI DÙNG
--- =============================================
-create database CRM
-select * from Users
--- 1. Bảng Users: Quản lý tài khoản
-CREATE TABLE Users (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    full_name NVARCHAR(255) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    phone VARCHAR(20), -- Đã bổ sung kiểu dữ liệu thiếu trong file gốc
-    role VARCHAR(20) NOT NULL CHECK (role IN ('Marketing', 'Manager', 'Support', 'Sale')),
-    status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive', 'Locked')),
-    created_at DATETIME DEFAULT GETDATE()
-);
-
--- 2. Bảng Notifications: Thông báo hệ thống
-CREATE TABLE Notifications (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    user_id INT NOT NULL,
-    title NVARCHAR(255),
-    content NVARCHAR(MAX),
-    is_read BIT DEFAULT 0,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Notifications_User FOREIGN KEY (user_id) REFERENCES Users(id)
-);
-
--- 3. Bảng AuditLogs: Nhật ký hệ thống
-CREATE TABLE AuditLogs (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    user_id INT,
-    action NVARCHAR(255),
-    entity NVARCHAR(100),
-    entity_id INT,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Audit_User FOREIGN KEY (user_id) REFERENCES Users(id)
-);
-
--- =============================================
--- PHÂN HỆ 2: MARKETING (CAMPAIGN & LANDING PAGE)
--- =============================================
-
--- 4. Bảng Campaigns: Chiến dịch Marketing
-CREATE TABLE Campaigns (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    budget DECIMAL(18,2) DEFAULT 0,
-    start_date DATETIME NOT NULL,
-    end_date DATETIME NOT NULL,
-    manager_id INT,
-    status VARCHAR(20) CHECK (status IN ('Draft', 'Pending', 'Approved', 'Active', 'Finished', 'Rejected')),
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Campaigns_Manager FOREIGN KEY (manager_id) REFERENCES Users(id)
-);
-
--- 5. Bảng LandingPages: Trang đích
-CREATE TABLE LandingPages (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    campaign_id INT,
-    content_html NVARCHAR(MAX),
-    status VARCHAR(20) CHECK (status IN ('Draft', 'Approved', 'Rejected')),
-    manager_comment NVARCHAR(MAX),
-    approved_by INT,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_LandingPages_Campaign FOREIGN KEY (campaign_id) REFERENCES Campaigns(id),
-    CONSTRAINT FK_LandingPages_Approver FOREIGN KEY (approved_by) REFERENCES Users(id)
-);
-
--- 6. Bảng LeadSources: Nguồn Lead (Facebook, Google...)
-CREATE TABLE LeadSources (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name NVARCHAR(100) NOT NULL,
-    description NVARCHAR(255),
-    is_active BIT DEFAULT 1,
-    created_at DATETIME DEFAULT GETDATE()
-);
-
--- 7. Bảng ScoringRules: Quy tắc chấm điểm
-CREATE TABLE ScoringRules (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    event_type VARCHAR(50),
-    points INT,
-    is_active BIT DEFAULT 1
-);
-
--- 8. Bảng ActivityTypes: Loại tương tác (Click, View...)
-CREATE TABLE ActivityTypes (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    description NVARCHAR(255),
-    is_active BIT DEFAULT 1
-);
-
--- =============================================
--- PHÂN HỆ 3: QUẢN LÝ LEAD (KHÁCH HÀNG TIỀM NĂNG)
--- =============================================
-
--- 9. Bảng Leads: Khách hàng tiềm năng
-CREATE TABLE Leads (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    campaign_id INT,
-    source_id INT,
-    full_name NVARCHAR(255) NOT NULL,
-    email VARCHAR(100),
-    phone VARCHAR(20),
-    current_score INT DEFAULT 0,
-    status VARCHAR(20) CHECK (status IN ('New', 'Nurturing', 'Qualified', 'Assigned', 'Junk')),
-    is_converted BIT DEFAULT 0,
-    assigned_to INT, -- Sales phụ trách
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Leads_Campaign FOREIGN KEY (campaign_id) REFERENCES Campaigns(id),
-    CONSTRAINT FK_Leads_Source FOREIGN KEY (source_id) REFERENCES LeadSources(id),
-    CONSTRAINT FK_Leads_Sales FOREIGN KEY (assigned_to) REFERENCES Users(id)
-);
-
--- 10. Bảng LeadScoreHistory: Lịch sử điểm số
-CREATE TABLE LeadScoreHistory (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    lead_id INT NOT NULL,
-    rule_id INT,
-    score_change INT,
-    total_score INT,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_LeadScore_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
-    CONSTRAINT FK_LeadScore_Rule FOREIGN KEY (rule_id) REFERENCES ScoringRules(id)
-);
-
--- 11. Bảng LeadInteractions: Nhật ký tương tác Lead
-CREATE TABLE LeadInteractions (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    lead_id INT,
-    campaign_id INT,
-    activity_type_id INT,
-    reference_url NVARCHAR(MAX),
-    score_change INT,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Interactions_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
-    CONSTRAINT FK_Interactions_Campaign FOREIGN KEY (campaign_id) REFERENCES Campaigns(id),
-    CONSTRAINT FK_Interactions_Type FOREIGN KEY (activity_type_id) REFERENCES ActivityTypes(id)
-);
-
--- 12. Bảng LeadStatusHistory: Lịch sử thay đổi trạng thái
-CREATE TABLE LeadStatusHistory (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    lead_id INT NOT NULL,
-    old_status VARCHAR(20),
-    new_status VARCHAR(20),
-    changed_by INT,
-    changed_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_StatusHistory_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
-    CONSTRAINT FK_StatusHistory_User FOREIGN KEY (changed_by) REFERENCES Users(id)
-);
-
--- 13. Bảng LeadAssignments: Lịch sử bàn giao Lead (Manager -> Sales)
-CREATE TABLE LeadAssignments (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    lead_id INT,
-    manager_id INT,
-    sales_id INT,
-    assigned_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Assignments_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
-    CONSTRAINT FK_Assignments_Manager FOREIGN KEY (manager_id) REFERENCES Users(id),
-    CONSTRAINT FK_Assignments_Sales FOREIGN KEY (sales_id) REFERENCES Users(id)
-);
-
--- 14. Bảng SalesFeedback: Đánh giá chất lượng Lead từ Sales
-CREATE TABLE SalesFeedback (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    lead_id INT,
-    sales_id INT,
-    quality_rating TINYINT CHECK (quality_rating BETWEEN 1 AND 5),
-    comment NVARCHAR(MAX),
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Feedback_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
-    CONSTRAINT FK_Feedback_Sales FOREIGN KEY (sales_id) REFERENCES Users(id)
-);
-
--- =============================================
--- PHÂN HỆ 4: KHÁCH HÀNG & CHĂM SÓC (CUSTOMERS)
--- =============================================
-
--- 15. Bảng Customers: Khách hàng chính thức (B2B)
-CREATE TABLE Customers (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    lead_id INT NULL,
-    assigned_to INT,
-    company_name NVARCHAR(255) NOT NULL,
-    tax_code VARCHAR(50) UNIQUE,
-    website VARCHAR(255),
-    industry NVARCHAR(100),
-    number_of_employees INT,
-    phone VARCHAR(20),
-    email VARCHAR(100),
-    billing_address NVARCHAR(MAX),
-    shipping_address NVARCHAR(MAX),
-    city NVARCHAR(100),
-    country NVARCHAR(100) DEFAULT 'Vietnam',
-    tier VARCHAR(20) DEFAULT 'Standard' CHECK (tier IN ('Standard', 'Silver', 'Gold', 'Platinum', 'VIP')),
-    status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive', 'Churned', 'Blacklisted')),
-    founded_date DATE,
-    last_care_date DATETIME,
-    total_revenue DECIMAL(18,2) DEFAULT 0,
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME,
-    CONSTRAINT FK_Customers_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
-    CONSTRAINT FK_Customers_User FOREIGN KEY (assigned_to) REFERENCES Users(id)
-);
-
--- 16. Bảng Contacts: Người liên hệ của Khách hàng
-CREATE TABLE Contacts (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    customer_id INT NOT NULL,
-    full_name NVARCHAR(255) NOT NULL,
-    gender NVARCHAR(10),
-    position NVARCHAR(100),
-    phone VARCHAR(20),
-    email VARCHAR(100),
-    is_primary BIT DEFAULT 0,
-    is_active BIT DEFAULT 1,
-    birthday DATE,
-    note NVARCHAR(MAX),
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Contacts_Customer FOREIGN KEY (customer_id) REFERENCES Customers(id)
-);
-
--- 17. Bảng CarePrograms: Chương trình chăm sóc
-CREATE TABLE CarePrograms (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX),
-    frequency_type VARCHAR(20) CHECK (frequency_type IN ('Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly', 'OnDate')),
-    frequency_value INT DEFAULT 1,
-    target_tier VARCHAR(20),
-    default_action_type VARCHAR(50) DEFAULT 'Call',
-    is_active BIT DEFAULT 1,
-    created_at DATETIME DEFAULT GETDATE()
-);
-
--- 18. Bảng Tasks: Công việc & Lịch hẹn
-CREATE TABLE Tasks (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    title NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX),
-    due_date DATETIME,
-    status VARCHAR(20) CHECK (status IN ('Pending', 'Completed', 'Overdue')),
-    assigned_to INT,
-    related_to_entity VARCHAR(50),
-    related_record_id INT,
-    care_program_id INT NULL,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Tasks_User FOREIGN KEY (assigned_to) REFERENCES Users(id),
-    CONSTRAINT FK_Tasks_CareProgram FOREIGN KEY (care_program_id) REFERENCES CarePrograms(id)
-);
-
--- =============================================
--- PHÂN HỆ 5: BÁN HÀNG (SALES & ORDERS)
--- =============================================
-
--- 19. Bảng Products: Sản phẩm/Dịch vụ
-CREATE TABLE Products (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    product_code VARCHAR(50) UNIQUE,
-    name NVARCHAR(255) NOT NULL,
-    category NVARCHAR(100),
-    unit_price DECIMAL(18,2) DEFAULT 0,
-    description NVARCHAR(MAX),
-    is_active BIT DEFAULT 1
-);
-
--- 20. Bảng Opportunities: Cơ hội bán hàng
-CREATE TABLE Opportunities (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    lead_id INT NULL,
-    customer_id INT NULL,
-    type VARCHAR(20) CHECK (type IN ('New Business', 'Existing Business')),
-    expected_value DECIMAL(18,2),
-    stage VARCHAR(30) CHECK (stage IN ('Prospecting', 'Proposal', 'Negotiation', 'Won', 'Lost')),
-    probability INT DEFAULT 0,
-    sales_id INT,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Opp_Lead FOREIGN KEY (lead_id) REFERENCES Leads(id),
-    CONSTRAINT FK_Opp_Customer FOREIGN KEY (customer_id) REFERENCES Customers(id),
-    CONSTRAINT FK_Opp_Sales FOREIGN KEY (sales_id) REFERENCES Users(id),
-    CONSTRAINT CHK_Opp_Owner CHECK (lead_id IS NOT NULL OR customer_id IS NOT NULL)
-);
-
--- 21. Bảng OpportunityProducts: Chi tiết sản phẩm trong Cơ hội
-CREATE TABLE OpportunityProducts (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    opportunity_id INT,
-    product_id INT,
-    quantity INT DEFAULT 1,
-    sales_price DECIMAL(18,2),
-    total_amount AS (quantity * sales_price), -- Cột tính toán tự động
-    CONSTRAINT FK_OppProd_Opp FOREIGN KEY (opportunity_id) REFERENCES Opportunities(id),
-    CONSTRAINT FK_OppProd_Prod FOREIGN KEY (product_id) REFERENCES Products(id)
-);
-
--- 22. Bảng Quotes: Báo giá
-CREATE TABLE Quotes (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    opportunity_id INT NOT NULL,
-    quote_number VARCHAR(50) UNIQUE,
-    subject NVARCHAR(255),
-    subtotal DECIMAL(18,2),
-    discount_amount DECIMAL(18,2) DEFAULT 0,
-    tax_amount DECIMAL(18,2) DEFAULT 0,
-    grand_total DECIMAL(18,2),
-    status VARCHAR(20) CHECK (status IN ('Draft', 'Sent', 'Accepted', 'Rejected', 'Expired')),
-    valid_until DATETIME,
-    created_by INT,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Quotes_Opp FOREIGN KEY (opportunity_id) REFERENCES Opportunities(id),
-    CONSTRAINT FK_Quotes_User FOREIGN KEY (created_by) REFERENCES Users(id)
-);
-
--- 23. Bảng QuoteDetails: Chi tiết báo giá
-CREATE TABLE QuoteDetails (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    quote_id INT,
-    product_id INT,
-    quantity INT DEFAULT 1,
-    unit_price DECIMAL(18,2),
-    discount DECIMAL(18,2) DEFAULT 0,
-    line_total AS ((quantity * unit_price) - discount), -- Cột tính toán tự động
-    CONSTRAINT FK_QuoteDetails_Quote FOREIGN KEY (quote_id) REFERENCES Quotes(id),
-    CONSTRAINT FK_QuoteDetails_Prod FOREIGN KEY (product_id) REFERENCES Products(id)
-);
-
--- =============================================
--- PHÂN HỆ 6: HỖ TRỢ (SUPPORT & OTHERS)
--- =============================================
-
--- 24. Bảng Tickets: Yêu cầu hỗ trợ
-CREATE TABLE Tickets (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    customer_id INT,
-    title NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX),
-    status VARCHAR(20) CHECK (status IN ('Open', 'In Progress', 'Resolved', 'Closed')),
-    priority VARCHAR(20) CHECK (priority IN ('Low', 'Medium', 'High', 'Critical')),
-    assigned_to INT,
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME,
-    CONSTRAINT FK_Tickets_Support FOREIGN KEY (assigned_to) REFERENCES Users(id),
-    CONSTRAINT FK_Tickets_Customer FOREIGN KEY (customer_id) REFERENCES Customers(id)
-);
-
--- 25. Bảng TicketActivities: Trao đổi trong Ticket
-CREATE TABLE TicketActivities (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ticket_id INT,
-    user_id INT,
-    message NVARCHAR(MAX),
-    activity_type VARCHAR(20) DEFAULT 'Comment',
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_TicketAct_Ticket FOREIGN KEY (ticket_id) REFERENCES Tickets(id),
-    CONSTRAINT FK_TicketAct_User FOREIGN KEY (user_id) REFERENCES Users(id)
-);
-
--- 26. Bảng Attachments: File đính kèm
-CREATE TABLE Attachments (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    file_name NVARCHAR(255),
-    file_path NVARCHAR(MAX),
-    file_size INT,
-    uploaded_by INT,
-    related_to_entity VARCHAR(50),
-    related_record_id INT,
-    created_at DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Attachments_User FOREIGN KEY (uploaded_by) REFERENCES Users(id)
-);
-
-
+USE [master]
+GO
+/****** Object:  Database [CRM]    Script Date: 2/4/2026 9:19:39 AM ******/
+CREATE DATABASE [CRM]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'CRM', FILENAME = N'H:\Microsoft SQL Server\MSSQL15.SQLEXPRESS\MSSQL\DATA\CRM.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'CRM_log', FILENAME = N'H:\Microsoft SQL Server\MSSQL15.SQLEXPRESS\MSSQL\DATA\CRM_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
+GO
+ALTER DATABASE [CRM] SET COMPATIBILITY_LEVEL = 150
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [CRM].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [CRM] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [CRM] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [CRM] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [CRM] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [CRM] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [CRM] SET AUTO_CLOSE ON 
+GO
+ALTER DATABASE [CRM] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [CRM] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [CRM] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [CRM] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [CRM] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [CRM] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [CRM] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [CRM] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [CRM] SET  ENABLE_BROKER 
+GO
+ALTER DATABASE [CRM] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [CRM] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [CRM] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [CRM] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [CRM] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [CRM] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [CRM] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [CRM] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [CRM] SET  MULTI_USER 
+GO
+ALTER DATABASE [CRM] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [CRM] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [CRM] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [CRM] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [CRM] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [CRM] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [CRM] SET QUERY_STORE = OFF
+GO
+USE [CRM]
+GO
+/****** Object:  Table [dbo].[ActivityTypes]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ActivityTypes](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [varchar](50) NOT NULL,
+	[description] [nvarchar](255) NULL,
+	[is_active] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Attachments]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Attachments](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[file_name] [nvarchar](255) NULL,
+	[file_path] [nvarchar](max) NULL,
+	[file_size] [int] NULL,
+	[uploaded_by] [int] NULL,
+	[related_to_entity] [varchar](50) NULL,
+	[related_record_id] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[AuditLogs]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AuditLogs](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[user_id] [int] NULL,
+	[action] [nvarchar](255) NULL,
+	[entity] [nvarchar](100) NULL,
+	[entity_id] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Campaigns]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Campaigns](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](255) NOT NULL,
+	[budget] [decimal](18, 2) NULL,
+	[start_date] [datetime] NOT NULL,
+	[end_date] [datetime] NOT NULL,
+	[manager_id] [int] NULL,
+	[status] [varchar](20) NULL,
+	[created_at] [datetime] NULL,
+	[description] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[CampaignTransferHistory]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[CampaignTransferHistory](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[transfer_id] [int] NOT NULL,
+	[campaign_id] [int] NOT NULL,
+	[from_manager_id] [int] NOT NULL,
+	[to_manager_id] [int] NOT NULL,
+	[final_status] [varchar](20) NOT NULL,
+	[requested_at] [datetime] NOT NULL,
+	[completed_at] [datetime] NOT NULL,
+	[reason] [nvarchar](500) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[CampaignTransfers]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[CampaignTransfers](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[campaign_id] [int] NOT NULL,
+	[from_manager_id] [int] NOT NULL,
+	[to_manager_id] [int] NOT NULL,
+	[transfer_status] [varchar](20) NOT NULL,
+	[transfer_reason] [nvarchar](500) NULL,
+	[notes] [nvarchar](max) NULL,
+	[requested_at] [datetime] NULL,
+	[responded_at] [datetime] NULL,
+	[response_notes] [nvarchar](500) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[CarePrograms]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[CarePrograms](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](255) NOT NULL,
+	[description] [nvarchar](max) NULL,
+	[frequency_type] [varchar](20) NULL,
+	[frequency_value] [int] NULL,
+	[target_tier] [varchar](20) NULL,
+	[default_action_type] [varchar](50) NULL,
+	[is_active] [bit] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Contacts]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Contacts](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[customer_id] [int] NOT NULL,
+	[full_name] [nvarchar](255) NOT NULL,
+	[gender] [nvarchar](10) NULL,
+	[position] [nvarchar](100) NULL,
+	[phone] [varchar](20) NULL,
+	[email] [varchar](100) NULL,
+	[is_primary] [bit] NULL,
+	[is_active] [bit] NULL,
+	[birthday] [date] NULL,
+	[note] [nvarchar](max) NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Customers]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Customers](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[lead_id] [int] NULL,
+	[assigned_to] [int] NULL,
+	[company_name] [nvarchar](255) NOT NULL,
+	[tax_code] [varchar](50) NULL,
+	[website] [varchar](255) NULL,
+	[industry] [nvarchar](100) NULL,
+	[number_of_employees] [int] NULL,
+	[phone] [varchar](20) NULL,
+	[email] [varchar](100) NULL,
+	[billing_address] [nvarchar](max) NULL,
+	[shipping_address] [nvarchar](max) NULL,
+	[city] [nvarchar](100) NULL,
+	[country] [nvarchar](100) NULL,
+	[tier] [varchar](20) NULL,
+	[status] [varchar](20) NULL,
+	[founded_date] [date] NULL,
+	[last_care_date] [datetime] NULL,
+	[total_revenue] [decimal](18, 2) NULL,
+	[created_at] [datetime] NULL,
+	[updated_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[tax_code] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LandingPages]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LandingPages](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[campaign_id] [int] NULL,
+	[content_html] [nvarchar](max) NULL,
+	[status] [varchar](20) NULL,
+	[manager_comment] [nvarchar](max) NULL,
+	[approved_by] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LeadAssignments]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LeadAssignments](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[lead_id] [int] NULL,
+	[manager_id] [int] NULL,
+	[sales_id] [int] NULL,
+	[assigned_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LeadInteractions]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LeadInteractions](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[lead_id] [int] NULL,
+	[campaign_id] [int] NULL,
+	[activity_type_id] [int] NULL,
+	[reference_url] [nvarchar](max) NULL,
+	[score_change] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Leads]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Leads](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[campaign_id] [int] NULL,
+	[source_id] [int] NULL,
+	[full_name] [nvarchar](255) NOT NULL,
+	[email] [varchar](100) NULL,
+	[phone] [varchar](20) NULL,
+	[current_score] [int] NULL,
+	[status] [varchar](20) NULL,
+	[is_converted] [bit] NULL,
+	[assigned_to] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LeadScoreHistory]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LeadScoreHistory](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[lead_id] [int] NOT NULL,
+	[rule_id] [int] NULL,
+	[score_change] [int] NULL,
+	[total_score] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LeadSources]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LeadSources](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](100) NOT NULL,
+	[description] [nvarchar](255) NULL,
+	[is_active] [bit] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LeadStatusHistory]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LeadStatusHistory](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[lead_id] [int] NOT NULL,
+	[old_status] [varchar](20) NULL,
+	[new_status] [varchar](20) NULL,
+	[changed_by] [int] NULL,
+	[changed_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Notifications]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Notifications](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[user_id] [int] NOT NULL,
+	[title] [nvarchar](255) NULL,
+	[content] [nvarchar](max) NULL,
+	[is_read] [bit] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Opportunities]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Opportunities](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [nvarchar](255) NOT NULL,
+	[lead_id] [int] NULL,
+	[customer_id] [int] NULL,
+	[type] [varchar](20) NULL,
+	[expected_value] [decimal](18, 2) NULL,
+	[stage] [varchar](30) NULL,
+	[probability] [int] NULL,
+	[sales_id] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[OpportunityProducts]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[OpportunityProducts](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[opportunity_id] [int] NULL,
+	[product_id] [int] NULL,
+	[quantity] [int] NULL,
+	[sales_price] [decimal](18, 2) NULL,
+	[total_amount]  AS ([quantity]*[sales_price]),
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Products]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Products](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[product_code] [varchar](50) NULL,
+	[name] [nvarchar](255) NOT NULL,
+	[category] [nvarchar](100) NULL,
+	[unit_price] [decimal](18, 2) NULL,
+	[description] [nvarchar](max) NULL,
+	[is_active] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[product_code] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[QuoteDetails]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[QuoteDetails](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[quote_id] [int] NULL,
+	[product_id] [int] NULL,
+	[quantity] [int] NULL,
+	[unit_price] [decimal](18, 2) NULL,
+	[discount] [decimal](18, 2) NULL,
+	[line_total]  AS ([quantity]*[unit_price]-[discount]),
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Quotes]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Quotes](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[opportunity_id] [int] NOT NULL,
+	[quote_number] [varchar](50) NULL,
+	[subject] [nvarchar](255) NULL,
+	[subtotal] [decimal](18, 2) NULL,
+	[discount_amount] [decimal](18, 2) NULL,
+	[tax_amount] [decimal](18, 2) NULL,
+	[grand_total] [decimal](18, 2) NULL,
+	[status] [varchar](20) NULL,
+	[valid_until] [datetime] NULL,
+	[created_by] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[quote_number] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SalesFeedback]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SalesFeedback](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[lead_id] [int] NULL,
+	[sales_id] [int] NULL,
+	[quality_rating] [tinyint] NULL,
+	[comment] [nvarchar](max) NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ScoringRules]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ScoringRules](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[event_type] [varchar](50) NULL,
+	[points] [int] NULL,
+	[is_active] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Tasks]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Tasks](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[title] [nvarchar](255) NOT NULL,
+	[description] [nvarchar](max) NULL,
+	[due_date] [datetime] NULL,
+	[status] [varchar](20) NULL,
+	[assigned_to] [int] NULL,
+	[related_to_entity] [varchar](50) NULL,
+	[related_record_id] [int] NULL,
+	[care_program_id] [int] NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[TicketActivities]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TicketActivities](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[ticket_id] [int] NULL,
+	[user_id] [int] NULL,
+	[message] [nvarchar](max) NULL,
+	[activity_type] [varchar](20) NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Tickets]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Tickets](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[customer_id] [int] NULL,
+	[title] [nvarchar](255) NOT NULL,
+	[description] [nvarchar](max) NULL,
+	[status] [varchar](20) NULL,
+	[priority] [varchar](20) NULL,
+	[assigned_to] [int] NULL,
+	[created_at] [datetime] NULL,
+	[updated_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Users]    Script Date: 2/4/2026 9:19:39 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Users](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[username] [varchar](50) NOT NULL,
+	[password_hash] [varchar](255) NOT NULL,
+	[full_name] [nvarchar](255) NOT NULL,
+	[email] [varchar](100) NOT NULL,
+	[phone] [varchar](20) NULL,
+	[role] [varchar](20) NOT NULL,
+	[status] [varchar](20) NULL,
+	[created_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[email] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[username] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_CampaignTransfers_Status]    Script Date: 2/4/2026 9:19:39 AM ******/
+CREATE NONCLUSTERED INDEX [IX_CampaignTransfers_Status] ON [dbo].[CampaignTransfers]
+(
+	[transfer_status] ASC,
+	[campaign_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_CampaignTransfers_ToManager]    Script Date: 2/4/2026 9:19:39 AM ******/
+CREATE NONCLUSTERED INDEX [IX_CampaignTransfers_ToManager] ON [dbo].[CampaignTransfers]
+(
+	[to_manager_id] ASC,
+	[transfer_status] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_OnePendingPerCampaign]    Script Date: 2/4/2026 9:19:39 AM ******/
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_OnePendingPerCampaign] ON [dbo].[CampaignTransfers]
+(
+	[campaign_id] ASC
+)
+WHERE ([transfer_status]='Pending')
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[ActivityTypes] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[Attachments] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[AuditLogs] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[Campaigns] ADD  DEFAULT ((0)) FOR [budget]
+GO
+ALTER TABLE [dbo].[Campaigns] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[CampaignTransfers] ADD  DEFAULT (getdate()) FOR [requested_at]
+GO
+ALTER TABLE [dbo].[CarePrograms] ADD  DEFAULT ((1)) FOR [frequency_value]
+GO
+ALTER TABLE [dbo].[CarePrograms] ADD  DEFAULT ('Call') FOR [default_action_type]
+GO
+ALTER TABLE [dbo].[CarePrograms] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[CarePrograms] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[Contacts] ADD  DEFAULT ((0)) FOR [is_primary]
+GO
+ALTER TABLE [dbo].[Contacts] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[Contacts] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[Customers] ADD  DEFAULT ('Vietnam') FOR [country]
+GO
+ALTER TABLE [dbo].[Customers] ADD  DEFAULT ('Standard') FOR [tier]
+GO
+ALTER TABLE [dbo].[Customers] ADD  DEFAULT ('Active') FOR [status]
+GO
+ALTER TABLE [dbo].[Customers] ADD  DEFAULT ((0)) FOR [total_revenue]
+GO
+ALTER TABLE [dbo].[Customers] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[LandingPages] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[LeadAssignments] ADD  DEFAULT (getdate()) FOR [assigned_at]
+GO
+ALTER TABLE [dbo].[LeadInteractions] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[Leads] ADD  DEFAULT ((0)) FOR [current_score]
+GO
+ALTER TABLE [dbo].[Leads] ADD  DEFAULT ((0)) FOR [is_converted]
+GO
+ALTER TABLE [dbo].[Leads] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[LeadScoreHistory] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[LeadSources] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[LeadSources] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[LeadStatusHistory] ADD  DEFAULT (getdate()) FOR [changed_at]
+GO
+ALTER TABLE [dbo].[Notifications] ADD  DEFAULT ((0)) FOR [is_read]
+GO
+ALTER TABLE [dbo].[Notifications] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[Opportunities] ADD  DEFAULT ((0)) FOR [probability]
+GO
+ALTER TABLE [dbo].[Opportunities] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[OpportunityProducts] ADD  DEFAULT ((1)) FOR [quantity]
+GO
+ALTER TABLE [dbo].[Products] ADD  DEFAULT ((0)) FOR [unit_price]
+GO
+ALTER TABLE [dbo].[Products] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[QuoteDetails] ADD  DEFAULT ((1)) FOR [quantity]
+GO
+ALTER TABLE [dbo].[QuoteDetails] ADD  DEFAULT ((0)) FOR [discount]
+GO
+ALTER TABLE [dbo].[Quotes] ADD  DEFAULT ((0)) FOR [discount_amount]
+GO
+ALTER TABLE [dbo].[Quotes] ADD  DEFAULT ((0)) FOR [tax_amount]
+GO
+ALTER TABLE [dbo].[Quotes] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[SalesFeedback] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[ScoringRules] ADD  DEFAULT ((1)) FOR [is_active]
+GO
+ALTER TABLE [dbo].[Tasks] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[TicketActivities] ADD  DEFAULT ('Comment') FOR [activity_type]
+GO
+ALTER TABLE [dbo].[TicketActivities] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[Tickets] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[Users] ADD  DEFAULT ('Active') FOR [status]
+GO
+ALTER TABLE [dbo].[Users] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[Attachments]  WITH CHECK ADD  CONSTRAINT [FK_Attachments_User] FOREIGN KEY([uploaded_by])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Attachments] CHECK CONSTRAINT [FK_Attachments_User]
+GO
+ALTER TABLE [dbo].[AuditLogs]  WITH CHECK ADD  CONSTRAINT [FK_Audit_User] FOREIGN KEY([user_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[AuditLogs] CHECK CONSTRAINT [FK_Audit_User]
+GO
+ALTER TABLE [dbo].[Campaigns]  WITH CHECK ADD  CONSTRAINT [FK_Campaigns_Manager] FOREIGN KEY([manager_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Campaigns] CHECK CONSTRAINT [FK_Campaigns_Manager]
+GO
+ALTER TABLE [dbo].[CampaignTransferHistory]  WITH CHECK ADD  CONSTRAINT [FK_TransferHistory_Transfer] FOREIGN KEY([transfer_id])
+REFERENCES [dbo].[CampaignTransfers] ([id])
+GO
+ALTER TABLE [dbo].[CampaignTransferHistory] CHECK CONSTRAINT [FK_TransferHistory_Transfer]
+GO
+ALTER TABLE [dbo].[CampaignTransfers]  WITH CHECK ADD  CONSTRAINT [FK_CampaignTransfers_Campaign] FOREIGN KEY([campaign_id])
+REFERENCES [dbo].[Campaigns] ([id])
+GO
+ALTER TABLE [dbo].[CampaignTransfers] CHECK CONSTRAINT [FK_CampaignTransfers_Campaign]
+GO
+ALTER TABLE [dbo].[CampaignTransfers]  WITH CHECK ADD  CONSTRAINT [FK_CampaignTransfers_FromManager] FOREIGN KEY([from_manager_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[CampaignTransfers] CHECK CONSTRAINT [FK_CampaignTransfers_FromManager]
+GO
+ALTER TABLE [dbo].[CampaignTransfers]  WITH CHECK ADD  CONSTRAINT [FK_CampaignTransfers_ToManager] FOREIGN KEY([to_manager_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[CampaignTransfers] CHECK CONSTRAINT [FK_CampaignTransfers_ToManager]
+GO
+ALTER TABLE [dbo].[Contacts]  WITH CHECK ADD  CONSTRAINT [FK_Contacts_Customer] FOREIGN KEY([customer_id])
+REFERENCES [dbo].[Customers] ([id])
+GO
+ALTER TABLE [dbo].[Contacts] CHECK CONSTRAINT [FK_Contacts_Customer]
+GO
+ALTER TABLE [dbo].[Customers]  WITH CHECK ADD  CONSTRAINT [FK_Customers_Lead] FOREIGN KEY([lead_id])
+REFERENCES [dbo].[Leads] ([id])
+GO
+ALTER TABLE [dbo].[Customers] CHECK CONSTRAINT [FK_Customers_Lead]
+GO
+ALTER TABLE [dbo].[Customers]  WITH CHECK ADD  CONSTRAINT [FK_Customers_User] FOREIGN KEY([assigned_to])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Customers] CHECK CONSTRAINT [FK_Customers_User]
+GO
+ALTER TABLE [dbo].[LandingPages]  WITH CHECK ADD  CONSTRAINT [FK_LandingPages_Approver] FOREIGN KEY([approved_by])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[LandingPages] CHECK CONSTRAINT [FK_LandingPages_Approver]
+GO
+ALTER TABLE [dbo].[LandingPages]  WITH CHECK ADD  CONSTRAINT [FK_LandingPages_Campaign] FOREIGN KEY([campaign_id])
+REFERENCES [dbo].[Campaigns] ([id])
+GO
+ALTER TABLE [dbo].[LandingPages] CHECK CONSTRAINT [FK_LandingPages_Campaign]
+GO
+ALTER TABLE [dbo].[LeadAssignments]  WITH CHECK ADD  CONSTRAINT [FK_Assignments_Lead] FOREIGN KEY([lead_id])
+REFERENCES [dbo].[Leads] ([id])
+GO
+ALTER TABLE [dbo].[LeadAssignments] CHECK CONSTRAINT [FK_Assignments_Lead]
+GO
+ALTER TABLE [dbo].[LeadAssignments]  WITH CHECK ADD  CONSTRAINT [FK_Assignments_Manager] FOREIGN KEY([manager_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[LeadAssignments] CHECK CONSTRAINT [FK_Assignments_Manager]
+GO
+ALTER TABLE [dbo].[LeadAssignments]  WITH CHECK ADD  CONSTRAINT [FK_Assignments_Sales] FOREIGN KEY([sales_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[LeadAssignments] CHECK CONSTRAINT [FK_Assignments_Sales]
+GO
+ALTER TABLE [dbo].[LeadInteractions]  WITH CHECK ADD  CONSTRAINT [FK_Interactions_Campaign] FOREIGN KEY([campaign_id])
+REFERENCES [dbo].[Campaigns] ([id])
+GO
+ALTER TABLE [dbo].[LeadInteractions] CHECK CONSTRAINT [FK_Interactions_Campaign]
+GO
+ALTER TABLE [dbo].[LeadInteractions]  WITH CHECK ADD  CONSTRAINT [FK_Interactions_Lead] FOREIGN KEY([lead_id])
+REFERENCES [dbo].[Leads] ([id])
+GO
+ALTER TABLE [dbo].[LeadInteractions] CHECK CONSTRAINT [FK_Interactions_Lead]
+GO
+ALTER TABLE [dbo].[LeadInteractions]  WITH CHECK ADD  CONSTRAINT [FK_Interactions_Type] FOREIGN KEY([activity_type_id])
+REFERENCES [dbo].[ActivityTypes] ([id])
+GO
+ALTER TABLE [dbo].[LeadInteractions] CHECK CONSTRAINT [FK_Interactions_Type]
+GO
+ALTER TABLE [dbo].[Leads]  WITH CHECK ADD  CONSTRAINT [FK_Leads_Campaign] FOREIGN KEY([campaign_id])
+REFERENCES [dbo].[Campaigns] ([id])
+GO
+ALTER TABLE [dbo].[Leads] CHECK CONSTRAINT [FK_Leads_Campaign]
+GO
+ALTER TABLE [dbo].[Leads]  WITH CHECK ADD  CONSTRAINT [FK_Leads_Sales] FOREIGN KEY([assigned_to])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Leads] CHECK CONSTRAINT [FK_Leads_Sales]
+GO
+ALTER TABLE [dbo].[Leads]  WITH CHECK ADD  CONSTRAINT [FK_Leads_Source] FOREIGN KEY([source_id])
+REFERENCES [dbo].[LeadSources] ([id])
+GO
+ALTER TABLE [dbo].[Leads] CHECK CONSTRAINT [FK_Leads_Source]
+GO
+ALTER TABLE [dbo].[LeadScoreHistory]  WITH CHECK ADD  CONSTRAINT [FK_LeadScore_Lead] FOREIGN KEY([lead_id])
+REFERENCES [dbo].[Leads] ([id])
+GO
+ALTER TABLE [dbo].[LeadScoreHistory] CHECK CONSTRAINT [FK_LeadScore_Lead]
+GO
+ALTER TABLE [dbo].[LeadScoreHistory]  WITH CHECK ADD  CONSTRAINT [FK_LeadScore_Rule] FOREIGN KEY([rule_id])
+REFERENCES [dbo].[ScoringRules] ([id])
+GO
+ALTER TABLE [dbo].[LeadScoreHistory] CHECK CONSTRAINT [FK_LeadScore_Rule]
+GO
+ALTER TABLE [dbo].[LeadStatusHistory]  WITH CHECK ADD  CONSTRAINT [FK_StatusHistory_Lead] FOREIGN KEY([lead_id])
+REFERENCES [dbo].[Leads] ([id])
+GO
+ALTER TABLE [dbo].[LeadStatusHistory] CHECK CONSTRAINT [FK_StatusHistory_Lead]
+GO
+ALTER TABLE [dbo].[LeadStatusHistory]  WITH CHECK ADD  CONSTRAINT [FK_StatusHistory_User] FOREIGN KEY([changed_by])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[LeadStatusHistory] CHECK CONSTRAINT [FK_StatusHistory_User]
+GO
+ALTER TABLE [dbo].[Notifications]  WITH CHECK ADD  CONSTRAINT [FK_Notifications_User] FOREIGN KEY([user_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Notifications] CHECK CONSTRAINT [FK_Notifications_User]
+GO
+ALTER TABLE [dbo].[Opportunities]  WITH CHECK ADD  CONSTRAINT [FK_Opp_Customer] FOREIGN KEY([customer_id])
+REFERENCES [dbo].[Customers] ([id])
+GO
+ALTER TABLE [dbo].[Opportunities] CHECK CONSTRAINT [FK_Opp_Customer]
+GO
+ALTER TABLE [dbo].[Opportunities]  WITH CHECK ADD  CONSTRAINT [FK_Opp_Lead] FOREIGN KEY([lead_id])
+REFERENCES [dbo].[Leads] ([id])
+GO
+ALTER TABLE [dbo].[Opportunities] CHECK CONSTRAINT [FK_Opp_Lead]
+GO
+ALTER TABLE [dbo].[Opportunities]  WITH CHECK ADD  CONSTRAINT [FK_Opp_Sales] FOREIGN KEY([sales_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Opportunities] CHECK CONSTRAINT [FK_Opp_Sales]
+GO
+ALTER TABLE [dbo].[OpportunityProducts]  WITH CHECK ADD  CONSTRAINT [FK_OppProd_Opp] FOREIGN KEY([opportunity_id])
+REFERENCES [dbo].[Opportunities] ([id])
+GO
+ALTER TABLE [dbo].[OpportunityProducts] CHECK CONSTRAINT [FK_OppProd_Opp]
+GO
+ALTER TABLE [dbo].[OpportunityProducts]  WITH CHECK ADD  CONSTRAINT [FK_OppProd_Prod] FOREIGN KEY([product_id])
+REFERENCES [dbo].[Products] ([id])
+GO
+ALTER TABLE [dbo].[OpportunityProducts] CHECK CONSTRAINT [FK_OppProd_Prod]
+GO
+ALTER TABLE [dbo].[QuoteDetails]  WITH CHECK ADD  CONSTRAINT [FK_QuoteDetails_Prod] FOREIGN KEY([product_id])
+REFERENCES [dbo].[Products] ([id])
+GO
+ALTER TABLE [dbo].[QuoteDetails] CHECK CONSTRAINT [FK_QuoteDetails_Prod]
+GO
+ALTER TABLE [dbo].[QuoteDetails]  WITH CHECK ADD  CONSTRAINT [FK_QuoteDetails_Quote] FOREIGN KEY([quote_id])
+REFERENCES [dbo].[Quotes] ([id])
+GO
+ALTER TABLE [dbo].[QuoteDetails] CHECK CONSTRAINT [FK_QuoteDetails_Quote]
+GO
+ALTER TABLE [dbo].[Quotes]  WITH CHECK ADD  CONSTRAINT [FK_Quotes_Opp] FOREIGN KEY([opportunity_id])
+REFERENCES [dbo].[Opportunities] ([id])
+GO
+ALTER TABLE [dbo].[Quotes] CHECK CONSTRAINT [FK_Quotes_Opp]
+GO
+ALTER TABLE [dbo].[Quotes]  WITH CHECK ADD  CONSTRAINT [FK_Quotes_User] FOREIGN KEY([created_by])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Quotes] CHECK CONSTRAINT [FK_Quotes_User]
+GO
+ALTER TABLE [dbo].[SalesFeedback]  WITH CHECK ADD  CONSTRAINT [FK_Feedback_Lead] FOREIGN KEY([lead_id])
+REFERENCES [dbo].[Leads] ([id])
+GO
+ALTER TABLE [dbo].[SalesFeedback] CHECK CONSTRAINT [FK_Feedback_Lead]
+GO
+ALTER TABLE [dbo].[SalesFeedback]  WITH CHECK ADD  CONSTRAINT [FK_Feedback_Sales] FOREIGN KEY([sales_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[SalesFeedback] CHECK CONSTRAINT [FK_Feedback_Sales]
+GO
+ALTER TABLE [dbo].[Tasks]  WITH CHECK ADD  CONSTRAINT [FK_Tasks_CareProgram] FOREIGN KEY([care_program_id])
+REFERENCES [dbo].[CarePrograms] ([id])
+GO
+ALTER TABLE [dbo].[Tasks] CHECK CONSTRAINT [FK_Tasks_CareProgram]
+GO
+ALTER TABLE [dbo].[Tasks]  WITH CHECK ADD  CONSTRAINT [FK_Tasks_User] FOREIGN KEY([assigned_to])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Tasks] CHECK CONSTRAINT [FK_Tasks_User]
+GO
+ALTER TABLE [dbo].[TicketActivities]  WITH CHECK ADD  CONSTRAINT [FK_TicketAct_Ticket] FOREIGN KEY([ticket_id])
+REFERENCES [dbo].[Tickets] ([id])
+GO
+ALTER TABLE [dbo].[TicketActivities] CHECK CONSTRAINT [FK_TicketAct_Ticket]
+GO
+ALTER TABLE [dbo].[TicketActivities]  WITH CHECK ADD  CONSTRAINT [FK_TicketAct_User] FOREIGN KEY([user_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[TicketActivities] CHECK CONSTRAINT [FK_TicketAct_User]
+GO
+ALTER TABLE [dbo].[Tickets]  WITH CHECK ADD  CONSTRAINT [FK_Tickets_Customer] FOREIGN KEY([customer_id])
+REFERENCES [dbo].[Customers] ([id])
+GO
+ALTER TABLE [dbo].[Tickets] CHECK CONSTRAINT [FK_Tickets_Customer]
+GO
+ALTER TABLE [dbo].[Tickets]  WITH CHECK ADD  CONSTRAINT [FK_Tickets_Support] FOREIGN KEY([assigned_to])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[Tickets] CHECK CONSTRAINT [FK_Tickets_Support]
+GO
+ALTER TABLE [dbo].[Campaigns]  WITH CHECK ADD CHECK  (([status]='Rejected' OR [status]='Finished' OR [status]='Active' OR [status]='Approved' OR [status]='Pending' OR [status]='Draft'))
+GO
+ALTER TABLE [dbo].[CampaignTransfers]  WITH CHECK ADD CHECK  (([transfer_status]='Cancelled' OR [transfer_status]='Rejected' OR [transfer_status]='Accepted' OR [transfer_status]='Pending'))
+GO
+ALTER TABLE [dbo].[CarePrograms]  WITH CHECK ADD CHECK  (([frequency_type]='OnDate' OR [frequency_type]='Yearly' OR [frequency_type]='Quarterly' OR [frequency_type]='Monthly' OR [frequency_type]='Weekly' OR [frequency_type]='Daily'))
+GO
+ALTER TABLE [dbo].[Customers]  WITH CHECK ADD CHECK  (([status]='Blacklisted' OR [status]='Churned' OR [status]='Inactive' OR [status]='Active'))
+GO
+ALTER TABLE [dbo].[Customers]  WITH CHECK ADD CHECK  (([tier]='VIP' OR [tier]='Platinum' OR [tier]='Gold' OR [tier]='Silver' OR [tier]='Standard'))
+GO
+ALTER TABLE [dbo].[LandingPages]  WITH CHECK ADD CHECK  (([status]='Rejected' OR [status]='Approved' OR [status]='Draft'))
+GO
+ALTER TABLE [dbo].[Leads]  WITH CHECK ADD CHECK  (([status]='Junk' OR [status]='Assigned' OR [status]='Qualified' OR [status]='Nurturing' OR [status]='New'))
+GO
+ALTER TABLE [dbo].[Opportunities]  WITH CHECK ADD  CONSTRAINT [CHK_Opp_Owner] CHECK  (([lead_id] IS NOT NULL OR [customer_id] IS NOT NULL))
+GO
+ALTER TABLE [dbo].[Opportunities] CHECK CONSTRAINT [CHK_Opp_Owner]
+GO
+ALTER TABLE [dbo].[Opportunities]  WITH CHECK ADD CHECK  (([stage]='Lost' OR [stage]='Won' OR [stage]='Negotiation' OR [stage]='Proposal' OR [stage]='Prospecting'))
+GO
+ALTER TABLE [dbo].[Opportunities]  WITH CHECK ADD CHECK  (([type]='Existing Business' OR [type]='New Business'))
+GO
+ALTER TABLE [dbo].[Quotes]  WITH CHECK ADD CHECK  (([status]='Expired' OR [status]='Rejected' OR [status]='Accepted' OR [status]='Sent' OR [status]='Draft'))
+GO
+ALTER TABLE [dbo].[SalesFeedback]  WITH CHECK ADD CHECK  (([quality_rating]>=(1) AND [quality_rating]<=(5)))
+GO
+ALTER TABLE [dbo].[Tasks]  WITH CHECK ADD CHECK  (([status]='Overdue' OR [status]='Completed' OR [status]='Pending'))
+GO
+ALTER TABLE [dbo].[Tickets]  WITH CHECK ADD CHECK  (([priority]='Critical' OR [priority]='High' OR [priority]='Medium' OR [priority]='Low'))
+GO
+ALTER TABLE [dbo].[Tickets]  WITH CHECK ADD CHECK  (([status]='Closed' OR [status]='Resolved' OR [status]='In Progress' OR [status]='Open'))
+GO
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD CHECK  (([role]='Sale' OR [role]='Support' OR [role]='Manager' OR [role]='Marketing'))
+GO
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD CHECK  (([status]='Locked' OR [status]='Inactive' OR [status]='Active'))
+GO
+USE [master]
+GO
+ALTER DATABASE [CRM] SET  READ_WRITE 
+GO

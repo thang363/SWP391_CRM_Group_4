@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 
+import util.Constants;
+
 @WebServlet(name = "SalesPipelineServlet", urlPatterns = {"/sales-pipeline"})
 public class SalesPipelineServlet extends HttpServlet {
 
@@ -17,7 +19,7 @@ public class SalesPipelineServlet extends HttpServlet {
         
         request.setAttribute("pageTitle", "Sales Pipeline");
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/sales-pipeline.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher(Constants.PAGE_SALES_PIPELINE);
         dispatcher.forward(request, response);
     }
 

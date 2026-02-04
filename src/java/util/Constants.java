@@ -44,11 +44,11 @@ public class Constants {
     public static final String SUCCESS_USER_UPDATED = "Cập nhật người dùng thành công.";
     public static final String SUCCESS_USER_DELETED = "Xóa người dùng thành công.";
     
-    public static final String PAGE_LOGIN = "/views/login.jsp";
-    public static final String PAGE_REGISTER = "/views/register.jsp";
-    public static final String PAGE_DASHBOARD = "/views/dashboard.jsp";
-    public static final String PAGE_PROFILE = "/views/profile.jsp";
-    public static final String PAGE_SALES_PIPELINE = "/views/sales-pipeline.jsp";
+    public static final String PAGE_LOGIN = "/views/auth/login.jsp";
+    public static final String PAGE_REGISTER = "/views/auth/register.jsp";
+    public static final String PAGE_DASHBOARD = "/views/common/dashboard.jsp";
+    public static final String PAGE_PROFILE = "/views/common/profile.jsp";
+    public static final String PAGE_SALES_PIPELINE = "/views/sales/pipeline.jsp";
     public static final String PAGE_CUSTOMERS = "/views/customers.jsp";
     public static final String PAGE_USERS = "/views/users.jsp";
     public static final String PAGE_ERROR = "/views/error.jsp";
@@ -66,7 +66,10 @@ public class Constants {
     public static final String SERVLET_CAMPAIGNS = "/campaigns";
     
     // Campaign constants
-    public static final String PAGE_CAMPAIGNS = "/views/campaigns.jsp";
+    public static final String PAGE_CAMPAIGNS = "/views/marketing/campaigns.jsp";
+    public static final String PAGE_TRANSFER_INBOX = "/views/common/transfer-inbox.jsp";
+    
+    public static final String SERVLET_TRANSFERS = "/transfers";
     
     public static final String SUCCESS_CAMPAIGN_CREATED = "Tạo chiến dịch thành công.";
     public static final String SUCCESS_CAMPAIGN_UPDATED = "Cập nhật chiến dịch thành công.";
@@ -75,7 +78,7 @@ public class Constants {
     public static final String ERROR_INVALID_DATE_RANGE = "Ngày bắt đầu phải trước ngày kết thúc.";
     public static final String ERROR_CAMPAIGN_VALIDATION = "Dữ liệu chiến dịch không hợp lệ.";
     
-    public static final int DEFAULT_PAGE_SIZE = 10;
+    public static final int DEFAULT_PAGE_SIZE = 3;
     public static final int MAX_PAGE_SIZE = 100;
     
     public static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
