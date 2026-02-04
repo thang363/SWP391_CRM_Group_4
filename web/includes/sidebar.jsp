@@ -61,6 +61,9 @@
                                             class="dropdown-item">Email Marketing</a>
                                         <a href="${pageContext.request.contextPath}/lead-sources"
                                             class="dropdown-item">Lead Sources</a>
+                                        <a href="${pageContext.request.contextPath}/transfers"
+                                            class="dropdown-item ${currentPage == 'transfers' ? 'active' : ''}">Chuyển
+                                            giao (Handover)</a>
                                     </div>
                                 </div>
 

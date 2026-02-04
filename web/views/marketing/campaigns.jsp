@@ -91,6 +91,7 @@
                                                     <div class="filter-section">
                                                         <form id="filterForm" method="get"
                                                             action="${pageContext.request.contextPath}/campaigns">
+                                                            <input type="hidden" name="page" id="pageInput" value="1">
                                                             <div class="row g-3">
                                                                 <div class="col-md-3">
                                                                     <label class="form-label">Tên chiến dịch</label>
@@ -133,13 +134,13 @@
                                                                         name="endDate" id="filterEndDate"
                                                                         value="${param.endDate}">
                                                                 </div>
-                                                                <div class="col-md-3 d-flex align-items-end">
+                                                                <div class="col-md-3 d-flex align-items-end gap-2">
                                                                     <button type="submit"
-                                                                        class="btn btn-primary w-100 me-2">
+                                                                        class="btn btn-primary flex-grow-1">
                                                                         <i class="fa fa-search me-1"></i>Tìm kiếm
                                                                     </button>
                                                                     <button type="button"
-                                                                        class="btn btn-secondary w-100"
+                                                                        class="btn btn-secondary flex-grow-1"
                                                                         onclick="resetFilters()">
                                                                         <i class="fa fa-redo me-1"></i>Đặt lại
                                                                     </button>
@@ -219,13 +220,27 @@
                                                                                                     class="badge badge-${campaign.status.toLowerCase()}">${campaign.status}</span>
                                                                                             </td>
                                                                                             <td class="table-actions">
-                                                                                                <button
-                                                                                                    class="btn btn-sm btn-info"
-                                                                                                    onclick="editCampaign(${campaign.id})"
-                                                                                                    title="Chỉnh sửa">
-                                                                                                    <i
-                                                                                                        class="fa fa-edit"></i>
-                                                                                                </button>
+                                                                                                <c:choose>
+                                                                                                    <c:when
+                                                                                                        test="${campaign.hasPendingTransfer}">
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-secondary"
+                                                                                                            disabled
+                                                                                                            title="Đang chuyển giao - không thể chỉnh sửa">
+                                                                                                            <i
+                                                                                                                class="fa fa-lock"></i>
+                                                                                                        </button>
+                                                                                                    </c:when>
+                                                                                                    <c:otherwise>
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-info"
+                                                                                                            onclick="editCampaign(${campaign.id})"
+                                                                                                            title="Chỉnh sửa">
+                                                                                                            <i
+                                                                                                                class="fa fa-edit"></i>
+                                                                                                        </button>
+                                                                                                    </c:otherwise>
+                                                                                                </c:choose>
                                                                                                 <button
                                                                                                     class="btn btn-sm btn-danger"
                                                                                                     onclick="deleteCampaign(${campaign.id}, '${campaign.name}')"
@@ -233,6 +248,27 @@
                                                                                                     <i
                                                                                                         class="fa fa-trash"></i>
                                                                                                 </button>
+                                                                                                <c:choose>
+                                                                                                    <c:when
+                                                                                                        test="${campaign.hasPendingTransfer}">
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-secondary"
+                                                                                                            disabled
+                                                                                                            title="Đã có yêu cầu chuyển giao đang chờ xử lý">
+                                                                                                            <i
+                                                                                                                class="fa fa-exchange-alt"></i>
+                                                                                                        </button>
+                                                                                                    </c:when>
+                                                                                                    <c:otherwise>
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-warning"
+                                                                                                            onclick="openTransferModal(${campaign.id}, '${campaign.name}')"
+                                                                                                            title="Chuyển giao (Handover)">
+                                                                                                            <i
+                                                                                                                class="fa fa-exchange-alt"></i>
+                                                                                                        </button>
+                                                                                                    </c:otherwise>
+                                                                                                </c:choose>
                                                                                             </td>
                                                                                         </tr>
                                                                                     </c:forEach>
@@ -241,6 +277,44 @@
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
+
+                                                                <!-- Pagination -->
+                                                                <c:if test="${totalPages > 1}">
+                                                                    <nav aria-label="Page navigation" class="mt-4">
+                                                                        <ul class="pagination justify-content-center">
+                                                                            <li
+                                                                                class="page-item ${currentPageNumber == 1 ? 'disabled' : ''}">
+                                                                                <button class="page-link"
+                                                                                    onclick="goToPage(${currentPageNumber - 1})"
+                                                                                    ${currentPageNumber==1 ? 'disabled'
+                                                                                    : '' }>
+                                                                                    Previous
+                                                                                </button>
+                                                                            </li>
+                                                                            <c:forEach begin="1" end="${totalPages}"
+                                                                                var="i">
+                                                                                <li
+                                                                                    class="page-item ${currentPageNumber == i ? 'active' : ''}">
+                                                                                    <button class="page-link"
+                                                                                        onclick="goToPage(${i})">${i}</button>
+                                                                                </li>
+                                                                            </c:forEach>
+                                                                            <li
+                                                                                class="page-item ${currentPageNumber == totalPages ? 'disabled' : ''}">
+                                                                                <button class="page-link"
+                                                                                    onclick="goToPage(${currentPageNumber + 1})"
+                                                                                    ${currentPageNumber==totalPages
+                                                                                    ? 'disabled' : '' }>
+                                                                                    Next
+                                                                                </button>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </nav>
+                                                                    <div class="text-center text-muted small">
+                                                                        Hiển thị trang ${currentPageNumber} trên tổng số
+                                                                        ${totalPages} trang (${totalItems} kết quả)
+                                                                    </div>
+                                                                </c:if>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -279,21 +353,11 @@
                                             </div>
 
                                             <div class="row">
-                                                <div class="col-md-6 mb-3">
+                                                <div class="col-md-12 mb-3">
                                                     <label for="campaignBudget" class="form-label">Ngân sách
                                                         (VNĐ)</label>
                                                     <input type="number" class="form-control" id="campaignBudget"
                                                         name="budget" min="0" step="1000" value="0">
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="campaignManager" class="form-label">Người phụ
-                                                        trách</label>
-                                                    <select class="form-select" id="campaignManager" name="managerId">
-                                                        <option value="">-- Chọn Manager --</option>
-                                                        <c:forEach var="manager" items="${managers}">
-                                                            <option value="${manager.id}">${manager.fullName}</option>
-                                                        </c:forEach>
-                                                    </select>
                                                 </div>
                                             </div>
 
@@ -335,202 +399,62 @@
                             </div>
                         </div>
 
+                        <!-- Transfer Modal -->
+                        <div class="modal fade" id="transferModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Chuyển giao Chiến dịch</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="transferForm">
+                                            <input type="hidden" id="transferCampaignId" name="campaignId">
+                                            <div class="mb-3">
+                                                <label class="form-label">Chiến dịch đang chọn:</label>
+                                                <input type="text" class="form-control" id="transferCampaignName"
+                                                    readonly>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="transferToManager" class="form-label">Người nhận (Manager)
+                                                    <span class="text-danger">*</span></label>
+                                                <select class="form-select" id="transferToManager" name="toManagerId"
+                                                    required>
+                                                    <option value="">-- Chọn Manager --</option>
+                                                    <c:forEach var="manager" items="${managers}">
+                                                        <option value="${manager.id}">${manager.fullName}</option>
+                                                    </c:forEach>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="transferReason" class="form-label">Lý do chuyển giao <span
+                                                        class="text-danger">*</span></label>
+                                                <textarea class="form-control" id="transferReason" name="reason"
+                                                    rows="3" required></textarea>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Hủy</button>
+                                        <button type="button" class="btn btn-warning" onclick="submitTransfer()">Gửi yêu
+                                            cầu</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <%-- Include Scripts --%>
                             <%@ include file="/includes/scripts.jsp" %>
 
-                                <script>
-                                    // Hide spinner when page loads
-                                    document.addEventListener('DOMContentLoaded', function () {
-                                        var spinner = document.getElementById('spinner');
-                                        if (spinner) {
-                                            spinner.classList.remove('show');
-                                        }
-                                    });
+                                <%-- Campaign Management JavaScript --%>
+                                    <script src="${pageContext.request.contextPath}/js/campaigns.js"></script>
+                                    <script>
+                                        // Initialize campaigns.js with context path
+                                        initCampaignsJS('${pageContext.request.contextPath}');
+                                    </script>
 
-                                    let isEditMode = false;
-
-                                    function openCreateModal() {
-                                        isEditMode = false;
-                                        document.getElementById('campaignModalLabel').textContent = 'Thêm chiến dịch mới';
-                                        document.getElementById('campaignForm').reset();
-                                        document.getElementById('campaignId').value = '';
-                                        document.getElementById('formErrorAlert').classList.add('d-none');
-                                        document.getElementById('campaignForm').classList.remove('was-validated');
-                                    }
-
-                                    function editCampaign(id) {
-                                        isEditMode = true;
-                                        document.getElementById('campaignModalLabel').textContent = 'Chỉnh sửa chiến dịch';
-                                        document.getElementById('formErrorAlert').classList.add('d-none');
-
-                                        // Fetch campaign data
-                                        fetch('${pageContext.request.contextPath}/campaigns?action=get&id=' + id)
-                                            .then(response => response.json())
-                                            .then(result => {
-                                                if (result.success && result.data) {
-                                                    const campaign = result.data;
-                                                    document.getElementById('campaignId').value = campaign.id;
-                                                    document.getElementById('campaignName').value = campaign.name;
-                                                    document.getElementById('campaignBudget').value = campaign.budget;
-                                                    document.getElementById('campaignStartDate').value = formatDateForInput(campaign.startDate);
-                                                    document.getElementById('campaignEndDate').value = formatDateForInput(campaign.endDate);
-                                                    document.getElementById('campaignManager').value = campaign.managerId || '';
-                                                    document.getElementById('campaignDescription').value = campaign.description || '';
-
-                                                    // Show modal
-                                                    new bootstrap.Modal(document.getElementById('campaignModal')).show();
-                                                } else {
-                                                    showAlert('danger', result.message || 'Không thể tải thông tin chiến dịch');
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error('Error:', error);
-                                                showAlert('danger', 'Lỗi khi tải thông tin chiến dịch');
-                                            });
-                                    }
-
-                                    function saveCampaign() {
-                                        const form = document.getElementById('campaignForm');
-
-                                        // Validate form
-                                        if (!form.checkValidity()) {
-                                            form.classList.add('was-validated');
-                                            return;
-                                        }
-
-                                        // Validate date range
-                                        const startDate = new Date(document.getElementById('campaignStartDate').value);
-                                        const endDate = new Date(document.getElementById('campaignEndDate').value);
-
-                                        if (startDate >= endDate) {
-                                            showFormError('Ngày bắt đầu phải trước ngày kết thúc');
-                                            return;
-                                        }
-
-                                        // Prepare form data using URLSearchParams for application/x-www-form-urlencoded
-                                        const params = new URLSearchParams();
-                                        new FormData(form).forEach((value, key) => params.append(key, value));
-
-                                        params.append('action', isEditMode ? 'update' : 'create');
-                                        if (!params.has('status')) {
-                                            params.append('status', 'Draft');
-                                        }
-
-                                        console.log('Saving campaign:', Object.fromEntries(params));
-
-                                        // Send request
-                                        fetch('${pageContext.request.contextPath}/campaigns', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                                            },
-                                            body: params
-                                        })
-                                            .then(response => {
-                                                if (!response.ok) throw new Error('Network response was not ok');
-                                                return response.json();
-                                            })
-                                            .then(result => {
-                                                if (result.success) {
-                                                    // Close modal safely
-                                                    const modalEl = document.getElementById('campaignModal');
-                                                    const modal = bootstrap.Modal.getInstance(modalEl);
-                                                    if (modal) modal.hide();
-
-                                                    // Show success message and reload
-                                                    showAlert('success', result.message);
-                                                    setTimeout(() => {
-                                                        window.location.reload();
-                                                    }, 1000);
-                                                } else {
-                                                    showFormError(result.message);
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error('Error saving campaign:', error);
-                                                showFormError('Lỗi khi lưu chiến dịch: ' + error.message);
-                                            });
-                                    }
-
-                                    function deleteCampaign(id, name) {
-                                        if (!confirm('Bạn có chắc chắn muốn xóa chiến dịch "' + name + '"?')) {
-                                            return;
-                                        }
-
-                                        const params = new URLSearchParams();
-                                        params.append('action', 'delete');
-                                        params.append('id', id);
-
-                                        console.log('Deleting campaign:', id);
-
-                                        fetch('${pageContext.request.contextPath}/campaigns', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                                            },
-                                            body: params
-                                        })
-                                            .then(response => {
-                                                if (!response.ok) throw new Error('Network response was not ok');
-                                                return response.json();
-                                            })
-                                            .then(result => {
-                                                if (result.success) {
-                                                    // Remove row from table
-                                                    const row = document.getElementById('campaign-row-' + id);
-                                                    if (row) row.remove();
-                                                    showAlert('success', result.message);
-                                                } else {
-                                                    showAlert('danger', result.message);
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error('Error deleting campaign:', error);
-                                                showAlert('danger', 'Lỗi khi xóa chiến dịch: ' + error.message);
-                                            });
-                                    }
-
-                                    function resetFilters() {
-                                        document.getElementById('filterName').value = '';
-                                        document.getElementById('filterStatus').value = '';
-                                        document.getElementById('filterStartDate').value = '';
-                                        document.getElementById('filterEndDate').value = '';
-                                        document.getElementById('filterForm').submit();
-                                    }
-
-                                    function showFormError(message) {
-                                        const alert = document.getElementById('formErrorAlert');
-                                        alert.textContent = message;
-                                        alert.classList.remove('d-none');
-                                    }
-
-                                    function showAlert(type, message) {
-                                        // Create alert element
-                                        const alertDiv = document.createElement('div');
-                                        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-                                        alertDiv.style.zIndex = '9999';
-                                        alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-
-                                        document.body.appendChild(alertDiv);
-
-                                        // Auto remove after 3 seconds
-                                        setTimeout(() => {
-                                            alertDiv.remove();
-                                        }, 3000);
-                                    }
-
-                                    function formatDateForInput(dateString) {
-                                        if (!dateString) return '';
-                                        const date = new Date(dateString);
-                                        const year = date.getFullYear();
-                                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                                        const day = String(date.getDate()).padStart(2, '0');
-                                        return `${year}-${month}-${day}`;
-                                    }
-                                </script>
                     </body>
 
                     </html>

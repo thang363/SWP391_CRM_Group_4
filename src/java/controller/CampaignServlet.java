@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import dao.CampaignTransferDAO;
+import dao.impl.CampaignTransferDAOImpl;
 import model.entity.Campaign;
 import model.entity.Role;
 import model.entity.User;
@@ -32,11 +34,13 @@ public class CampaignServlet extends HttpServlet {
 
     private final CampaignService campaignService;
     private final UserService userService;
+    private final CampaignTransferDAO transferDAO;
     private final Gson gson;
 
     public CampaignServlet() {
         this.campaignService = new CampaignServiceImpl();
         this.userService = new UserServiceImpl();
+        this.transferDAO = new CampaignTransferDAOImpl();
         this.gson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd HH:mm:ss")
                 .create();
@@ -46,7 +50,10 @@ public class CampaignServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-
+        // Get current user from session
+        HttpSession session = request.getSession(false);
+        Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+        Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
         // Handle AJAX GET requests (e.g., fetch particular campaign for edit)
         String action = request.getParameter("action");
@@ -67,20 +74,55 @@ public class CampaignServlet extends HttpServlet {
         Timestamp startDate = parseDate(startDateStr);
         Timestamp endDate = parseDate(endDateStr);
 
-        // Get campaigns
-        List<Campaign> campaigns;
-        if (hasFilters(nameFilter, statusFilter, startDate, endDate)) {
-            campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate);
-        } else {
-            campaigns = campaignService.getAllCampaigns();
+        // Pagination
+        int page = 1;
+        int pageSize = Constants.DEFAULT_PAGE_SIZE;
+        try {
+            String pageStr = request.getParameter("page");
+            if (pageStr != null && !pageStr.isEmpty()) {
+                page = Integer.parseInt(pageStr);
+            }
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
+        if (page < 1) page = 1;
+
+        int offset = (page - 1) * pageSize;
+
+        // Manager-level access control: filter by managerId unless Admin
+        Long managerIdFilter = null;
+        if (Role.MANAGER.equals(currentUserRole)) {
+            managerIdFilter = currentUserId; // Only show campaigns managed by this user
+        }
+        // If Admin, managerIdFilter stays null = see all campaigns
+
+        // Get total items and calculate pages
+        int totalItems = campaignService.countCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter);
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (totalPages < 1) totalPages = 1;
+        if (page > totalPages) {
+            page = totalPages;
+            offset = (page - 1) * pageSize;
         }
 
-        // Get all managers for dropdown
+        // Get campaigns
+        List<Campaign> campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter, offset, pageSize);
+
+        // Populate pending transfer status for UI display
+        for (Campaign campaign : campaigns) {
+            boolean hasPending = transferDAO.hasPendingTransfer(campaign.getId());
+            campaign.setHasPendingTransfer(hasPending);
+        }
+
+        // Get all managers for Transfer dropdown
         List<User> managers = userService.getUsersByRole(Role.MANAGER);
 
         // Set attributes
         request.setAttribute("campaigns", campaigns);
         request.setAttribute("managers", managers);
+        request.setAttribute("currentPageNumber", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
         request.setAttribute("currentPage", "campaigns");
         request.setAttribute("pageTitle", "Quản lý Chiến dịch");
 
@@ -169,6 +211,33 @@ public class CampaignServlet extends HttpServlet {
 
             campaign.setId(Long.parseLong(idStr));
 
+            // Authorization check: Manager can only update their own campaigns
+            HttpSession session = request.getSession(false);
+            Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
+
+            Campaign existingCampaign = campaignService.getCampaignById(campaign.getId());
+            if (existingCampaign == null) {
+                sendJsonResponse(response, false, "Chiến dịch không tồn tại", null);
+                return;
+            }
+
+            if (Role.MANAGER.equals(currentUserRole)) {
+                if (existingCampaign.getManagerId() == null || !existingCampaign.getManagerId().equals(currentUserId)) {
+                    sendJsonResponse(response, false, "Bạn không có quyền chỉnh sửa chiến dịch này", null);
+                    return;
+                }
+            }
+
+            // Check if campaign has pending transfer - prevent editing during handover
+            if (transferDAO.hasPendingTransfer(campaign.getId())) {
+                sendJsonResponse(response, false, "Chiến dịch đang trong quá trình chuyển giao, không thể chỉnh sửa", null);
+                return;
+            }
+
+            // Preserve managerId - it should only change via Transfer, not direct edit
+            campaign.setManagerId(existingCampaign.getManagerId());
+
             // Validate
             String validationError = campaignService.validateCampaign(campaign);
             if (validationError != null) {
@@ -226,11 +295,24 @@ public class CampaignServlet extends HttpServlet {
             Long id = Long.parseLong(idStr);
             Campaign campaign = campaignService.getCampaignById(id);
 
-            if (campaign != null) {
-                sendJsonResponse(response, true, "Thành công", campaign);
-            } else {
+            if (campaign == null) {
                 sendJsonResponse(response, false, Constants.ERROR_CAMPAIGN_NOT_FOUND, null);
+                return;
             }
+
+            // Authorization: Manager can only view their own campaigns
+            HttpSession session = request.getSession(false);
+            Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
+
+            if (Role.MANAGER.equals(currentUserRole)) {
+                if (campaign.getManagerId() == null || !campaign.getManagerId().equals(currentUserId)) {
+                    sendJsonResponse(response, false, "Bạn không có quyền xem chiến dịch này", null);
+                    return;
+                }
+            }
+
+            sendJsonResponse(response, true, "Thành công", campaign);
 
         } catch (Exception e) {
             e.printStackTrace();
