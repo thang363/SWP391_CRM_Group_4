@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 
+import util.Constants;
+
 @WebServlet(name = "ProfileServlet", urlPatterns = {"/profile"})
 public class ProfileServlet extends HttpServlet {
 
@@ -15,9 +17,9 @@ public class ProfileServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        request.setAttribute("pageTitle", "Há»“ sÆ¡ cÃ¡ nhÃ¢n");
+        request.setAttribute("pageTitle", "Hồ sơ cá nhân");
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/profile.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher(Constants.PAGE_PROFILE);
         dispatcher.forward(request, response);
     }
 

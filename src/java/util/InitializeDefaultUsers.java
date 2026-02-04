@@ -3,6 +3,7 @@ package util;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -43,58 +44,23 @@ public class InitializeDefaultUsers {
                 // 1. Ensure Schema (Migration)
                 ensureSchema(conn);
                 
-                // 2. Clean up old users
-                String deleteSql = "DELETE FROM users WHERE username IN ('manager', 'marketing', 'sale', 'support')";
-                try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
-                    int deleted = deleteStmt.executeUpdate();
-                    System.out.println("Đã xóa " + deleted + " user(s) cũ nếu tồn tại.");
-                }
+                // 2. Upsert Users (Update if exists, Insert if not)
+                System.out.println("Đang cập nhật/tạo users...");
                 
-                // 3. Insert new users
-                String insertSql = "INSERT INTO users (username, password_hash, email, full_name, phone, role, status, created_at) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, 'Active', GETDATE())";
+                // Manager 1
+                upsertUser(conn, "manager", passwordHash, "manager@crm.com", "Nguyễn Văn A (Manager)", "0909000001", "Manager");
                 
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                    // 1. Manager
-                    insertStmt.setString(1, "manager");
-                    insertStmt.setString(2, passwordHash);
-                    insertStmt.setString(3, "manager@crm.com");
-                    insertStmt.setString(4, "Quản lý");
-                    insertStmt.setString(5, "0909000001");
-                    insertStmt.setString(6, "Manager");
-                    insertStmt.executeUpdate();
-                    System.out.println("✅ Đã tạo: manager / 123 (Manager)");
-                    
-                    // 2. Marketing
-                    insertStmt.setString(1, "marketing");
-                    insertStmt.setString(2, passwordHash);
-                    insertStmt.setString(3, "marketing@crm.com");
-                    insertStmt.setString(4, "NV Tiếp thị");
-                    insertStmt.setString(5, "0909000002");
-                    insertStmt.setString(6, "Marketing");
-                    insertStmt.executeUpdate();
-                    System.out.println("✅ Đã tạo: marketing / 123 (Marketing)");
-
-                    // 3. Sale
-                    insertStmt.setString(1, "sale");
-                    insertStmt.setString(2, passwordHash);
-                    insertStmt.setString(3, "sale@crm.com");
-                    insertStmt.setString(4, "NV Kinh doanh");
-                    insertStmt.setString(5, "0909000003");
-                    insertStmt.setString(6, "Sale");
-                    insertStmt.executeUpdate();
-                    System.out.println("✅ Đã tạo: sale / 123 (Sale)");
-
-                    // 4. Support
-                    insertStmt.setString(1, "support");
-                    insertStmt.setString(2, passwordHash);
-                    insertStmt.setString(3, "support@crm.com");
-                    insertStmt.setString(4, "NV Hỗ trợ");
-                    insertStmt.setString(5, "0909000004");
-                    insertStmt.setString(6, "Support");
-                    insertStmt.executeUpdate();
-                    System.out.println("✅ Đã tạo: support / 123 (Support)");
-                }
+                // Manager 2
+                upsertUser(conn, "manager2", passwordHash, "manager2@crm.com", "Trần Thị B (Manager)", "0909000002", "Manager");
+                
+                // Marketing
+                upsertUser(conn, "marketing", passwordHash, "marketing@crm.com", "NV Tiếp thị", "0909000002", "Marketing");
+                
+                // Sale
+                upsertUser(conn, "sale", passwordHash, "sale@crm.com", "NV Kinh doanh", "0909000003", "Sale");
+                
+                // Support
+                upsertUser(conn, "support", passwordHash, "support@crm.com", "NV Hỗ trợ", "0909000004", "Support");
                 
                 System.out.println("\n🎉 Khởi tạo hoàn tất! Bạn có thể đăng nhập ngay.");
                 
@@ -104,10 +70,51 @@ public class InitializeDefaultUsers {
             System.err.println("❌ Không tìm thấy JDBC Driver: " + e.getMessage());
         } catch (SQLException e) {
             System.err.println("❌ Lỗi database: " + e.getMessage());
-            System.err.println("👉 LƯU Ý: Nếu lỗi 'CHECK constraint', hãy chạy SQL sau:");
-            System.err.println("   ALTER TABLE users DROP CONSTRAINT [Tên_Constraint];");
-            System.err.println("   ALTER TABLE users ADD CONSTRAINT CK_Users_Role CHECK (role IN ('Manager', 'Marketing', 'Sale', 'Support'));");
             e.printStackTrace();
+        }
+    }
+    
+    private static void upsertUser(Connection conn, String username, String passwordHash, 
+                                 String email, String fullName, String phone, String role) throws SQLException {
+        
+        // Check if user exists
+        String checkSql = "SELECT count(*) FROM users WHERE username = ?";
+        boolean exists = false;
+        try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+            checkStmt.setString(1, username);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    exists = true;
+                }
+            }
+        }
+        
+        if (exists) {
+            // UPDATE
+            String updateSql = "UPDATE users SET password_hash = ?, email = ?, full_name = ?, phone = ?, role = ?, status = 'Active', created_at = GETDATE() WHERE username = ?";
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                updateStmt.setString(1, passwordHash);
+                updateStmt.setString(2, email);
+                updateStmt.setString(3, fullName);
+                updateStmt.setString(4, phone);
+                updateStmt.setString(5, role);
+                updateStmt.setString(6, username);
+                updateStmt.executeUpdate();
+                System.out.println("✅ Đã cập nhật: " + username + " (" + role + ")");
+            }
+        } else {
+            // INSERT
+            String insertSql = "INSERT INTO users (username, password_hash, email, full_name, phone, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'Active', GETDATE())";
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                insertStmt.setString(1, username);
+                insertStmt.setString(2, passwordHash);
+                insertStmt.setString(3, email);
+                insertStmt.setString(4, fullName);
+                insertStmt.setString(5, phone);
+                insertStmt.setString(6, role);
+                insertStmt.executeUpdate();
+                System.out.println("✅ Đã tạo mới: " + username + " (" + role + ")");
+            }
         }
     }
 

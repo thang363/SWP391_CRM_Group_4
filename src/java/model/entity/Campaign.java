@@ -21,6 +21,9 @@ public class Campaign {
     // Manager info (for display purposes, not persisted)
     private String managerName;
     
+    // Transfer status (for display purposes, not persisted)
+    private boolean hasPendingTransfer;
+    
     public Campaign() {
         this.status = "Draft";
         this.budget = BigDecimal.ZERO;
@@ -130,6 +133,14 @@ public class Campaign {
     
     public void setManagerName(String managerName) {
         this.managerName = managerName;
+    }
+    
+    public boolean isHasPendingTransfer() {
+        return hasPendingTransfer;
+    }
+    
+    public void setHasPendingTransfer(boolean hasPendingTransfer) {
+        this.hasPendingTransfer = hasPendingTransfer;
     }
     
     @Override
