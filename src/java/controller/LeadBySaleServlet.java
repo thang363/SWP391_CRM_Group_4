@@ -13,6 +13,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+import model.entity.Lead;
+import dao.impl.LeadDao;
+import util.DatabaseUtil;
 
 /**
  *
@@ -42,8 +47,16 @@ public class LeadBySaleServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         request.setAttribute("pageTitle", "Sales Pipeline");
+        List<Lead>  lead_list = new ArrayList<>();
+        DatabaseUtil dbUtil = DatabaseUtil.getInstance();
+        LeadDao ld = new LeadDao(dbUtil);
+        try {
+           lead_list = ld.getLeadListBySaleID(3); 
+        } catch (Exception e) {
+        }
+        request.setAttribute("leadList", lead_list);
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/leadbysale.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/sales/leadbysale.jsp");
         dispatcher.forward(request, response);
     } 
 
