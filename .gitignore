@@ -1,26 +1,46 @@
-
-# ===== Build folders =====
-build/
-build_tmp_script/
-dist/
-
-# ===== Compiled files =====
-*.class
-
-# ===== NetBeans =====
+# ===== NetBeans Project =====
 nbproject/private/
 nbproject/build-impl.xml
 nbproject/genfiles.properties
+nbproject/ant-deploy.xml
+nbbuild/
+nbdist/
+.nbattrs
+
+# ===== Build & Distribution =====
+build/
+build_tmp_script/
+dist/
+web/WEB-INF/classes/
+
+# ===== Compiled Files =====
+*.class
+*.jar
+
+# NOTE: web/WEB-INF/lib/ chứa JSTL libraries - KHÔNG ignore để commit vào git
+# Nếu chuyển sang Maven/Gradle thì có thể ignore sau
 
 # ===== Logs =====
 *.log
 
-# ===== OS files =====
+# ===== Upload Directories =====
+uploads/
+web/uploads/
+
+# ===== Sensitive Configuration =====
+# Uncomment nếu có file config riêng (không dùng hardcode trong Constants.java)
+# *.properties
+# config.local.*
+# .env
+
+# ===== OS Files =====
 .DS_Store
 Thumbs.db
-# Chặn các thư viện tải về (nếu dùng Maven/Gradle thì nên chặn thư mục lib local)
-lib/
-nblib/
+desktop.ini
 
-# Chặn các file tạm của server (Tomcat/Glassfish)
-nbproject/ant-deploy.xml
+# ===== IDE Temporary Files =====
+*.swp
+*.swo
+*~
+.idea/
+*.iml
