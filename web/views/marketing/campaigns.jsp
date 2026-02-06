@@ -193,23 +193,15 @@
                                                                                                 </c:if>
                                                                                             </td>
                                                                                             <td>
-                                                                                                <fmt:formatNumber
-                                                                                                    value="${campaign.budget}"
-                                                                                                    type="currency"
-                                                                                                    currencySymbol="₫"
-                                                                                                    groupingUsed="true" />
+                                                                                                ${campaign.formattedBudget}
                                                                                             </td>
                                                                                             <td>
-                                                                                                <fmt:formatDate
-                                                                                                    value="${campaign.startDate}"
-                                                                                                    pattern="dd/MM/yyyy" />
+                                                                                                ${campaign.formattedStartDate}
                                                                                                 <br>
                                                                                                 <small
                                                                                                     class="text-muted">đến</small>
                                                                                                 <br>
-                                                                                                <fmt:formatDate
-                                                                                                    value="${campaign.endDate}"
-                                                                                                    pattern="dd/MM/yyyy" />
+                                                                                                ${campaign.formattedEndDate}
                                                                                             </td>
                                                                                             <td>${campaign.managerName
                                                                                                 != null ?

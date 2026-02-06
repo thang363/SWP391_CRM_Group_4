@@ -28,9 +28,8 @@ public class CampaignDAOImpl implements CampaignDAO {
         
         try {
             conn = dbUtil.getConnection();
-            String sql = "SELECT c.*, u.full_name as manager_name " +
+            String sql = "SELECT c.* " +
                         "FROM Campaigns c " +
-                        "LEFT JOIN Users u ON c.manager_id = u.id " +
                         "WHERE c.id = ?";
             
             stmt = conn.prepareStatement(sql);
@@ -60,9 +59,8 @@ public class CampaignDAOImpl implements CampaignDAO {
         
         try {
             conn = dbUtil.getConnection();
-            String sql = "SELECT c.*, u.full_name as manager_name " +
+            String sql = "SELECT c.* " +
                         "FROM Campaigns c " +
-                        "LEFT JOIN Users u ON c.manager_id = u.id " +
                         "ORDER BY c.created_at DESC";
             
             stmt = conn.prepareStatement(sql);
@@ -92,9 +90,8 @@ public class CampaignDAOImpl implements CampaignDAO {
         try {
             conn = dbUtil.getConnection();
             StringBuilder sql = new StringBuilder(
-                "SELECT c.*, u.full_name as manager_name " +
+                "SELECT c.* " +
                 "FROM Campaigns c " +
-                "LEFT JOIN Users u ON c.manager_id = u.id " +
                 "WHERE 1=1"
             );
             
@@ -419,10 +416,7 @@ public class CampaignDAOImpl implements CampaignDAO {
         campaign.setCreatedAt(rs.getTimestamp("created_at"));
         
         // Set manager name if available
-        String managerName = rs.getString("manager_name");
-        if (managerName != null) {
-            campaign.setManagerName(managerName);
-        }
+        // Manager name is now handled by Service/ViewModel, not DAO
         
         return campaign;
     }
