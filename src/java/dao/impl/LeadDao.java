@@ -52,14 +52,14 @@ public class LeadDao {
                 SaleList.add(mapResultSetToLead(rs));
             }
             return SaleList;
-        } finally{
+        } finally {
             closeResources(rs, stmt, conn);
         }
 
     }
 
     //
-    public Lead mapResultSetToLead(ResultSet rs) throws Exception{
+    public Lead mapResultSetToLead(ResultSet rs) throws Exception {
         Lead lead = new Lead();
         lead.setId(rs.getLong("id"));
         lead.setFullName(rs.getString("full_name"));
@@ -72,23 +72,39 @@ public class LeadDao {
         lead.setCreatedAt(ts != null ? ts.toLocalDateTime() : null);
         return lead;
     }
+
     //
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
         try {
-            if (rs != null) rs.close();
+            if (rs != null) {
+                rs.close();
+            }
         } catch (SQLException e) {
             System.err.println("Error closing ResultSet: " + e.getMessage());
         }
-        
+
         try {
-            if (stmt != null) stmt.close();
+            if (stmt != null) {
+                stmt.close();
+            }
         } catch (SQLException e) {
             System.err.println("Error closing Statement: " + e.getMessage());
         }
-        
+
         if (conn != null) {
             dbUtil.closeConnection(conn);
         }
     }
 
+//    public static void main(String[] args) {
+//        DatabaseUtil dbUtil = DatabaseUtil.getInstance();
+//        LeadDao leadDao = new LeadDao(dbUtil);       
+//try {
+//        List<Lead> list = leadDao.getLeadListBySaleID(3);
+//        System.out.println(list);
+//    } catch (Exception e) {
+//        e.printStackTrace();
+//    }
+//        
+//    }
 }
