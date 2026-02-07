@@ -16,6 +16,7 @@ web/WEB-INF/classes/
 # ===== Compiled Files =====
 *.class
 *.jar
+!web/WEB-INF/lib/*.jar
 
 # NOTE: web/WEB-INF/lib/ chứa JSTL libraries - KHÔNG ignore để commit vào git
 # Nếu chuyển sang Maven/Gradle thì có thể ignore sau

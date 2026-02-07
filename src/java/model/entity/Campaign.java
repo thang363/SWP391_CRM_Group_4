@@ -18,12 +18,6 @@ public class Campaign {
     private String description;
     private Timestamp createdAt;
     
-    // Manager info (for display purposes, not persisted)
-    private String managerName;
-    
-    // Transfer status (for display purposes, not persisted)
-    private boolean hasPendingTransfer;
-    
     public Campaign() {
         this.status = "Draft";
         this.budget = BigDecimal.ZERO;
@@ -126,22 +120,7 @@ public class Campaign {
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
-    
-    public String getManagerName() {
-        return managerName;
-    }
-    
-    public void setManagerName(String managerName) {
-        this.managerName = managerName;
-    }
-    
-    public boolean isHasPendingTransfer() {
-        return hasPendingTransfer;
-    }
-    
-    public void setHasPendingTransfer(boolean hasPendingTransfer) {
-        this.hasPendingTransfer = hasPendingTransfer;
-    }
+
     
     @Override
     public String toString() {

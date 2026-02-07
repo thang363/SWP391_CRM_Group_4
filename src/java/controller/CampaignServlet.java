@@ -13,6 +13,7 @@ import dao.impl.CampaignTransferDAOImpl;
 import model.entity.Campaign;
 import model.entity.Role;
 import model.entity.User;
+import model.viewmodel.CampaignViewModel;
 import service.CampaignService;
 import service.UserService;
 import service.impl.CampaignServiceImpl;
@@ -25,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +66,7 @@ public class CampaignServlet extends HttpServlet {
             return;
         }
 
+        // Get filter parameters
         // Get filter parameters
         String nameFilter = request.getParameter("name");
         String statusFilter = request.getParameter("status");
@@ -108,17 +111,28 @@ public class CampaignServlet extends HttpServlet {
         // Get campaigns
         List<Campaign> campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter, offset, pageSize);
 
-        // Populate pending transfer status for UI display
-        for (Campaign campaign : campaigns) {
-            boolean hasPending = transferDAO.hasPendingTransfer(campaign.getId());
-            campaign.setHasPendingTransfer(hasPending);
+        // Convert to ViewModels
+        List<CampaignViewModel> viewModels = new ArrayList<>();
+        for (Campaign c : campaigns) {
+            // Get manager name
+            String managerName = "Unknown";
+            User manager = userService.getUserById(c.getManagerId());
+            if (manager != null) {
+                managerName = manager.getFullName();
+            }
+            
+            // Check pending transfer
+            boolean hasPending = transferDAO.hasPendingTransfer(c.getId());
+            
+            // Create ViewModel
+            viewModels.add(CampaignViewModel.fromEntity(c, managerName, hasPending));
         }
 
         // Get all managers for Transfer dropdown
         List<User> managers = userService.getUsersByRole(Role.MANAGER);
 
         // Set attributes
-        request.setAttribute("campaigns", campaigns);
+        request.setAttribute("campaigns", viewModels);
         request.setAttribute("managers", managers);
         request.setAttribute("currentPageNumber", page);
         request.setAttribute("totalPages", totalPages);
@@ -175,6 +189,11 @@ public class CampaignServlet extends HttpServlet {
             throws IOException {
         try {
             Campaign campaign = extractCampaignFromRequest(request);
+
+            // Auto-assign current user as campaign manager
+            HttpSession session = request.getSession(false);
+            Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            campaign.setManagerId(currentUserId);
 
             // Validate
             String validationError = campaignService.validateCampaign(campaign);
