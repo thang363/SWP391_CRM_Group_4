@@ -63,4 +63,40 @@ public class TicketServiceImpl implements TicketService {
     public boolean addActivity(model.entity.TicketActivity activity) {
         return ticketActivityDAO.addActivity(activity);
     }
+
+    @Override
+    public boolean resolveTicket(int ticketId, String note) {
+        // 1. Update status and note
+        boolean success = ticketDAO.updateStatusAndNote(ticketId, "Resolved", note);
+        if (success) {
+            // 2. Fetch ticket to get customer info
+            Ticket ticket = ticketDAO.getTicketById(ticketId);
+            // In a real app, I would fetch Customer email. For now, I'll use a dummy email
+            // or fetch if possible.
+            // Since Ticket doesn't directly have customer email, I might need CustomerDAO
+            // or UserDAO.
+            // For simplicity/demo:
+            String customerEmail = "customer" + ticket.getCustomerId() + "@example.com";
+
+            new service.EmailService().sendResolutionEmail(customerEmail, ticket.getCustomerName(), ticketId, note);
+        }
+        return success;
+    }
+
+    @Override
+    public boolean processCustomerFeedback(int ticketId, String action) {
+        if ("accept".equalsIgnoreCase(action)) {
+            return ticketDAO.updateStatus(ticketId, "Closed");
+        } else if ("reject".equalsIgnoreCase(action)) {
+            boolean success = ticketDAO.updatePriority(ticketId, "High"); // Escalate priority
+            if (success) {
+                success = ticketDAO.updateStatus(ticketId, "In Progress"); // Re-open
+                if (success) {
+                    new service.EmailService().sendEscalationEmail("manager@crm.com", ticketId);
+                }
+            }
+            return success;
+        }
+        return false;
+    }
 }

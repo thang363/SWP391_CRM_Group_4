@@ -10,6 +10,7 @@ public class Ticket {
     private String description;
     private String status;
     private String priority;
+    private String solutionNote;
     private Integer assignedTo; // Nullable
     private String assignedToName; // From Join
     private Timestamp createdAt;
@@ -72,6 +73,14 @@ public class Ticket {
 
     public void setPriority(String priority) {
         this.priority = priority;
+    }
+
+    public String getSolutionNote() {
+        return solutionNote;
+    }
+
+    public void setSolutionNote(String solutionNote) {
+        this.solutionNote = solutionNote;
     }
 
     public Integer getAssignedTo() {

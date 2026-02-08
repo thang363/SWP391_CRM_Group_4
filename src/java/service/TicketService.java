@@ -22,4 +22,8 @@ public interface TicketService {
     List<model.entity.TicketActivity> getActivitiesByTicketId(int ticketId);
 
     boolean addActivity(model.entity.TicketActivity activity);
+
+    boolean resolveTicket(int ticketId, String note);
+
+    boolean processCustomerFeedback(int ticketId, String action);
 }

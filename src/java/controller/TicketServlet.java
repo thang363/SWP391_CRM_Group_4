@@ -69,6 +69,9 @@ public class TicketServlet extends HttpServlet {
             case "detail":
                 showTicketDetail(request, response);
                 break;
+            case "verify-ticket":
+                handleVerifyTicket(request, response);
+                break;
             default:
                 listTickets(request, response);
                 break;
@@ -104,17 +107,14 @@ public class TicketServlet extends HttpServlet {
                 isUnassigned = true;
             }
         } else if (Role.SUPPORT.equals(role)) {
-            // Support: Mặc định xem ticket của mình + chưa gán
+            // Support: Xem tất cả tickets
             if ("my".equals(view) && userId != null) {
                 assignedTo = userId.intValue();
             } else if ("unassigned".equals(view)) {
                 isUnassigned = true;
-            } else {
-                // Default: Show assigned to me
-                if (userId != null) {
-                    assignedTo = userId.intValue();
-                }
             }
+            // Mặc định (view=all hoặc null) -> Xem tất cả (assignedTo = null, isUnassigned
+            // = false)
         } else {
             // Marketing/Sale hoặc không có role
             assignedTo = -1; // Không có ticket nào
@@ -125,14 +125,14 @@ public class TicketServlet extends HttpServlet {
         request.setAttribute("tickets", tickets);
         request.setAttribute("currentPage", "support");
         request.setAttribute("pageTitle", "Quản lý Ticket");
-        request.getRequestDispatcher("/views/tickets.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/ticket/tickets.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setAttribute("currentPage", "support");
         request.setAttribute("pageTitle", "Tạo Ticket Mới");
-        request.getRequestDispatcher("/views/ticket-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/ticket/ticket-form.jsp").forward(request, response);
     }
 
     private void searchCustomers(HttpServletRequest request, HttpServletResponse response)
@@ -180,6 +180,10 @@ public class TicketServlet extends HttpServlet {
             handleAddActivity(request, response);
         } else if ("claim".equals(action)) {
             handleClaim(request, response);
+        } else if ("resolve".equals(action)) {
+            handleResolve(request, response);
+        } else if ("reopen".equals(action)) {
+            handleReopen(request, response);
         } else {
             doGet(request, response);
         }
@@ -313,14 +317,8 @@ public class TicketServlet extends HttpServlet {
             // Manager xem tất cả
             hasAccess = true;
         } else if (Role.SUPPORT.equals(role)) {
-            // Support xem: ticket của mình HOẶC ticket chưa gán
-            if (ticket.getAssignedTo() == null || ticket.getAssignedTo() == 0) {
-                // Ticket chưa gán
-                hasAccess = true;
-            } else if (userId != null && ticket.getAssignedTo() == userId.intValue()) {
-                // Ticket được gán cho mình
-                hasAccess = true;
-            }
+            // Support: Xem tất cả
+            hasAccess = true;
         } else if (Role.MARKETING.equals(role) || Role.SALE.equals(role)) {
             // Marketing/Sale: Chỉ xem ticket do mình tạo
             // (Cần thêm field createdBy trong Ticket entity)
@@ -354,22 +352,70 @@ public class TicketServlet extends HttpServlet {
             e.printStackTrace();
         }
 
+        // Permissions Flags for JSP
+        boolean canEdit = false;
+        boolean canClaim = false;
+
+        if (Role.MANAGER.equals(role)) {
+            canEdit = true;
+            canClaim = (ticket.getAssignedTo() == null || ticket.getAssignedTo() == 0);
+        } else if (Role.SUPPORT.equals(role)) {
+            if (userId != null && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue()) {
+                canEdit = true; // Chỉ sửa ticket của mình
+            }
+            if (ticket.getAssignedTo() == null || ticket.getAssignedTo() == 0) {
+                canClaim = true; // Chỉ nhận ticket chưa gán
+            }
+        }
+
         request.setAttribute("ticket", ticket);
         request.setAttribute("activities", activities);
         request.setAttribute("agents", agents);
+        request.setAttribute("canEdit", canEdit);
+        request.setAttribute("canClaim", canClaim);
         request.setAttribute("currentPage", "support");
         request.setAttribute("pageTitle", "Chi tiết Ticket #" + id);
 
-        request.getRequestDispatcher("/views/ticket-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/ticket/ticket-detail.jsp").forward(request, response);
     }
 
     private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         String status = request.getParameter("status");
+
+        // Backend Permission Check
+        HttpSession session = request.getSession(false);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
+        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
+
+        if (role == null) {
+            sendJsonResponse(response, false, "Chưa đăng nhập");
+            return;
+        }
+
+        Ticket ticket = ticketService.getTicketById(id);
+        if (ticket == null) {
+            sendJsonResponse(response, false, "Ticket không tồn tại");
+            return;
+        }
+
+        boolean allowed = false;
+        if (Role.MANAGER.equals(role)) {
+            allowed = true;
+        } else if (Role.SUPPORT.equals(role)) {
+            if (userId != null && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue()) {
+                allowed = true;
+            }
+        }
+
+        if (!allowed) {
+            sendJsonResponse(response, false, "Bạn chỉ có thể thay đổi trạng thái ticket được giao cho bạn.");
+            return;
+        }
+
         boolean success = ticketService.updateStatus(id, status);
 
         if (success) {
-            Role role = (Role) request.getSession().getAttribute(Constants.SESSION_ROLE);
             String actor = (role != null) ? role.getValue() : "System";
             logSystemActivity(request, id, "Changed status to: " + status + " (" + actor + ")");
         }
@@ -525,5 +571,151 @@ public class TicketServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         response.getWriter()
                 .print(String.format("{\"success\": %b, \"message\": \"%s\"}", success, escapeJson(message)));
+    }
+
+    private void handleResolve(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
+        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
+
+        if (role == null) {
+            sendJsonResponse(response, false, "Chưa đăng nhập");
+            return;
+        }
+
+        int id = Integer.parseInt(request.getParameter("ticketId"));
+        String note = request.getParameter("solutionNote");
+
+        // Validate permission (Support assigned or Manager)
+        Ticket ticket = ticketService.getTicketById(id);
+        boolean allowed = false;
+        if (Role.MANAGER.equals(role))
+            allowed = true;
+        if (Role.SUPPORT.equals(role) && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue())
+            allowed = true;
+
+        if (!allowed) {
+            sendJsonResponse(response, false, "Bạn không có quyền xử lý ticket này.");
+            return;
+        }
+
+        boolean success = ticketService.resolveTicket(id, note);
+        if (success) {
+            logSystemActivity(request, id, "Resolved ticket. Solution: " + note);
+        }
+        sendJsonResponse(response, success, success ? "Đã cập nhật trạng thái Resolved" : "Lỗi xử lý");
+    }
+
+    private void handleVerifyTicket(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String idStr = request.getParameter("id");
+        String decision = request.getParameter("decision"); // accept / reject
+
+        int id = Integer.parseInt(idStr);
+        boolean success = ticketService.processCustomerFeedback(id, decision);
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        out.println("<html><body>");
+        if (success) {
+            if ("accept".equals(decision)) {
+                out.println("<h1>Cảm ơn bạn! Ticket đã được đóng.</h1>");
+            } else {
+                out.println("<h1>Yêu cầu của bạn đã được ghi nhận. Chúng tôi sẽ xem xét lại ngay.</h1>");
+            }
+        } else {
+            out.println("<h1>Có lỗi xảy ra hoặc ticket không tồn tại.</h1>");
+        }
+        out.println("<p><a href='" + request.getContextPath() + "/tickets'>Quay lại trang chủ</a></p>");
+        out.println("</body></html>");
+    }
+
+    private void handleReopen(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
+
+        if (!Role.MANAGER.equals(role)) {
+            sendJsonResponse(response, false, "Chỉ Manager mới có quyền mở lại ticket.");
+            return;
+        }
+
+        int id = Integer.parseInt(request.getParameter("ticketId"));
+        boolean success = ticketService.updateStatus(id, "In Progress"); // Re-open logic simple
+        if (success) {
+            logSystemActivity(request, id, "Re-opened ticket (Manager Override)");
+        }
+        sendJsonResponse(response, success, success ? "Đã mở lại ticket" : "Lỗi mở lại");
+    }
+
+    private void handleResolve(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
+        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
+
+        if (role == null) {
+            sendJsonResponse(response, false, "Chưa đăng nhập");
+            return;
+        }
+
+        int id = Integer.parseInt(request.getParameter("ticketId"));
+        String note = request.getParameter("solutionNote");
+
+        // Validate permission (Support assigned or Manager)
+        Ticket ticket = ticketService.getTicketById(id);
+        boolean allowed = false;
+        if (Role.MANAGER.equals(role))
+            allowed = true;
+        if (Role.SUPPORT.equals(role) && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue())
+            allowed = true;
+
+        if (!allowed) {
+            sendJsonResponse(response, false, "Bạn không có quyền xử lý ticket này.");
+            return;
+        }
+
+        boolean success = ticketService.resolveTicket(id, note);
+        if (success) {
+            logSystemActivity(request, id, "Resolved ticket. Solution: " + note);
+        }
+        sendJsonResponse(response, success, success ? "Đã cập nhật trạng thái Resolved" : "Lỗi xử lý");
+    }
+
+    private void handleVerifyTicket(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String idStr = request.getParameter("id");
+        String decision = request.getParameter("decision"); // accept / reject
+
+        int id = Integer.parseInt(idStr);
+        boolean success = ticketService.processCustomerFeedback(id, decision);
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        out.println("<html><body>");
+        if (success) {
+            if ("accept".equals(decision)) {
+                out.println("<h1>Cảm ơn bạn! Ticket đã được đóng.</h1>");
+            } else {
+                out.println("<h1>Yêu cầu của bạn đã được ghi nhận. Chúng tôi sẽ xem xét lại ngay.</h1>");
+            }
+        } else {
+            out.println("<h1>Có lỗi xảy ra hoặc ticket không tồn tại.</h1>");
+        }
+        out.println("<p><a href='" + request.getContextPath() + "/tickets'>Quay lại trang chủ</a></p>");
+        out.println("</body></html>");
+    }
+
+    private void handleReopen(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
+
+        if (!Role.MANAGER.equals(role)) {
+            sendJsonResponse(response, false, "Chỉ Manager mới có quyền mở lại ticket.");
+            return;
+        }
+
+        int id = Integer.parseInt(request.getParameter("ticketId"));
+        boolean success = ticketService.updateStatus(id, "In Progress"); // Re-open logic simple
+        if (success) {
+            logSystemActivity(request, id, "Re-opened ticket (Manager Override)");
+        }
+        sendJsonResponse(response, success, success ? "Đã mở lại ticket" : "Lỗi mở lại");
     }
 }

@@ -17,5 +17,7 @@ public interface TicketDAO {
 
     boolean updatePriority(int ticketId, String priority);
 
+    boolean updateStatusAndNote(int ticketId, String status, String note);
+
     boolean assignTicket(int ticketId, Integer userId);
 }

@@ -1041,3 +1041,5 @@ GO
 ALTER DATABASE [CRM] SET  READ_WRITE 
 GO
 ........................................
+ALTER TABLE tickets 
+ADD solution_note NVARCHAR(MAX);
