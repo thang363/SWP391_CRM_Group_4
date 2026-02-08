@@ -1,0 +1,84 @@
+package service;
+
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
+import java.io.UnsupportedEncodingException;
+import java.util.Properties;
+
+public class EmailService {
+    private static final String FROM_EMAIL = "he180827phammanhhiep@gmail.com";
+    private static final String APP_PASSWORD = "akqf ltai htyr kxcw";
+
+    public void sendResolutionEmail(String toEmail, String customerName, int ticketId, String note) {
+        String subject = "[CRM] Ticket #" + ticketId + " đã được xử lý";
+
+        String acceptLink = "http://localhost:8080/CRM/tickets?action=verify-ticket&amp;id=" + ticketId
+                + "&amp;decision=accept";
+        String rejectLink = "http://localhost:8080/CRM/tickets?action=verify-ticket&amp;id=" + ticketId
+                + "&amp;decision=reject";
+
+        StringBuilder content = new StringBuilder();
+        content.append("<html><body style='font-family: Arial, sans-serif;'>");
+        content.append("<h2>Chào ").append(customerName).append(",</h2>");
+        content.append("<p>Ticket #<strong>").append(ticketId)
+                .append("</strong> của bạn đã được đánh dấu là đã giải quyết.</p>");
+        content.append("<p><strong>Giải pháp:</strong> ").append(note).append("</p>");
+        content.append("<p>Vui lòng xác nhận kết quả xử lý:</p>");
+        content.append("<ol>");
+        content.append("<li><a href='").append(acceptLink).append(
+                "' style='color: #4CAF50; text-decoration: none; font-weight: bold;'>Chấp nhận (Đã xong)</a></li>");
+        content.append("<li><a href='").append(rejectLink).append(
+                "' style='color: #f44336; text-decoration: none; font-weight: bold;'>Từ chối (Vẫn còn lỗi)</a></li>");
+        content.append("</ol>");
+        content.append("<p><em>Nếu bạn không phản hồi trong vòng 3 ngày, ticket sẽ tự động đóng.</em></p>");
+        content.append("</body></html>");
+
+        sendEmailHtml(toEmail, subject, content.toString());
+    }
+
+    public void sendEscalationEmail(String toManagerEmail, int ticketId) {
+        String subject = "KHẨN CẤP: Ticket #" + ticketId + " Bị khách hàng từ chối giải pháp";
+        StringBuilder content = new StringBuilder();
+        content.append("<html><body style='font-family: Arial, sans-serif;'>");
+        content.append("<h2 style='color: #f44336;'>KHẨN CẤP</h2>");
+        content.append("<p>Ticket #<strong>").append(ticketId)
+                .append("</strong> đã bị khách hàng từ chối sau khi được đánh dấu là đã giải quyết.</p>");
+        content.append("<p><strong>Vui lòng kiểm tra ngay lập tức.</strong></p>");
+        content.append("</body></html>");
+
+        sendEmailHtml(toManagerEmail, subject, content.toString());
+    }
+
+    private void sendEmailHtml(String to, String subject, String htmlBody) {
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
+
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(FROM_EMAIL, APP_PASSWORD);
+            }
+        });
+
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(FROM_EMAIL, "CRM Support System"));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+            message.setSubject(MimeUtility.encodeText(subject, "UTF-8", "B"));
+            message.setContent(htmlBody, "text/html; charset=UTF-8");
+
+            Transport.send(message);
+
+            System.out.println("HTML Email sent successfully to: " + to);
+
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            System.err.println("Failed to send HTML email to " + to + ": " + e.getMessage());
+        }
+    }
+}

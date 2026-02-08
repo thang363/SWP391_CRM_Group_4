@@ -157,15 +157,14 @@
                                                                 <label class="form-label">Độ ưu tiên</label>
                                                                 <select class="form-select" name="priority">
                                                                     <option value="">Tất cả</option>
-                                                                    <option value="High" ${param.priority=='High'
-                                                                        ? 'selected' : '' }>High</option>
-                                                                    <option value="Medium" ${param.priority=='Medium'
-                                                                        ? 'selected' : '' }>Medium</option>
                                                                     <option value="Low" ${param.priority=='Low'
                                                                         ? 'selected' : '' }>Low</option>
-                                                                    <option value="Critical"
-                                                                        ${param.priority=='Critical' ? 'selected' : ''
-                                                                        }>Critical</option>
+                                                                    <option value="Medium" ${param.priority=='Medium'
+                                                                        ? 'selected' : '' }>Medium</option>
+                                                                    <option value="High" ${param.priority=='High'
+                                                                        ? 'selected' : '' }>High</option>
+                                                                    <option value="Critical"${param.priority=='Critical' 
+                                                                        ? 'selected' : '' }>Critical</option>
                                                                 </select>
                                                             </div>
                                                             <div class="col-md-4 d-flex align-items-end">
