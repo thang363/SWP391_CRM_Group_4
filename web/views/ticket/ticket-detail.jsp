@@ -386,7 +386,6 @@
 
                                 // Assign Ticket
                                 function assignTicket(ticketId, btnElement) {
-                                    console.log('assignTicket called with ticketId:', ticketId);
 
                                     const selectElement = document.getElementById('assignSelect');
                                     if (!selectElement) {
@@ -395,7 +394,6 @@
                                         return;
                                     }
                                     const userId = selectElement.value;
-                                    console.log('Selected userId:', userId);
 
 
                                     let confirmMsg = 'Phân công ticket cho nhân viên này?';
@@ -408,13 +406,12 @@
                                     // Disable button
                                     if (btnElement) btnElement.disabled = true;
 
-                                    console.log('Sending POST request...');
                                     $.post('${pageContext.request.contextPath}/tickets', {
                                         action: 'assign',
                                         id: ticketId,
+                                        id: ticketId,
                                         userId: userId
                                     }, function (response) {
-                                        console.log('Response received:', response);
                                         if (response.success) {
                                             alert(response.message);
                                             window.location.href = '${pageContext.request.contextPath}/tickets';
@@ -423,7 +420,6 @@
                                             if (btnElement) btnElement.disabled = false;
                                         }
                                     }).fail(function (xhr, status, error) {
-                                        console.error('AJAX error:', xhr, status, error);
                                         let msg = 'Lỗi kết nối server: ' + error;
                                         if (xhr.status === 200) {
                                             msg = 'Lỗi xử lý phản hồi (Invalid JSON). Xem console để biết thêm chi tiết.';

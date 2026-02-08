@@ -74,6 +74,8 @@ public class CustomerDAOImpl implements CustomerDAO {
                 Customer c = new Customer();
                 c.setId(rs.getInt("id"));
                 c.setCompanyName(rs.getString("company_name"));
+                c.setEmail(rs.getString("email"));
+                c.setPhone(rs.getString("phone"));
                 // Map other fields as needed for display
                 return c;
             }

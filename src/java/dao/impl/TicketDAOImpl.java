@@ -202,7 +202,6 @@ public class TicketDAOImpl implements TicketDAO {
 
     @Override
     public boolean assignTicket(int ticketId, Integer userId) {
-        System.out.println("DEBUG: DAO assignTicket called. TicketId: " + ticketId + ", UserId: " + userId);
 
         String statusToUpdate = (userId != null) ? "In Progress" : "Open";
         String sql = "UPDATE Tickets SET assigned_to = ?, status = ?, updated_at = GETDATE() WHERE id = ?";
@@ -223,16 +222,10 @@ public class TicketDAOImpl implements TicketDAO {
             stmt.setString(2, statusToUpdate);
             stmt.setInt(3, ticketId);
 
-            System.out.println("DEBUG: Executing UPDATE: " + sql + " [Params: " + userId + ", " + statusToUpdate + ", "
-                    + ticketId + "]");
-
             int rows = stmt.executeUpdate();
-            System.out.println("DEBUG: Rows affected: " + rows);
-
             return rows > 0;
 
         } catch (SQLException e) {
-            System.out.println("DEBUG: SQLException in assignTicket: " + e.getMessage());
             e.printStackTrace();
             return false;
         } finally {
@@ -299,7 +292,6 @@ public class TicketDAOImpl implements TicketDAO {
         ticket.setCustomerName(rs.getString("customer_name"));
         ticket.setTitle(rs.getString("title"));
         ticket.setDescription(rs.getString("description"));
-        ticket.setStatus(rs.getString("status"));
         ticket.setStatus(rs.getString("status"));
         ticket.setPriority(rs.getString("priority"));
         ticket.setSolutionNote(rs.getString("solution_note"));

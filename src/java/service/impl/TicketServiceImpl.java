@@ -4,6 +4,9 @@ import dao.TicketDAO;
 import dao.TicketActivityDAO;
 import dao.impl.TicketDAOImpl;
 import dao.impl.TicketActivityDAOImpl;
+import dao.CustomerDAO;
+import dao.impl.CustomerDAOImpl;
+import model.entity.Customer;
 import model.entity.Ticket;
 import service.TicketService;
 import java.util.List;
@@ -12,10 +15,12 @@ public class TicketServiceImpl implements TicketService {
 
     private final TicketDAO ticketDAO;
     private final TicketActivityDAO ticketActivityDAO;
+    private final CustomerDAO customerDAO;
 
     public TicketServiceImpl() {
         this.ticketDAO = new TicketDAOImpl();
         this.ticketActivityDAO = new dao.impl.TicketActivityDAOImpl();
+        this.customerDAO = new CustomerDAOImpl();
     }
 
     @Override
@@ -69,16 +74,18 @@ public class TicketServiceImpl implements TicketService {
         // 1. Update status and note
         boolean success = ticketDAO.updateStatusAndNote(ticketId, "Resolved", note);
         if (success) {
-            // 2. Fetch ticket to get customer info
+            // Fetch ticket to get customer info
             Ticket ticket = ticketDAO.getTicketById(ticketId);
-            // In a real app, I would fetch Customer email. For now, I'll use a dummy email
-            // or fetch if possible.
-            // Since Ticket doesn't directly have customer email, I might need CustomerDAO
-            // or UserDAO.
-            // For simplicity/demo:
-            String customerEmail = "customer" + ticket.getCustomerId() + "@example.com";
 
-            new service.EmailService().sendResolutionEmail(customerEmail, ticket.getCustomerName(), ticketId, note);
+            // Get Customer Email
+            Customer customer = customerDAO.getCustomerById(ticket.getCustomerId());
+            String customerEmail = (customer != null && customer.getEmail() != null) ? customer.getEmail() : "";
+
+            if (!customerEmail.isEmpty()) {
+                new service.EmailService().sendResolutionEmail(customerEmail, ticket.getCustomerName(), ticketId, note);
+            } else {
+                // Log warning or handle no-email case properly (e.g. use logger)
+            }
         }
         return success;
     }

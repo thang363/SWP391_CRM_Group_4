@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.io.PrintWriter;
-import com.google.gson.Gson; // Assuming Gson is available or I will use manual JSON
 
 @WebServlet(name = "TicketServlet", urlPatterns = { "/tickets" })
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
@@ -149,7 +148,6 @@ public class TicketServlet extends HttpServlet {
 
         List<Customer> customers = customerDAO.searchCustomers(keyword);
 
-        // Manual JSON construction to avoid Gson dependency issues if missing
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < customers.size(); i++) {
             Customer c = customers.get(i);
@@ -209,22 +207,12 @@ public class TicketServlet extends HttpServlet {
             int customerId = Integer.parseInt(customerIdStr);
             String fullTitle = (category != null && !category.isEmpty()) ? "[" + category + "] " + subject : subject;
 
-            // Create Ticket Object
             Ticket ticket = new Ticket();
             ticket.setCustomerId(customerId);
             ticket.setTitle(fullTitle);
             ticket.setDescription(description);
             ticket.setPriority(priority);
-            ticket.setStatus("Open"); // Default status
-
-            // Assign to current user (creator) ?? Or Unassigned?
-            // Usually unassigned or auto-assigned. Let's leave unassigned for Support
-            // Manager to dispatch.
-            // Or assign to self if Support Staff creates it?
-            // Logic: "Nhân viên Support nhập liệu". Likely they take it.
-            // But let's leave unassigned or prompt? Unassigned is safer.
-            // Actually user request: "Assign To: ...".
-            // I'll leave it unassigned (null) by default.
+            ticket.setStatus("Open");
 
             int ticketId = ticketService.createTicket(ticket);
 
@@ -330,7 +318,6 @@ public class TicketServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/tickets?error=access_denied");
             return;
         }
-        // === End RBAC ===
 
         List<model.entity.TicketActivity> activities = ticketService.getActivitiesByTicketId(id);
 
@@ -439,38 +426,20 @@ public class TicketServlet extends HttpServlet {
     }
 
     private void handleAssign(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        System.out.println("DEBUG: handleAssign started");
         HttpSession session = request.getSession(false);
         Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
 
         if (!Role.MANAGER.equals(role)) {
-            System.out.println("DEBUG: Permission denied. Role: " + role);
             sendJsonResponse(response, false, "Bạn không có quyền phân công ticket.");
             return;
         }
 
         try {
             int id = Integer.parseInt(request.getParameter("id"));
-            String userIdStr = request.getParameter("userId");
-            System.out.println("DEBUG: Assigning Ticket ID: " + id + ", User ID Str: '" + userIdStr + "'");
-
-            Integer userId = (userIdStr != null && !userIdStr.trim().isEmpty()) ? Integer.parseInt(userIdStr) : null;
-            System.out.println("DEBUG: Parsed User ID: " + userId);
-
-            boolean success = ticketService.assignTicket(id, userId);
-            System.out.println("DEBUG: ticketService.assignTicket result: " + success);
-
-            if (success) {
-                logSystemActivity(request, id,
-                        "Assigned ticket to User ID: " + (userId != null ? userId : "Unassigned"));
-            }
-            sendJsonResponse(response, success, success ? "Phân công thành công" : "Lỗi phân công");
         } catch (NumberFormatException e) {
-            System.out.println("DEBUG: Invalid number format: " + e.getMessage());
             e.printStackTrace();
             sendJsonResponse(response, false, "Dữ liệu không hợp lệ.");
         } catch (Exception e) {
-            System.out.println("DEBUG: Exception in handleAssign: " + e.getMessage());
             e.printStackTrace();
             sendJsonResponse(response, false, "Lỗi server: " + e.getMessage());
         }
@@ -533,14 +502,12 @@ public class TicketServlet extends HttpServlet {
             Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
             Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
-            // === RBAC: Kiểm tra quyền tạo Internal Note ===
             if (isInternal) {
                 if (!Role.SUPPORT.equals(role) && !Role.MANAGER.equals(role)) {
                     sendJsonResponse(response, false, "Bạn không có quyền tạo ghi chú nội bộ.");
                     return;
                 }
             }
-            // === End RBAC ===
 
             model.entity.TicketActivity activity = new model.entity.TicketActivity();
             activity.setTicketId(ticketId);
@@ -551,10 +518,6 @@ public class TicketServlet extends HttpServlet {
             boolean success = ticketService.addActivity(activity);
 
             if (success) {
-                // Return the activity object structure so JS can append it without reload
-                // Or just success true and reload page? Reload is easier for MVP.
-                // But requested "Chat stream" implies dynamic appends.
-                // Let's return success and let JS reload or handle it.
                 sendJsonResponse(response, success, "Đã gửi phản hồi");
             } else {
                 sendJsonResponse(response, false, "Lỗi gửi phản hồi");
@@ -625,7 +588,7 @@ public class TicketServlet extends HttpServlet {
         } else {
             out.println("<h1>Có lỗi xảy ra hoặc ticket không tồn tại.</h1>");
         }
-        out.println("<p><a href='" + request.getContextPath() + "/tickets'>Quay lại trang chủ</a></p>");
+        out.println("<p style='color: #666;'>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>");
         out.println("</body></html>");
     }
 
@@ -646,76 +609,4 @@ public class TicketServlet extends HttpServlet {
         sendJsonResponse(response, success, success ? "Đã mở lại ticket" : "Lỗi mở lại");
     }
 
-    private void handleResolve(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
-        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
-
-        if (role == null) {
-            sendJsonResponse(response, false, "Chưa đăng nhập");
-            return;
-        }
-
-        int id = Integer.parseInt(request.getParameter("ticketId"));
-        String note = request.getParameter("solutionNote");
-
-        // Validate permission (Support assigned or Manager)
-        Ticket ticket = ticketService.getTicketById(id);
-        boolean allowed = false;
-        if (Role.MANAGER.equals(role))
-            allowed = true;
-        if (Role.SUPPORT.equals(role) && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue())
-            allowed = true;
-
-        if (!allowed) {
-            sendJsonResponse(response, false, "Bạn không có quyền xử lý ticket này.");
-            return;
-        }
-
-        boolean success = ticketService.resolveTicket(id, note);
-        if (success) {
-            logSystemActivity(request, id, "Resolved ticket. Solution: " + note);
-        }
-        sendJsonResponse(response, success, success ? "Đã cập nhật trạng thái Resolved" : "Lỗi xử lý");
-    }
-
-    private void handleVerifyTicket(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String idStr = request.getParameter("id");
-        String decision = request.getParameter("decision"); // accept / reject
-
-        int id = Integer.parseInt(idStr);
-        boolean success = ticketService.processCustomerFeedback(id, decision);
-
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        out.println("<html><body>");
-        if (success) {
-            if ("accept".equals(decision)) {
-                out.println("<h1>Cảm ơn bạn! Ticket đã được đóng.</h1>");
-            } else {
-                out.println("<h1>Yêu cầu của bạn đã được ghi nhận. Chúng tôi sẽ xem xét lại ngay.</h1>");
-            }
-        } else {
-            out.println("<h1>Có lỗi xảy ra hoặc ticket không tồn tại.</h1>");
-        }
-        out.println("<p><a href='" + request.getContextPath() + "/tickets'>Quay lại trang chủ</a></p>");
-        out.println("</body></html>");
-    }
-
-    private void handleReopen(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
-
-        if (!Role.MANAGER.equals(role)) {
-            sendJsonResponse(response, false, "Chỉ Manager mới có quyền mở lại ticket.");
-            return;
-        }
-
-        int id = Integer.parseInt(request.getParameter("ticketId"));
-        boolean success = ticketService.updateStatus(id, "In Progress"); // Re-open logic simple
-        if (success) {
-            logSystemActivity(request, id, "Re-opened ticket (Manager Override)");
-        }
-        sendJsonResponse(response, success, success ? "Đã mở lại ticket" : "Lỗi mở lại");
-    }
 }
