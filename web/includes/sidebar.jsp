@@ -64,6 +64,9 @@
                                         <a href="${pageContext.request.contextPath}/transfers"
                                             class="dropdown-item ${currentPage == 'transfers' ? 'active' : ''}">Chuyển
                                             giao (Handover)</a>
+                                        <a href="${pageContext.request.contextPath}/landing-pages"
+                                            class="dropdown-item ${currentPage == 'landing-pages' ? 'active' : ''}">
+                                            <i class="fa fa-file-code me-1"></i>Landing Pages</a>
                                     </div>
                                 </div>
 
