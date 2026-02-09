@@ -261,6 +261,12 @@
                                                                                                         </button>
                                                                                                     </c:otherwise>
                                                                                                 </c:choose>
+                                                                                                <a href="${pageContext.request.contextPath}/landing-pages?campaignId=${campaign.id}"
+                                                                                                    class="btn btn-sm btn-dark"
+                                                                                                    title="Xem Landing Pages">
+                                                                                                    <i
+                                                                                                        class="fa fa-file-code"></i>
+                                                                                                </a>
                                                                                             </td>
                                                                                         </tr>
                                                                                     </c:forEach>
@@ -436,6 +442,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- LP Assignment Modal (REMOVED - Moved to /landing-pages) -->
 
                         <%-- Include Scripts --%>
                             <%@ include file="/includes/scripts.jsp" %>

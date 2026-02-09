@@ -37,12 +37,14 @@ public class CampaignServlet extends HttpServlet {
     private final CampaignService campaignService;
     private final UserService userService;
     private final CampaignTransferDAO transferDAO;
+    private final service.LandingPageService lpService;
     private final Gson gson;
 
     public CampaignServlet() {
         this.campaignService = new CampaignServiceImpl();
         this.userService = new UserServiceImpl();
         this.transferDAO = new CampaignTransferDAOImpl();
+        this.lpService = new service.impl.LandingPageServiceImpl();
         this.gson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd HH:mm:ss")
                 .create();
@@ -113,6 +115,7 @@ public class CampaignServlet extends HttpServlet {
 
         // Convert to ViewModels
         List<CampaignViewModel> viewModels = new ArrayList<>();
+
         for (Campaign c : campaigns) {
             // Get manager name
             String managerName = "Unknown";
@@ -124,16 +127,35 @@ public class CampaignServlet extends HttpServlet {
             // Check pending transfer
             boolean hasPending = transferDAO.hasPendingTransfer(c.getId());
             
+            // Get Landing Page info
+            String lpStatus = "null";
+            Long assigneeId = null;
+            String assigneeName = "-";
+            
+            model.entity.LandingPage lp = lpService.getLandingPageByCampaignId(c.getId().intValue());
+            if (lp != null) {
+                lpStatus = lp.getStatus();
+                if (lp.getCreatedBy() != null) {
+                    assigneeId = Long.valueOf(lp.getCreatedBy());
+                    User assignee = userService.getUserById(assigneeId);
+                    assigneeName = (assignee != null) ? assignee.getFullName() : "Unknown ID: " + assigneeId;
+                }
+            }
+            
             // Create ViewModel
-            viewModels.add(CampaignViewModel.fromEntity(c, managerName, hasPending));
+            viewModels.add(CampaignViewModel.fromEntity(c, managerName, hasPending, lpStatus, assigneeId, assigneeName));
         }
 
         // Get all managers for Transfer dropdown
         List<User> managers = userService.getUsersByRole(Role.MANAGER);
+        
+        // Get all Marketing staff for Assignment dropdown
+        List<User> marketingStaffs = userService.getUsersByRole(Role.MARKETING);
 
         // Set attributes
         request.setAttribute("campaigns", viewModels);
         request.setAttribute("managers", managers);
+        request.setAttribute("marketingStaffs", marketingStaffs);
         request.setAttribute("currentPageNumber", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalItems", totalItems);
@@ -180,10 +202,13 @@ public class CampaignServlet extends HttpServlet {
             case "get":
                 handleGet(request, response);
                 break;
+            // LP Assignment moved to /landing-pages
             default:
                 sendJsonResponse(response, false, "Action không hợp lệ", null);
         }
     }
+
+    // handleAssign moved to LandingPageServlet
 
     private void handleCreate(HttpServletRequest request, HttpServletResponse response)
             throws IOException {

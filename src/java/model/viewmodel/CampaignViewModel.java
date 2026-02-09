@@ -26,6 +26,11 @@ public class CampaignViewModel {
     private String managerName;
     private boolean hasPendingTransfer;
 
+    // Landing Page specific fields
+    private String landingPageStatus;
+    private Long assigneeId;
+    private String assigneeName;
+
     // Formatters
     private static final NumberFormat CURRENCY_FORMATTER = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
     private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy");
@@ -35,7 +40,8 @@ public class CampaignViewModel {
     /**
      * Convert from Entity to ViewModel
      */
-    public static CampaignViewModel fromEntity(Campaign entity, String managerName, boolean hasPendingTransfer) {
+    public static CampaignViewModel fromEntity(Campaign entity, String managerName, boolean hasPendingTransfer, 
+                                             String lpStatus, Long assigneeId, String assigneeName) {
         CampaignViewModel vm = new CampaignViewModel();
         vm.setId(entity.getId());
         vm.setName(entity.getName());
@@ -50,6 +56,12 @@ public class CampaignViewModel {
         // Enrich with view data
         vm.setManagerName(managerName);
         vm.setHasPendingTransfer(hasPendingTransfer);
+        
+        // LP Data
+        vm.setLandingPageStatus(lpStatus);
+        vm.setAssigneeId(assigneeId);
+        vm.setAssigneeName(assigneeName);
+        
         return vm;
     }
 
@@ -86,6 +98,15 @@ public class CampaignViewModel {
 
     public boolean isHasPendingTransfer() { return hasPendingTransfer; }
     public void setHasPendingTransfer(boolean hasPendingTransfer) { this.hasPendingTransfer = hasPendingTransfer; }
+
+    public String getLandingPageStatus() { return landingPageStatus; }
+    public void setLandingPageStatus(String landingPageStatus) { this.landingPageStatus = landingPageStatus; }
+
+    public Long getAssigneeId() { return assigneeId; }
+    public void setAssigneeId(Long assigneeId) { this.assigneeId = assigneeId; }
+
+    public String getAssigneeName() { return assigneeName; }
+    public void setAssigneeName(String assigneeName) { this.assigneeName = assigneeName; }
 
     // Helper methods for View display
     public String getFormattedBudget() {
