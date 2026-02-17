@@ -39,8 +39,6 @@
                                     <a href="${pageContext.request.contextPath}/sales-pipeline"
                                         class="dropdown-item">Sales Pipeline</a>
                                     <a href="${pageContext.request.contextPath}/leads" class="dropdown-item">Leads</a>
-                                    <a href="${pageContext.request.contextPath}/opportunities"
-                                        class="dropdown-item">Opportunities</a>
                                     <a href="${pageContext.request.contextPath}/quotes" class="dropdown-item">Báo
                                         giá</a>
                                 </div>

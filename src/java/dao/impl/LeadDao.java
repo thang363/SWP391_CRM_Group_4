@@ -25,6 +25,26 @@ public class LeadDao {
         this.dbUtil = dbUtil;
     }
 
+    //get lead by id
+    public Lead getLeadById(long leadId) throws Exception {
+        String sql = "SELECT * FROM Leads WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setLong(1, leadId);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToLead(rs);
+            }
+            return null;
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+    }
+
     //get lead list by sale id
     public List<Lead> getLeadListBySaleID(long Sale_id) throws Exception {
         String sql = "SELECT \n"
