@@ -35,6 +35,12 @@
                                     background-color: #dc3545;
                                 }
 
+                                .badge-paused {
+                                    background-color: #fd7e14;
+                                    /* Orange */
+                                    color: white;
+                                }
+
                                 .filter-section {
                                     background-color: #f8f9fa;
                                     padding: 1.5rem;
@@ -106,20 +112,13 @@
                                                                         <option value="">Tất cả</option>
                                                                         <option value="Draft" ${param.status=='Draft'
                                                                             ? 'selected' : '' }>Draft</option>
-                                                                        <option value="Pending"
-                                                                            ${param.status=='Pending' ? 'selected' : ''
-                                                                            }>Pending</option>
-                                                                        <option value="Approved"
-                                                                            ${param.status=='Approved' ? 'selected' : ''
-                                                                            }>Approved</option>
                                                                         <option value="Active" ${param.status=='Active'
                                                                             ? 'selected' : '' }>Active</option>
+                                                                        <option value="Paused" ${param.status=='Paused'
+                                                                            ? 'selected' : '' }>Paused</option>
                                                                         <option value="Finished"
                                                                             ${param.status=='Finished' ? 'selected' : ''
                                                                             }>Finished</option>
-                                                                        <option value="Rejected"
-                                                                            ${param.status=='Rejected' ? 'selected' : ''
-                                                                            }>Rejected</option>
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-md-2">
@@ -374,6 +373,16 @@
                                                         name="endDate" required>
                                                     <div class="invalid-feedback">Vui lòng chọn ngày kết thúc</div>
                                                 </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="campaignStatus" class="form-label">Trạng thái</label>
+                                                <select class="form-select" id="campaignStatus" name="status">
+                                                    <option value="Draft">Draft</option>
+                                                    <option value="Active">Active</option>
+                                                    <option value="Paused">Paused</option>
+                                                    <option value="Finished">Finished</option>
+                                                </select>
                                             </div>
 
                                             <div class="mb-3">

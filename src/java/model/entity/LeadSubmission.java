@@ -7,9 +7,10 @@ import java.sql.Timestamp;
  * Maps to 'LandingPageSubmissions' table in database.
  * Stores form data submitted by users from Landing Pages.
  */
-public class LandingPageSubmission {
+public class LeadSubmission {
     private Integer id;
     private Integer landingPageId;
+    private String source; // New field for Import source e.g. "Landing Page", "Excel Import: filename.csv"
     private String fullName;
     private String email;
     private String phone;
@@ -17,7 +18,7 @@ public class LandingPageSubmission {
     private Boolean isProcessed; // true if converted to Lead, false otherwise
     private Timestamp submittedAt;
 
-    public LandingPageSubmission() {
+    public LeadSubmission() {
         this.isProcessed = false;
         this.submittedAt = new Timestamp(System.currentTimeMillis());
     }
@@ -37,6 +38,14 @@ public class LandingPageSubmission {
 
     public void setLandingPageId(Integer landingPageId) {
         this.landingPageId = landingPageId;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getFullName() {
@@ -89,9 +98,10 @@ public class LandingPageSubmission {
 
     @Override
     public String toString() {
-        return "LandingPageSubmission{" +
+        return "LeadSubmission{" +
                 "id=" + id +
                 ", landingPageId=" + landingPageId +
+                ", source='" + source + '\'' +
                 ", fullName='" + fullName + '\'' +
                 ", email='" + email + '\'' +
                 ", isProcessed=" + isProcessed +

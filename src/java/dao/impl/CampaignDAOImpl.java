@@ -308,9 +308,10 @@ public class CampaignDAOImpl implements CampaignDAO {
             return affectedRows > 0;
             
         } catch (SQLException e) {
-            System.err.println("Error updating campaign: " + e.getMessage());
+            String errorMsg = "Error updating campaign: " + e.getMessage();
+            System.err.println(errorMsg);
             e.printStackTrace();
-            return false;
+            throw new RuntimeException(errorMsg, e);
         } finally {
             closeResources(null, stmt, conn);
         }

@@ -1,6 +1,6 @@
 package controller;
 
-import dao.impl.LeadDao;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -26,11 +26,13 @@ public class LeadDetailsServlet extends HttpServlet {
             return;
         }
 
+       
         try {
             long leadId = Long.parseLong(idParam);
-            DatabaseUtil dbUtil = DatabaseUtil.getInstance();
-            LeadDao leadDao = new LeadDao(dbUtil);
-            Lead lead = leadDao.getLeadById(leadId);
+            
+            // Use standard DAO pattern
+            dao.LeadDAO leadDao = new dao.impl.LeadDAOImpl();
+            Lead lead = leadDao.findById(leadId);
 
             if (lead == null) {
                 response.sendRedirect(request.getContextPath() + "/leads");

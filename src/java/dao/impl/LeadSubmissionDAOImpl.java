@@ -1,0 +1,423 @@
+package dao.impl;
+
+import dao.LeadSubmissionDAO;
+import model.entity.LeadSubmission;
+import util.DatabaseUtil;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Implementation of LeadSubmissionDAO interface
+ */
+public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
+    
+    private final DatabaseUtil dbUtil;
+    
+    public LeadSubmissionDAOImpl() {
+        this.dbUtil = DatabaseUtil.getInstance();
+    }
+    
+    @Override
+    public LeadSubmission create(LeadSubmission submission) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = dbUtil.getConnection();
+            String sql = "INSERT INTO LeadSubmissions (landing_page_id, source, full_name, email, phone, raw_data, is_processed) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            if (submission.getLandingPageId() != null) {
+                stmt.setInt(1, submission.getLandingPageId());
+            } else {
+                stmt.setNull(1, java.sql.Types.INTEGER);
+            }
+            stmt.setString(2, submission.getSource());
+            stmt.setString(3, submission.getFullName());
+            stmt.setString(4, submission.getEmail());
+            stmt.setString(5, submission.getPhone());
+            stmt.setString(6, null); // raw_data not used for import, can be null
+            stmt.setBoolean(7, false); // Default not processed
+            
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    submission.setId(rs.getInt(1));
+                    return submission;
+                }
+            }
+            
+            return null;
+            
+        } catch (SQLException e) {
+            System.err.println("Error creating lead submission: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+    }
+    
+    @Override
+    public LeadSubmission findById(Integer id) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = dbUtil.getConnection();
+            String sql = "SELECT * FROM LeadSubmissions WHERE id = ?";
+            
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, id);
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToSubmission(rs);
+            }
+            return null;
+            
+        } catch (SQLException e) {
+            System.err.println("Error finding lead submission by ID: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+    }
+    
+    @Override
+    public List<LeadSubmission> findByLandingPageId(Integer landingPageId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<LeadSubmission> submissions = new ArrayList<>();
+        
+        try {
+            conn = dbUtil.getConnection();
+            String sql = "SELECT * FROM LeadSubmissions WHERE landing_page_id = ? ORDER BY submitted_at DESC";
+            
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, landingPageId);
+            rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                submissions.add(mapResultSetToSubmission(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error finding submissions by landing page ID: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        
+        return submissions;
+    }
+
+    @Override
+    public List<LeadSubmission> findAll(String keyword, Integer campaignId, String source, String status, Date fromDate, Date toDate, int offset, int limit) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<LeadSubmission> submissions = new ArrayList<>();
+        
+        try {
+            conn = dbUtil.getConnection();
+            StringBuilder sql = new StringBuilder("SELECT s.* FROM LeadSubmissions s ");
+            if (campaignId != null && campaignId > 0) {
+                 sql.append("JOIN LandingPages lp ON s.landing_page_id = lp.id ");
+            }
+            sql.append("WHERE 1=1 ");
+            
+            List<Object> params = new ArrayList<>();
+            
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                sql.append("AND (s.full_name LIKE ? OR s.email LIKE ? OR s.phone LIKE ?) ");
+                String likeKey = "%" + keyword + "%";
+                params.add(likeKey);
+                params.add(likeKey);
+                params.add(likeKey);
+            }
+            
+            if (campaignId != null && campaignId > 0) {
+                sql.append("AND lp.campaign_id = ? ");
+                params.add(campaignId);
+            }
+            
+            if (source != null && !source.isEmpty()) {
+                if ("LP".equals(source)) {
+                    sql.append("AND s.landing_page_id IS NOT NULL ");
+                } else if ("IMPORT".equals(source)) {
+                     sql.append("AND s.landing_page_id IS NULL ");
+                }
+            }
+            
+            if (status != null && !status.isEmpty()) {
+                if ("PENDING".equals(status)) {
+                    sql.append("AND s.is_processed = 0 ");
+                } else if ("PROCESSED".equals(status)) {
+                    sql.append("AND s.is_processed = 1 ");
+                }
+            }
+
+             if (fromDate != null) {
+                sql.append("AND CAST(s.submitted_at AS DATE) >= ? ");
+                params.add(fromDate);
+            }
+            
+            if (toDate != null) {
+                sql.append("AND CAST(s.submitted_at AS DATE) <= ? ");
+                params.add(toDate);
+            }
+            
+            sql.append("ORDER BY s.submitted_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            params.add(offset);
+            params.add(limit);
+            
+            stmt = conn.prepareStatement(sql.toString());
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                submissions.add(mapResultSetToSubmission(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error finding all submissions: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return submissions;
+    }
+
+    @Override
+    public int count(String keyword, Integer campaignId, String source, String status, Date fromDate, Date toDate) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = dbUtil.getConnection();
+            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM LeadSubmissions s ");
+            if (campaignId != null && campaignId > 0) {
+                 sql.append("JOIN LandingPages lp ON s.landing_page_id = lp.id ");
+            }
+            sql.append("WHERE 1=1 ");
+            
+            List<Object> params = new ArrayList<>();
+             if (keyword != null && !keyword.trim().isEmpty()) {
+                sql.append("AND (s.full_name LIKE ? OR s.email LIKE ? OR s.phone LIKE ?) ");
+                String likeKey = "%" + keyword + "%";
+                params.add(likeKey);
+                params.add(likeKey);
+                params.add(likeKey);
+            }
+            
+            if (campaignId != null && campaignId > 0) {
+                sql.append("AND lp.campaign_id = ? ");
+                params.add(campaignId);
+            }
+            
+            if (source != null && !source.isEmpty()) {
+                if ("LP".equals(source)) {
+                    sql.append("AND s.landing_page_id IS NOT NULL ");
+                } else if ("IMPORT".equals(source)) {
+                     sql.append("AND s.landing_page_id IS NULL ");
+                }
+            }
+            
+            if (status != null && !status.isEmpty()) {
+                 if ("PENDING".equals(status)) {
+                    sql.append("AND s.is_processed = 0 ");
+                } else if ("PROCESSED".equals(status)) {
+                    sql.append("AND s.is_processed = 1 ");
+                }
+            }
+
+             if (fromDate != null) {
+                sql.append("AND CAST(s.submitted_at AS DATE) >= ? ");
+                params.add(fromDate);
+            }
+            
+            if (toDate != null) {
+                sql.append("AND CAST(s.submitted_at AS DATE) <= ? ");
+                params.add(toDate);
+            }
+            
+            stmt = conn.prepareStatement(sql.toString());
+             for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error counting submissions: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+             closeResources(rs, stmt, conn);
+        }
+        return 0;
+    }
+
+    @Override
+    public void delete(Integer id) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        
+        try {
+            conn = dbUtil.getConnection();
+            String sql = "DELETE FROM LeadSubmissions WHERE id = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error deleting submission: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+    }
+    
+    @Override
+    public boolean markAsProcessed(Integer id) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        
+        try {
+            conn = dbUtil.getConnection();
+            // Optimistic Locking: Only update if it is currently NOT processed (0)
+            // This prevents race condition where 2 users convert the same submission at the same time.
+            String sql = "UPDATE LeadSubmissions SET is_processed = 1 WHERE id = ? AND is_processed = 0";
+            
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, id);
+            
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0; // If 0, it means it was already processed (or id not found)
+            
+        } catch (SQLException e) {
+            System.err.println("Error marking submission as processed: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+    }
+
+    @Override
+    public int countPending() {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM LeadSubmissions WHERE is_processed = 0");
+            rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            System.err.println("Error counting pending submissions: " + e.getMessage());
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return 0;
+    }
+
+    @Override
+    public int countToday() {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM LeadSubmissions WHERE CAST(submitted_at AS DATE) = CAST(GETDATE() AS DATE)");
+            rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            System.err.println("Error counting today submissions: " + e.getMessage());
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean exists(String email, String phone) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            String sql = "SELECT COUNT(*) FROM LeadSubmissions WHERE email = ? OR phone = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, email);
+            stmt.setString(2, phone);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking existence: " + e.getMessage());
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return false;
+    }
+
+    /**
+     * Map ResultSet to LeadSubmission object
+     */
+    private LeadSubmission mapResultSetToSubmission(ResultSet rs) throws SQLException {
+        LeadSubmission submission = new LeadSubmission();
+        submission.setId(rs.getInt("id"));
+        int lpId = rs.getInt("landing_page_id");
+        if (!rs.wasNull()) {
+             submission.setLandingPageId(lpId);
+        }
+        submission.setSource(rs.getString("source"));
+        submission.setFullName(rs.getString("full_name"));
+        submission.setEmail(rs.getString("email"));
+        submission.setPhone(rs.getString("phone"));
+        submission.setIsProcessed(rs.getBoolean("is_processed"));
+        submission.setSubmittedAt(rs.getTimestamp("submitted_at"));
+        return submission;
+    }
+    
+    /**
+     * Close database resources
+     */
+    private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println("Error closing ResultSet: " + e.getMessage());
+            }
+        }
+        
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                System.err.println("Error closing PreparedStatement: " + e.getMessage());
+            }
+        }
+        
+        if (conn != null) {
+            dbUtil.closeConnection(conn);
+        }
+    }
+}
