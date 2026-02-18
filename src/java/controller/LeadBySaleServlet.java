@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-
 package controller;
 
 import jakarta.servlet.RequestDispatcher;
@@ -18,27 +17,31 @@ import java.util.List;
 import model.entity.Lead;
 import dao.LeadDAO;
 import dao.impl.LeadDAOImpl;
+import jakarta.servlet.http.HttpSession;
+import model.entity.User;
 import util.DatabaseUtil;
+import util.Constants;
 
 /**
  *
  * @author ADMIN
  */
-@WebServlet(name="LeadBySaleServlet", urlPatterns={"/leads"})
+@WebServlet(name = "LeadBySaleServlet", urlPatterns = {"/leads"})
 public class LeadBySaleServlet extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
+
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    
-
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
+    /**
      * Handles the HTTP <code>GET</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -46,23 +49,29 @@ public class LeadBySaleServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         request.setAttribute("pageTitle", "Sales Pipeline");
-        List<Lead>  lead_list = new ArrayList<>();
+        List<Lead> lead_list = new ArrayList<>();
         DatabaseUtil dbUtil = DatabaseUtil.getInstance();
         LeadDAO ld = new LeadDAOImpl();
         try {
-           lead_list = ld.findBySaleId(3); 
+            HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("currentUser"); // Get User object from session
+            if (user != null) {
+                lead_list = ld.findBySaleId(user.getId());
+            }
         } catch (Exception e) {
+            e.printStackTrace();
         }
         request.setAttribute("leadList", lead_list);
-        
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("/views/sales/leadbysale.jsp");
         dispatcher.forward(request, response);
-    } 
+    }
 
-    /** 
+    /**
      * Handles the HTTP <code>POST</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -70,12 +79,13 @@ public class LeadBySaleServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         //processRequest(request, response);
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
+     *
      * @return a String containing servlet description
      */
     @Override

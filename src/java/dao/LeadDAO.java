@@ -29,4 +29,11 @@ public interface LeadDAO {
      * @return true if insertion successful, false otherwise
      */
     boolean insert(Lead lead);
+
+    /**
+     * Find a lead by its ID.
+     * @param id The ID of the lead
+     * @return The Lead object if found, null otherwise
+     */
+    Lead findById(long id);
 }

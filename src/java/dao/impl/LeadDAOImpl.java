@@ -126,6 +126,28 @@ public class LeadDAOImpl implements LeadDAO {
         }
     }
 
+    @Override
+    public Lead findById(long id) {
+        String sql = "SELECT * FROM Leads WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setLong(1, id);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToLead(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error finding lead by ID: " + e.getMessage());
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return null;
+    }
+
     private Lead mapResultSetToLead(ResultSet rs) throws SQLException {
         Lead lead = new Lead();
         lead.setId(rs.getLong("id"));
