@@ -16,7 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import model.entity.Lead;
-import dao.impl.LeadDao;
+import dao.LeadDAO;
+import dao.impl.LeadDAOImpl;
 import util.DatabaseUtil;
 
 /**
@@ -49,9 +50,9 @@ public class LeadBySaleServlet extends HttpServlet {
         request.setAttribute("pageTitle", "Sales Pipeline");
         List<Lead>  lead_list = new ArrayList<>();
         DatabaseUtil dbUtil = DatabaseUtil.getInstance();
-        LeadDao ld = new LeadDao(dbUtil);
+        LeadDAO ld = new LeadDAOImpl();
         try {
-           lead_list = ld.getLeadListBySaleID(3); 
+           lead_list = ld.findBySaleId(3); 
         } catch (Exception e) {
         }
         request.setAttribute("leadList", lead_list);

@@ -5,6 +5,8 @@ import dao.impl.LandingPageDAOImpl;
 import model.entity.LandingPage;
 import service.LandingPageService;
 import java.sql.Timestamp;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class LandingPageServiceImpl implements LandingPageService {
 
@@ -113,6 +115,68 @@ public class LandingPageServiceImpl implements LandingPageService {
         lp.setManagerComment(reason); // Store rejection reason
         
         return lpDAO.update(lp);
+    }
+
+    @Override
+    public boolean updateLandingPage(Integer lpId, String name, String brief, java.util.Map<String, String> contentFields, boolean isManager) {
+        LandingPage lp = lpDAO.findById(lpId);
+        if (lp == null) return false;
+
+        // Check Logic: Approved -> Revert to Draft (Manager Only)
+        // Marketing cannot edit Approved (handled by Servlet check, but good to safeguard here)
+        if ("Approved".equals(lp.getStatus())) {
+            if (isManager) {
+                lp.setStatus("Draft"); // Revert status
+            } else {
+                return false; // Marketing cannot edit Approved
+            }
+        }
+        
+        // Update Content
+        lp.setName(name);
+        lp.setBrief(brief);
+        
+        // Update Data Config (JSON) using Gson
+        JsonObject json = new JsonObject();
+        
+        // Add all fields from the map
+        if (contentFields != null) {
+            for (java.util.Map.Entry<String, String> entry : contentFields.entrySet()) {
+                json.addProperty(entry.getKey(), entry.getValue() != null ? entry.getValue() : "");
+            }
+        }
+        
+        // Ensure HERO_ALIGN is set if not present (or we can just let it be handled by frontend)
+        if (!json.has("HERO_ALIGN")) {
+            json.addProperty("HERO_ALIGN", "text-left");
+        }
+        
+        lp.setDataConfig(new Gson().toJson(json));
+
+        return lpDAO.update(lp);
+    }
+
+    @Override
+    public boolean updateStatus(Integer id, String status) {
+        return updateStatus(id, status, null);
+    }
+
+    @Override
+    public boolean updateStatus(Integer id, String status, String comment) {
+        LandingPage lp = lpDAO.findById(id);
+        if (lp == null) {
+            return false;
+        }
+        lp.setStatus(status);
+        if (comment != null) {
+            lp.setManagerComment(comment);
+        }
+        return lpDAO.update(lp);
+    }
+
+    private String escapeJson(String input) {
+        if (input == null) return "";
+        return input.replace("\"", "\\\"").replace("\n", " ").replace("\r", "");
     }
 
     @Override

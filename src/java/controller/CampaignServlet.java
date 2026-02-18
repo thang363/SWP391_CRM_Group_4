@@ -111,7 +111,34 @@ public class CampaignServlet extends HttpServlet {
         }
 
         // Get campaigns
-        List<Campaign> campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter, offset, pageSize);
+        // Get campaigns
+        List<Campaign> campaigns;
+        String idFilterStr = request.getParameter("id");
+        if (idFilterStr != null && !idFilterStr.trim().isEmpty()) {
+            // Filter by specific ID (from LP list link)
+            try {
+                Long idFilter = Long.parseLong(idFilterStr);
+                Campaign specificCampaign = campaignService.getCampaignById(idFilter);
+                if (specificCampaign != null) {
+                    // Check manager permission
+                    if (!Role.MANAGER.equals(currentUserRole) || 
+                        specificCampaign.getManagerId() != null && specificCampaign.getManagerId().equals(currentUserId)) {
+                         campaigns = new ArrayList<>();
+                         campaigns.add(specificCampaign);
+                    } else {
+                        campaigns = new ArrayList<>(); // Found but no permission
+                    }
+                } else {
+                    campaigns = new ArrayList<>(); // Not found
+                }
+                totalItems = campaigns.size(); // Reset totals
+            } catch (NumberFormatException e) {
+                 campaigns = new ArrayList<>();
+            }
+        } else {
+            // Normal search
+             campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter, offset, pageSize);
+        }
 
         // Convert to ViewModels
         List<CampaignViewModel> viewModels = new ArrayList<>();
@@ -285,9 +312,12 @@ public class CampaignServlet extends HttpServlet {
             // Validate
             String validationError = campaignService.validateCampaign(campaign);
             if (validationError != null) {
+                System.out.println("Update failed validation: " + validationError);
                 sendJsonResponse(response, false, validationError, null);
                 return;
             }
+
+            System.out.println("Updating campaign: " + campaign.toString());
 
             // Update
             boolean updated = campaignService.updateCampaign(campaign);
@@ -393,7 +423,7 @@ public class CampaignServlet extends HttpServlet {
 
         String status = request.getParameter("status");
         if (status != null && !status.trim().isEmpty()) {
-            campaign.setStatus(status);
+            campaign.setStatus(status.trim());
         } else {
             campaign.setStatus("Draft");
         }

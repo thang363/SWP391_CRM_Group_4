@@ -67,6 +67,12 @@
                                         <a href="${pageContext.request.contextPath}/landing-pages"
                                             class="dropdown-item ${currentPage == 'landing-pages' ? 'active' : ''}">
                                             <i class="fa fa-file-code me-1"></i>Landing Pages</a>
+                                        <a href="${pageContext.request.contextPath}/marketing/submissions"
+                                            class="dropdown-item ${currentPage == 'submissions' ? 'active' : ''}">
+                                            <i class="fa fa-clipboard-list me-1"></i>Danh sách đăng ký</a>
+                                        <a href="${pageContext.request.contextPath}/marketing/import-leads"
+                                            class="dropdown-item ${currentPage == 'import-leads' ? 'active' : ''}">
+                                            <i class="fa fa-file-import me-1"></i>Import Leads</a>
                                     </div>
                                 </div>
 

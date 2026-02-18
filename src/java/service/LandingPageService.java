@@ -23,5 +23,22 @@ public interface LandingPageService {
     boolean rejectLandingPage(Integer lpId, String managerId, String reason);
     
     // Public Facing
+    /**
+     * Update landing page content.
+     * Handles status transitions (e.g., Approved -> Draft on edit).
+     */
+    boolean updateLandingPage(Integer id, String name, String brief, java.util.Map<String, String> contentFields, boolean isManager);
+    
+    boolean updateStatus(Integer id, String status);
+    
+    /**
+     * Update status with manager comment
+     * @param id LP ID
+     * @param status New Status
+     * @param comment Manager's comment
+     * @return true if success
+     */
+    boolean updateStatus(Integer id, String status, String comment);
+
     String getRenderedHtml(Integer lpId);
 }

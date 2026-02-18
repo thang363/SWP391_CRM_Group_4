@@ -91,6 +91,13 @@ function openCreateModal() {
     document.getElementById('campaignModalLabel').textContent = 'Thêm chiến dịch mới';
     document.getElementById('campaignForm').reset();
     document.getElementById('campaignId').value = '';
+
+    // Reset status to Draft
+    const statusSelect = document.getElementById('campaignStatus');
+    if (statusSelect) {
+        statusSelect.value = 'Draft';
+    }
+
     document.getElementById('formErrorAlert').classList.add('d-none');
     document.getElementById('campaignForm').classList.remove('was-validated');
 }
@@ -115,6 +122,23 @@ function editCampaign(id) {
                 document.getElementById('campaignStartDate').value = formatDateForInput(campaign.startDate);
                 document.getElementById('campaignEndDate').value = formatDateForInput(campaign.endDate);
                 document.getElementById('campaignDescription').value = campaign.description || '';
+
+                // Set status if field exists
+                const statusSelect = document.getElementById('campaignStatus');
+                if (statusSelect && campaign.status) {
+                    // Try exact match
+                    let statusToSet = campaign.status.trim();
+
+                    // Check if option exists, if not, might need case conversion or it's an invalid status
+                    let optionExists = [...statusSelect.options].some(o => o.value === statusToSet);
+                    if (!optionExists) {
+                        console.warn('Status from DB not in dropdown:', statusToSet);
+                        // Fallback or keep as is (which usually defaults to first option)
+                    }
+
+                    statusSelect.value = statusToSet;
+                    console.log("Set campaign status to:", statusToSet);
+                }
 
                 // Show modal
                 new bootstrap.Modal(document.getElementById('campaignModal')).show();
