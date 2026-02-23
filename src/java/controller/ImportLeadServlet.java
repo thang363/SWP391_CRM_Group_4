@@ -39,12 +39,14 @@ public class ImportLeadServlet extends HttpServlet {
     private ImportHistoryDAO importHistoryDAO;
     private LeadSubmissionDAO submissionDAO;
     private LeadSourceDAO leadSourceDAO;
+    private dao.CampaignDAO campaignDAO;
 
     @Override
     public void init() {
         importHistoryDAO = new ImportHistoryDAOImpl();
         submissionDAO = new LeadSubmissionDAOImpl();
         leadSourceDAO = new LeadSourceDAOImpl();
+        campaignDAO = new dao.impl.CampaignDAOImpl();
     }
 
     @Override
@@ -53,6 +55,12 @@ public class ImportLeadServlet extends HttpServlet {
         
         List<LeadSource> sources = leadSourceDAO.findAll();
         request.setAttribute("sources", sources);
+        
+        // Load Campaigns for dropdown
+        // Using findAll for now. Ideally should filter by Active status.
+        List<model.entity.Campaign> campaigns = campaignDAO.findAll();
+        request.setAttribute("campaigns", campaigns);
+        
         request.getRequestDispatcher("/views/marketing/import-leads.jsp").forward(request, response);
     }
 
@@ -81,10 +89,16 @@ public class ImportLeadServlet extends HttpServlet {
             // 3. Get Part & Parameters
             Part filePart = request.getPart("file");
             String sourceInput = request.getParameter("source");
+            String campaignIdStr = request.getParameter("campaignId");
             
             if (filePart == null || filePart.getSize() == 0) {
                 throw new Exception("Vui lòng chọn file CSV.");
             }
+            
+            if (campaignIdStr == null || campaignIdStr.trim().isEmpty()) {
+                throw new Exception("Vui lòng chọn Chiến dịch (Campaign).");
+            }
+            Integer campaignId = Integer.parseInt(campaignIdStr);
 
             String fileName = filePart.getSubmittedFileName();
             if (sourceInput == null || sourceInput.trim().isEmpty()) {
@@ -100,7 +114,7 @@ public class ImportLeadServlet extends HttpServlet {
             // if (importHistoryDAO.existsChecksum(checksum)) { ... }
             
             // 5. Parse CSV & Create Submissions
-            List<LeadSubmission> submissions = parseCSV(fileContent, sourceInput);
+            List<LeadSubmission> submissions = parseCSV(fileContent, sourceInput, campaignId);
             
             if (submissions.isEmpty()) {
                  throw new Exception("File rỗng hoặc không có dữ liệu hợp lệ (Yêu cầu: FullName, Email, Phone).");
@@ -166,9 +180,11 @@ public class ImportLeadServlet extends HttpServlet {
         request.setAttribute("message", message);
         request.setAttribute("messageType", messageType);
         
-        // Reload sources
+        // Reload sources and campaigns
         List<LeadSource> sources = leadSourceDAO.findAll();
         request.setAttribute("sources", sources);
+        List<model.entity.Campaign> campaigns = campaignDAO.findAll();
+        request.setAttribute("campaigns", campaigns);
         
         request.getRequestDispatcher("/views/marketing/import-leads.jsp").forward(request, response);
     }
@@ -194,7 +210,7 @@ public class ImportLeadServlet extends HttpServlet {
         return phone.matches("^[0-9\\+\\-\\s]{7,15}$");
     }
 
-    private List<LeadSubmission> parseCSV(byte[] content, String source) throws IOException {
+    private List<LeadSubmission> parseCSV(byte[] content, String source, Integer campaignId) throws IOException {
         List<LeadSubmission> list = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(content), StandardCharsets.UTF_8))) {
             String line;
@@ -223,6 +239,7 @@ public class ImportLeadServlet extends HttpServlet {
                 sub.setEmail(email);
                 sub.setPhone(phone);
                 sub.setSource(source);
+                sub.setCampaignId(campaignId); // Set Campaign ID
                 sub.setIsProcessed(false);
                 // LandingPageId is null for imports
                 

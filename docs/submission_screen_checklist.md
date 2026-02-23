@@ -11,6 +11,10 @@ File này liệt kê chi tiết các đầu việc cần làm để hoàn thiệ
     - [ ] `delete(int id)`: Xóa bản ghi.
     - [ ] `updateStatus(...)`: Cập nhật trạng thái.
     - [ ] `insertBatch(List<LeadSubmission> list)`: Insert nhiều dòng cùng lúc (Batch Optimize).
+    - [ ] **Update**: Thêm cột `campaign_id` vào câu lệnh INSERT và SELECT.
+- [ ] **LeadSubmission Entity**:
+    - [ ] Thêm field `Integer campaignId`.
+    - [ ] Update Getter/Setter.
 - [ ] **ImportHistoryDAO** (Mới - Để chống Spam):
     - [ ] `insert(fileChecksum, fileName, userId, rowCount)`: Log lịch sử import.
     - [ ] `existsChecksum(String checksum)`: Check xem file đã import chưa.
@@ -36,14 +40,11 @@ File này liệt kê chi tiết các đầu việc cần làm để hoàn thiệ
             - Check duplicate.
             - Nếu trùng -> Trả về JSON warning.
             - Nếu OK -> Gọi `LeadDAO.insert` -> `SubmissionDAO.updateStatus` -> Trả về JSON success.
-    - [ ] Action `bulkConvert` (Mới):
-            - Nhận danh sách ID.
-            - Loop xử lý từng ID (Bỏ qua nếu duplicate).
-            - Trả về kết quả: "Thành công X, Trùng/Lỗi Y".
-    - [ ] Action `delete`: Gọi `SubmissionDAO.delete` -> Trả về JSON success.
+- [ ] **PublicLandingPageServlet**:
+    - [ ] `handleFormSubmission`: Query `LandingPage` để lấy `campaignId` -> Set vào `LeadSubmission`.
 - [ ] **ImportLeadServlet (`/leads/import`)** - Action này cần bảo mật cao:
     - [ ] **Structure**:
-        - `doGet`: Hiện form upload (`web/views/marketing/import-leads.jsp`).
+        - `doGet`: Hiện form upload (Chọn Campaign + File).
         - `doPost`: Xử lý upload.
     - [ ] **Spam Protection Logic (Thứ tự check)**:
         1. Check logged in user & role (Marketing/Manager).
@@ -103,10 +104,12 @@ Bảng này chứa cả data từ Landing Page (Form SQL) và data nhập thủ 
 CREATE TABLE [dbo].[LeadSubmissions](
     [id] [int] IDENTITY(1,1) NOT NULL,
     [landing_page_id] [int] NULL, -- NULL nếu import từ Excel
+    [campaign_id] [int] NOT NULL, -- BẮT BUỘC: Để biết Lead quan tâm Campaign nào
     [source] [nvarchar](255) NULL, -- "Landing Page" hoặc "Import: filename.csv"
     [full_name] [nvarchar](255) NULL,
     [email] [varchar](100) NULL,
     [phone] [varchar](20) NULL,
+    [raw_data] [nvarchar](max) NULL, -- Giữ lại để Audit
     [is_processed] [bit] NULL DEFAULT 0, -- 0: Pending, 1: Processed (Converted to Lead)
     [submitted_at] [datetime] NULL DEFAULT getdate(),
     PRIMARY KEY CLUSTERED ([id] ASC)

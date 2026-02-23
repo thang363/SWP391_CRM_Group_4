@@ -10,7 +10,11 @@ import java.sql.Timestamp;
 public class LeadSubmission {
     private Integer id;
     private Integer landingPageId;
-    private String source; // New field for Import source e.g. "Landing Page", "Excel Import: filename.csv"
+    private Integer campaignId;
+    private String campaignName; // Transient field for display
+    private String source; 
+    private String mobile; // Transient? No, phone is persistent.
+    private String landingPageName; // Transient field for display
     private String fullName;
     private String email;
     private String phone;
@@ -32,12 +36,36 @@ public class LeadSubmission {
         this.id = id;
     }
 
+    public Integer getCampaignId() {
+        return campaignId;
+    }
+
+    public void setCampaignId(Integer campaignId) {
+        this.campaignId = campaignId;
+    }
+
+    public String getCampaignName() {
+        return campaignName;
+    }
+
+    public void setCampaignName(String campaignName) {
+        this.campaignName = campaignName;
+    }
+
     public Integer getLandingPageId() {
         return landingPageId;
     }
 
     public void setLandingPageId(Integer landingPageId) {
         this.landingPageId = landingPageId;
+    }
+
+    public String getLandingPageName() {
+        return landingPageName;
+    }
+
+    public void setLandingPageName(String landingPageName) {
+        this.landingPageName = landingPageName;
     }
 
     public String getSource() {

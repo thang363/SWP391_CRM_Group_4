@@ -21,30 +21,25 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
     
     @Override
     public LeadSubmission create(LeadSubmission submission) {
+        String sql = "INSERT INTO LeadSubmissions (landing_page_id, campaign_id, source, full_name, email, phone, raw_data, is_processed, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        
+
         try {
             conn = dbUtil.getConnection();
-            String sql = "INSERT INTO LeadSubmissions (landing_page_id, source, full_name, email, phone, raw_data, is_processed) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            if (submission.getLandingPageId() != null) {
-                stmt.setInt(1, submission.getLandingPageId());
-            } else {
-                stmt.setNull(1, java.sql.Types.INTEGER);
-            }
-            stmt.setString(2, submission.getSource());
-            stmt.setString(3, submission.getFullName());
-            stmt.setString(4, submission.getEmail());
-            stmt.setString(5, submission.getPhone());
-            stmt.setString(6, null); // raw_data not used for import, can be null
-            stmt.setBoolean(7, false); // Default not processed
-            
+            stmt.setObject(1, submission.getLandingPageId());
+            stmt.setInt(2, submission.getCampaignId()); // NOT NULL
+            stmt.setString(3, submission.getSource());
+            stmt.setString(4, submission.getFullName());
+            stmt.setString(5, submission.getEmail());
+            stmt.setString(6, submission.getPhone());
+            stmt.setString(7, submission.getRawData());
+            stmt.setBoolean(8, submission.getIsProcessed());
+            stmt.setTimestamp(9, submission.getSubmittedAt());
+
             int affectedRows = stmt.executeUpdate();
-            
             if (affectedRows > 0) {
                 rs = stmt.getGeneratedKeys();
                 if (rs.next()) {
@@ -52,16 +47,12 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
                     return submission;
                 }
             }
-            
-            return null;
-            
         } catch (SQLException e) {
-            System.err.println("Error creating lead submission: " + e.getMessage());
             e.printStackTrace();
-            return null;
         } finally {
             closeResources(rs, stmt, conn);
         }
+        return null;
     }
     
     @Override
@@ -72,7 +63,11 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
         
         try {
             conn = dbUtil.getConnection();
-            String sql = "SELECT * FROM LeadSubmissions WHERE id = ?";
+            String sql = "SELECT s.*, c.name as campaign_name, lp.name as landing_page_name " +
+                         "FROM LeadSubmissions s " +
+                         "LEFT JOIN Campaigns c ON s.campaign_id = c.id " +
+                         "LEFT JOIN LandingPages lp ON s.landing_page_id = lp.id " +
+                         "WHERE s.id = ?";
             
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, id);
@@ -130,10 +125,11 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
         
         try {
             conn = dbUtil.getConnection();
-            StringBuilder sql = new StringBuilder("SELECT s.* FROM LeadSubmissions s ");
-            if (campaignId != null && campaignId > 0) {
-                 sql.append("JOIN LandingPages lp ON s.landing_page_id = lp.id ");
-            }
+            StringBuilder sql = new StringBuilder("SELECT s.*, c.name as campaign_name, lp.name as landing_page_name " +
+                                                "FROM LeadSubmissions s " +
+                                                "LEFT JOIN Campaigns c ON s.campaign_id = c.id " +
+                                                "LEFT JOIN LandingPages lp ON s.landing_page_id = lp.id ");
+            
             sql.append("WHERE 1=1 ");
             
             List<Object> params = new ArrayList<>();
@@ -387,6 +383,17 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
         if (!rs.wasNull()) {
              submission.setLandingPageId(lpId);
         }
+        submission.setCampaignId(rs.getInt("campaign_id"));
+        
+        // Map Transient Fields (Check if columns exist to avoid error if reuse mapRow in simple queries)
+        try {
+            submission.setCampaignName(rs.getString("campaign_name"));
+            submission.setLandingPageName(rs.getString("landing_page_name"));
+        } catch (SQLException e) {
+            // Column might not exist in some queries (e.g. findByLandingPageId if not updated)
+            // Ignore or log
+        }
+
         submission.setSource(rs.getString("source"));
         submission.setFullName(rs.getString("full_name"));
         submission.setEmail(rs.getString("email"));
