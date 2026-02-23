@@ -241,6 +241,9 @@ public class CampaignServlet extends HttpServlet {
             throws IOException {
         try {
             Campaign campaign = extractCampaignFromRequest(request);
+            
+            // Force status to Draft for newly created campaigns
+            campaign.setStatus("Draft");
 
             // Auto-assign current user as campaign manager
             HttpSession session = request.getSession(false);
@@ -308,6 +311,33 @@ public class CampaignServlet extends HttpServlet {
 
             // Preserve managerId - it should only change via Transfer, not direct edit
             campaign.setManagerId(existingCampaign.getManagerId());
+
+            // Check status transition validity
+            String oldStatus = existingCampaign.getStatus();
+            String newStatus = campaign.getStatus();
+
+            if (oldStatus != null && newStatus != null && !oldStatus.equals(newStatus)) {
+                boolean validTransition = false;
+                switch (oldStatus) {
+                    case "Draft":
+                        if (newStatus.equals("Active") || newStatus.equals("Finished")) validTransition = true;
+                        break;
+                    case "Active":
+                        if (newStatus.equals("Paused") || newStatus.equals("Finished")) validTransition = true;
+                        break;
+                    case "Paused":
+                        if (newStatus.equals("Active") || newStatus.equals("Finished")) validTransition = true;
+                        break;
+                    case "Finished":
+                        // No transitions allowed from Finished
+                        break;
+                }
+                
+                if (!validTransition) {
+                    sendJsonResponse(response, false, "Chuyển đổi trạng thái từ " + oldStatus + " sang " + newStatus + " không hợp lệ", null);
+                    return;
+                }
+            }
 
             // Validate
             String validationError = campaignService.validateCampaign(campaign);

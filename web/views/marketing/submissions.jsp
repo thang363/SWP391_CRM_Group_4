@@ -258,24 +258,28 @@
                                                                                             <td>
                                                                                                 <c:choose>
                                                                                                     <c:when
-                                                                                                        test="${sub.landingPageId != null}">
-                                                                                                        <span
-                                                                                                            class="badge bg-info source-badge">Landing
-                                                                                                            Page</span>
+                                                                                                        test="${not empty sub.source}">
+                                                                                                        <c:choose>
+                                                                                                            <c:when
+                                                                                                                test="${sub.source == 'Internal Test (Draft Campaign)' || sub.source == 'Internal Test (Draft LP)'}">
+                                                                                                                <span
+                                                                                                                    class="badge bg-warning text-dark source-badge"><i
+                                                                                                                        class="fa fa-vial me-1"></i>${sub.source}</span>
+                                                                                                            </c:when>
+                                                                                                            <c:when
+                                                                                                                test="${sub.source == 'Landing Page'}">
+                                                                                                                <span
+                                                                                                                    class="badge bg-info source-badge">${sub.source}</span>
+                                                                                                            </c:when>
+                                                                                                            <c:otherwise>
+                                                                                                                <span
+                                                                                                                    class="badge bg-secondary source-badge">${sub.source}</span>
+                                                                                                            </c:otherwise>
+                                                                                                        </c:choose>
                                                                                                     </c:when>
                                                                                                     <c:otherwise>
                                                                                                         <span
-                                                                                                            class="badge bg-secondary source-badge">
-                                                                                                            <c:choose>
-                                                                                                                <c:when
-                                                                                                                    test="${not empty sub.source}">
-                                                                                                                    ${sub.source}
-                                                                                                                </c:when>
-                                                                                                                <c:otherwise>
-                                                                                                                    N/A
-                                                                                                                </c:otherwise>
-                                                                                                            </c:choose>
-                                                                                                        </span>
+                                                                                                            class="badge bg-secondary source-badge">N/A</span>
                                                                                                     </c:otherwise>
                                                                                                 </c:choose>
                                                                                             </td>

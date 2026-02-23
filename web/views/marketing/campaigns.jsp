@@ -375,7 +375,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mb-3">
+                                            <div class="mb-3" id="statusContainer">
                                                 <label for="campaignStatus" class="form-label">Trạng thái</label>
                                                 <select class="form-select" id="campaignStatus" name="status">
                                                     <option value="Draft">Draft</option>
