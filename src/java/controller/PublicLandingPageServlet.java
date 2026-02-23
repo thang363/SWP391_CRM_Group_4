@@ -207,21 +207,24 @@ public class PublicLandingPageServlet extends HttpServlet {
             // Create submission entity
             LeadSubmission submission = new LeadSubmission();
             submission.setLandingPageId(lpId);
+            
+            // Retrieve Campaign ID from Landing Page (Already loaded in doGet, need to load it here or query DAO)
+            // Since this is doPost, we don't have the lp object from doGet. Load it again.
+            LandingPage lp = lpDAO.findById(lpId);
+            if(lp != null && lp.getCampaignId() != null) {
+                submission.setCampaignId(lp.getCampaignId());
+            } else {
+                 result.addProperty("success", false);
+                 result.addProperty("message", "Error: Associated Campaign not found.");
+                 out.print(gson.toJson(result));
+                 return;
+            }
+
             submission.setSource("Landing Page"); // Default source for Web Form
             submission.setFullName(fullName);
             submission.setEmail(email);
             submission.setPhone(phone);
-            // rawData is not stored in LeadSubmission table anymore based on DAOImpl, 
-            // BUT we should probably check if we need it. 
-            // In DAOImpl we set rawData to NULL. 
-            // Let's remove rawData from here as per DAO change.
-            // Or if we want to support it, we need to update DAO to accept it.
-            // For now, let's strictly follow the new Entity which has no rawData setter used in DAO?
-            // Wait, Entity DOES NOT have rawData field anymore based on my previous edit?
-            // Let me check Entity again. 
-            // Ah, I removed rawData from Entity? No, I just renamed class.
-            // Let's check LeadSubmission.java content again to be sure.
-            // Actually I should just update this to match LeadSubmission.
+            submission.setRawData(gson.toJson(rawData)); // Create rawData JSON string
             
             // Checking LeadSubmission.java from previous step... 
             // It has: id, landingPageId, source, fullName, email, phone. NO RAW DATA.

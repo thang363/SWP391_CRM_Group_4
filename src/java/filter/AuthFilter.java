@@ -32,7 +32,7 @@ public class AuthFilter implements Filter {
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
         String path = requestURI.substring(contextPath.length());
-
+         
         if (isExcluded(path)) {
             chain.doFilter(request, response);
             return;
