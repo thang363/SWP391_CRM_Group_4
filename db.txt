@@ -582,6 +582,26 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
+GO
+/****** Object:  Table [dbo].[LeadNotes]    Script Date: 2/21/2026 ******/
+CREATE TABLE [dbo].[LeadNotes] (
+    [id] INT IDENTITY(1,1) PRIMARY KEY,
+    [lead_id] INT NOT NULL,                 -- Lead nào
+    [sales_id] INT NOT NULL,                -- Ai ghi note
+    [note_content] NVARCHAR(MAX) NOT NULL,  -- Nội dung ghi chú
+    [note_type] VARCHAR(30) DEFAULT 'General' 
+        CHECK (note_type IN ('Call', 'Meeting', 'Email', 'General', 'FollowUp')),
+    [is_important] BIT DEFAULT 0,           -- Đánh dấu quan trọng
+    [created_at] DATETIME DEFAULT GETDATE(),
+    [updated_at] DATETIME NULL,
+
+    CONSTRAINT FK_LeadNotes_Lead 
+        FOREIGN KEY (lead_id) REFERENCES Leads(id),
+
+    CONSTRAINT FK_LeadNotes_User 
+        FOREIGN KEY (sales_id) REFERENCES Users(id)
+);
+GO
 /****** Object:  Table [dbo].[ScoringRules]    Script Date: 2/9/2026 4:18:31 PM ******/
 SET ANSI_NULLS ON
 GO

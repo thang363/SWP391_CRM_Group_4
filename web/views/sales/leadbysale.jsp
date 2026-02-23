@@ -113,20 +113,47 @@
                                         <%-- Include Top Navbar --%>
                                             <%@ include file="/includes/topbar.jsp" %>
 
-                                                <!-- Page Header -->
+                                                <!-- Page Header & Filter Section -->
                                                 <div class="container-fluid pt-4 px-4">
-                                                    <div class="row g-4">
-                                                        <div class="col-12">
-                                                            <div
-                                                                class="d-flex justify-content-between align-items-center mb-4">
-                                                                <h3 class="mb-0"><i
-                                                                        class="fa fa-funnel-dollar me-2"></i>Lead List
-                                                                </h3>
-                                                            </div>
+                                                    <div class="bg-light rounded p-4 mb-4">
+                                                        <div
+                                                            class="d-flex justify-content-between align-items-center mb-4">
+                                                            <h3 class="mb-0"><i
+                                                                    class="fa fa-funnel-dollar me-2"></i>Lead List</h3>
                                                         </div>
+
+                                                        <!-- Search and Filter Form -->
+                                                        <form class="row g-3 align-items-center">
+                                                            <div class="col-md-4">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-transparent border-end-0"><i
+                                                                            class="fa fa-search text-muted"></i></span>
+                                                                    <input type="text"
+                                                                        class="form-control border-start-0"
+                                                                        name="search"
+                                                                        placeholder="Search Name or Email...">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <select class="form-select" name="status">
+                                                                    <option value="" selected>All Statuses</option>
+                                                                    <option value="New">New</option>
+                                                                    <option value="Contacted">Contacted</option>
+                                                                    <option value="Qualified">Qualified</option>
+                                                                    <option value="Nurturing">Nurturing</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <button type="button" class="btn btn-primary w-100"
+                                                                    onclick="alert('Feature in development!')">
+                                                                    <i class="fa fa-filter me-2"></i>Filter
+                                                                </button>
+                                                            </div>
+                                                        </form>
                                                     </div>
                                                 </div>
-                                                <div class="container-fluid pt-4 px-4">
+                                                <div class="container-fluid px-4">
                                                     <div class="row g-4">
                                                         <div class="col-12">
                                                             <div class="bg-light rounded p-4">
@@ -158,12 +185,16 @@
                                                                             <c:forEach var="lead" items="${leadList}">
                                                                                 <tr>
                                                                                     <td>${lead.id}</td>
-                                                                                    <td><strong><a
-                                                                                                href="lead-details?id=${lead.id}"
-                                                                                                class="text-primary">${lead.fullName}</a></strong>
+                                                                                    <td><strong>${lead.fullName}</strong>
                                                                                     </td>
-                                                                                    <td>${lead.email}</td>
-                                                                                    <td>${lead.phone}</td>
+                                                                                    <td><a href="mailto:${lead.email}"
+                                                                                            class="text-secondary"><i
+                                                                                                class="fa fa-envelope me-2 text-primary small"></i>${lead.email}</a>
+                                                                                    </td>
+                                                                                    <td><a href="tel:${lead.phone}"
+                                                                                            class="text-secondary"><i
+                                                                                                class="fa fa-phone me-2 text-primary small"></i>${lead.phone}</a>
+                                                                                    </td>
                                                                                     <td>
                                                                                         <span
                                                                                             class="badge bg-primary">${lead.status}</span>
@@ -183,10 +214,39 @@
                                                                                     </td>
                                                                                     <td>${lead.createdAt}</td>
                                                                                     <td>
-                                                                                        <a href="lead-details?id=${lead.id}"
-                                                                                            class="btn btn-sm btn-info"
-                                                                                            title="View Details"><i
-                                                                                                class="fa fa-eye"></i></a>
+                                                                                        <div class="d-flex gap-2">
+                                                                                            <button type="button"
+                                                                                                class="btn btn-sm btn-outline-info"
+                                                                                                title="View Details"
+                                                                                                onclick="showLeadDetails(${lead.id}, '${lead.fullName}', '${lead.email}', '${lead.phone}', '${lead.status}', ${lead.isConverted})">
+                                                                                                <i
+                                                                                                    class="fa fa-eye"></i>
+                                                                                            </button>
+                                                                                            <button type="button"
+                                                                                                class="btn btn-sm btn-outline-primary"
+                                                                                                title="Edit Lead"
+                                                                                                onclick="alert('Edit Lead logic coming soon')">
+                                                                                                <i
+                                                                                                    class="fa fa-edit"></i>
+                                                                                            </button>
+                                                                                            <button type="button"
+                                                                                                class="btn btn-sm btn-outline-warning"
+                                                                                                title="Log Interaction"
+                                                                                                onclick="alert('Log interaction logic coming soon')">
+                                                                                                <i
+                                                                                                    class="fa fa-history"></i>
+                                                                                            </button>
+                                                                                            <c:if
+                                                                                                test="${!lead.isConverted}">
+                                                                                                <button type="button"
+                                                                                                    class="btn btn-sm btn-outline-success"
+                                                                                                    title="Convert to Opportunity"
+                                                                                                    onclick="alert('Conversion logic coming soon')">
+                                                                                                    <i
+                                                                                                        class="fa fa-exchange-alt"></i>
+                                                                                                </button>
+                                                                                            </c:if>
+                                                                                        </div>
                                                                                     </td>
                                                                                 </tr>
                                                                             </c:forEach>
@@ -198,8 +258,111 @@
                                                     </div>
                                                 </div>
 
-                                                <%-- Include Footer --%>
-                                                    <%@ include file="/includes/footer.jsp" %>
+                                                <%@ include file="/includes/footer.jsp" %>
+
+                                                    <!-- Lead View Modal -->
+                                                    <div class="modal fade" id="leadViewModal" tabindex="-1"
+                                                        aria-labelledby="leadViewModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="leadViewModalLabel">Chi
+                                                                        tiết Lead</h5>
+                                                                    <button type="button" class="btn-close"
+                                                                        data-bs-dismiss="modal"
+                                                                        aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body p-4">
+                                                                    <div class="row g-4">
+                                                                        <!-- Left Column: Info -->
+                                                                        <div class="col-md-5 border-end">
+                                                                            <h6 class="text-primary mb-3"><i
+                                                                                    class="fa fa-info-circle me-2"></i>Thông
+                                                                                tin cơ bản</h6>
+                                                                            <div class="mb-2">
+                                                                                <label
+                                                                                    class="small text-muted d-block">Họ
+                                                                                    và Tên</label>
+                                                                                <span id="modalFullName"
+                                                                                    class="fw-bold"></span>
+                                                                            </div>
+                                                                            <div class="mb-2">
+                                                                                <label
+                                                                                    class="small text-muted d-block">Email</label>
+                                                                                <a id="modalEmailLink" href="#"
+                                                                                    class="text-secondary"><span
+                                                                                        id="modalEmail"></span></a>
+                                                                            </div>
+                                                                            <div class="mb-2">
+                                                                                <label
+                                                                                    class="small text-muted d-block">Số
+                                                                                    điện thoại</label>
+                                                                                <a id="modalPhoneLink" href="#"
+                                                                                    class="text-secondary"><span
+                                                                                        id="modalPhone"></span></a>
+                                                                            </div>
+                                                                            <div class="mb-3">
+                                                                                <label
+                                                                                    class="small text-muted d-block">Trạng
+                                                                                    thái</label>
+                                                                                <span id="modalStatusBadge"
+                                                                                    class="badge bg-primary"></span>
+                                                                                <span id="modalConvertedBadge"
+                                                                                    class="badge bg-success d-none">Converted</span>
+                                                                            </div>
+
+                                                                            <!-- Modal Actions -->
+                                                                            <div class="d-grid gap-2 mt-4">
+                                                                                <button type="button"
+                                                                                    class="btn btn-primary"
+                                                                                    onclick="alert('Edit logic coming soon')">
+                                                                                    <i class="fa fa-edit me-2"></i>Edit
+                                                                                    Information
+                                                                                </button>
+                                                                                <button id="modalConvertBtn"
+                                                                                    type="button"
+                                                                                    class="btn btn-success"
+                                                                                    onclick="alert('Conversion logic coming soon')">
+                                                                                    <i
+                                                                                        class="fa fa-exchange-alt me-2"></i>Convert
+                                                                                    to Opportunity
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                        <!-- Right Column: Timeline -->
+                                                                        <div class="col-md-7">
+                                                                            <h6 class="text-primary mb-3"><i
+                                                                                    class="fa fa-history me-2"></i>Lịch
+                                                                                sử giao tiếp</h6>
+                                                                            <div class="timeline-small">
+                                                                                <div
+                                                                                    class="p-2 border-start border-primary border-3 bg-white mb-2 small">
+                                                                                    <span class="text-muted d-block"
+                                                                                        style="font-size: 0.75rem;">15/02/2026</span>
+                                                                                    Đã gọi điện tư vấn - Khách đang cân
+                                                                                    nhắc về giá.
+                                                                                </div>
+                                                                                <div
+                                                                                    class="p-2 border-start border-info border-3 bg-white mb-2 small">
+                                                                                    <span class="text-muted d-block"
+                                                                                        style="font-size: 0.75rem;">16/02/2026</span>
+                                                                                    Đã gửi Email báo giá chi tiết.
+                                                                                </div>
+                                                                                <div class="text-center mt-3">
+                                                                                    <button
+                                                                                        class="btn btn-sm btn-outline-secondary px-3">
+                                                                                        <i
+                                                                                            class="fa fa-plus me-1"></i>Thêm
+                                                                                        ghi chú
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
                                     </div>
                                     <!-- Content End -->
@@ -223,6 +386,32 @@
                                             spinner.classList.remove('show');
                                         }
                                     });
+
+                                    function showLeadDetails(id, name, email, phone, status, isConverted) {
+                                        document.getElementById('modalFullName').innerText = name;
+                                        document.getElementById('modalEmail').innerText = email;
+                                        document.getElementById('modalEmailLink').href = "mailto:" + email;
+                                        document.getElementById('modalPhone').innerText = phone;
+                                        document.getElementById('modalPhoneLink').href = "tel:" + phone;
+
+                                        const statusBadge = document.getElementById('modalStatusBadge');
+                                        statusBadge.innerText = status;
+
+                                        const convertedBadge = document.getElementById('modalConvertedBadge');
+                                        const convertBtn = document.getElementById('modalConvertBtn');
+
+                                        if (isConverted) {
+                                            convertedBadge.classList.remove('d-none');
+                                            convertBtn.disabled = true;
+                                            convertBtn.title = "This lead is already converted";
+                                        } else {
+                                            convertedBadge.classList.add('d-none');
+                                            convertBtn.disabled = false;
+                                        }
+
+                                        var myModal = new bootstrap.Modal(document.getElementById('leadViewModal'));
+                                        myModal.show();
+                                    }
                                 </script>
                     </body>
 
