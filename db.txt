@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [CRM]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Database [CRM]    Script Date: 2/23/2026 10:28:54 AM ******/
 CREATE DATABASE [CRM]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -80,7 +80,7 @@ ALTER DATABASE [CRM] SET QUERY_STORE = OFF
 GO
 USE [CRM]
 GO
-/****** Object:  Table [dbo].[ActivityTypes]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[ActivityTypes]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -96,7 +96,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Attachments]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Attachments]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -116,7 +116,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[AuditLogs]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[AuditLogs]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -134,7 +134,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Campaigns]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Campaigns]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -155,7 +155,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CampaignTransferHistory]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[CampaignTransferHistory]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -176,7 +176,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CampaignTransfers]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[CampaignTransfers]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -198,7 +198,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CarePrograms]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[CarePrograms]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -219,7 +219,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Contacts]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Contacts]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -243,7 +243,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Customers]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Customers]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -280,7 +280,7 @@ UNIQUE NONCLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LandingPages]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[LandingPages]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -304,27 +304,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LandingPageSubmissions]    Script Date: 2/9/2026 4:18:31 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[LandingPageSubmissions](
-	[id] [int] IDENTITY(1,1) NOT NULL,
-	[landing_page_id] [int] NOT NULL,
-	[full_name] [nvarchar](255) NULL,
-	[email] [varchar](100) NULL,
-	[phone] [varchar](20) NULL,
-	[raw_data] [nvarchar](max) NULL,
-	[is_processed] [bit] NULL,
-	[submitted_at] [datetime] NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[LeadAssignments]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[LeadAssignments]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -341,7 +321,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LeadInteractions]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[LeadInteractions]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -360,7 +340,27 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Leads]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[LeadNotes]    Script Date: 2/23/2026 10:28:54 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LeadNotes](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[lead_id] [int] NOT NULL,
+	[sales_id] [int] NOT NULL,
+	[note_content] [nvarchar](max) NOT NULL,
+	[note_type] [varchar](30) NULL,
+	[is_important] [bit] NULL,
+	[created_at] [datetime] NULL,
+	[updated_at] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Leads]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -383,7 +383,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LeadScoreHistory]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[LeadScoreHistory]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -401,7 +401,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LeadSources]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[LeadSources]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -418,7 +418,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LeadStatusHistory]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[LeadStatusHistory]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -436,7 +436,29 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Notifications]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[LeadSubmissions]    Script Date: 2/23/2026 10:28:54 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LeadSubmissions](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[landing_page_id] [int] NULL,
+	[full_name] [nvarchar](255) NULL,
+	[email] [varchar](100) NULL,
+	[phone] [varchar](20) NULL,
+	[raw_data] [nvarchar](max) NULL,
+	[is_processed] [bit] NULL,
+	[submitted_at] [datetime] NULL,
+	[Source] [nvarchar](255) NULL,
+	[campaign_id] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Notifications]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -454,7 +476,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Opportunities]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Opportunities]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -476,7 +498,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[OpportunityProducts]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[OpportunityProducts]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -494,7 +516,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Products]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Products]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -517,7 +539,7 @@ UNIQUE NONCLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[QuoteDetails]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[QuoteDetails]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -536,7 +558,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Quotes]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Quotes]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -564,7 +586,7 @@ UNIQUE NONCLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[SalesFeedback]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[SalesFeedback]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -582,27 +604,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-GO
-/****** Object:  Table [dbo].[LeadNotes]    Script Date: 2/21/2026 ******/
-CREATE TABLE [dbo].[LeadNotes] (
-    [id] INT IDENTITY(1,1) PRIMARY KEY,
-    [lead_id] INT NOT NULL,                 -- Lead nào
-    [sales_id] INT NOT NULL,                -- Ai ghi note
-    [note_content] NVARCHAR(MAX) NOT NULL,  -- Nội dung ghi chú
-    [note_type] VARCHAR(30) DEFAULT 'General' 
-        CHECK (note_type IN ('Call', 'Meeting', 'Email', 'General', 'FollowUp')),
-    [is_important] BIT DEFAULT 0,           -- Đánh dấu quan trọng
-    [created_at] DATETIME DEFAULT GETDATE(),
-    [updated_at] DATETIME NULL,
-
-    CONSTRAINT FK_LeadNotes_Lead 
-        FOREIGN KEY (lead_id) REFERENCES Leads(id),
-
-    CONSTRAINT FK_LeadNotes_User 
-        FOREIGN KEY (sales_id) REFERENCES Users(id)
-);
-GO
-/****** Object:  Table [dbo].[ScoringRules]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[ScoringRules]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -618,7 +620,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Tasks]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Tasks]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -640,7 +642,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[TicketActivities]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[TicketActivities]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -658,7 +660,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Tickets]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Tickets]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -680,7 +682,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -711,7 +713,7 @@ UNIQUE NONCLUSTERED
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_CampaignTransfers_Status]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Index [IX_CampaignTransfers_Status]    Script Date: 2/23/2026 10:28:54 AM ******/
 CREATE NONCLUSTERED INDEX [IX_CampaignTransfers_Status] ON [dbo].[CampaignTransfers]
 (
 	[transfer_status] ASC,
@@ -720,14 +722,14 @@ CREATE NONCLUSTERED INDEX [IX_CampaignTransfers_Status] ON [dbo].[CampaignTransf
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_CampaignTransfers_ToManager]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Index [IX_CampaignTransfers_ToManager]    Script Date: 2/23/2026 10:28:54 AM ******/
 CREATE NONCLUSTERED INDEX [IX_CampaignTransfers_ToManager] ON [dbo].[CampaignTransfers]
 (
 	[to_manager_id] ASC,
 	[transfer_status] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_OnePendingPerCampaign]    Script Date: 2/9/2026 4:18:31 PM ******/
+/****** Object:  Index [UQ_OnePendingPerCampaign]    Script Date: 2/23/2026 10:28:54 AM ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_OnePendingPerCampaign] ON [dbo].[CampaignTransfers]
 (
 	[campaign_id] ASC
@@ -737,16 +739,16 @@ WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNOR
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_LPSub_Email]    Script Date: 2/9/2026 4:18:31 PM ******/
-CREATE NONCLUSTERED INDEX [IX_LPSub_Email] ON [dbo].[LandingPageSubmissions]
+/****** Object:  Index [IX_LPSub_Email]    Script Date: 2/23/2026 10:28:54 AM ******/
+CREATE NONCLUSTERED INDEX [IX_LPSub_Email] ON [dbo].[LeadSubmissions]
 (
 	[email] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [IX_LPSub_Phone]    Script Date: 2/9/2026 4:18:31 PM ******/
-CREATE NONCLUSTERED INDEX [IX_LPSub_Phone] ON [dbo].[LandingPageSubmissions]
+/****** Object:  Index [IX_LPSub_Phone]    Script Date: 2/23/2026 10:28:54 AM ******/
+CREATE NONCLUSTERED INDEX [IX_LPSub_Phone] ON [dbo].[LeadSubmissions]
 (
 	[phone] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
@@ -791,13 +793,15 @@ ALTER TABLE [dbo].[LandingPages] ADD  DEFAULT (getdate()) FOR [created_at]
 GO
 ALTER TABLE [dbo].[LandingPages] ADD  DEFAULT ((0)) FOR [view_count]
 GO
-ALTER TABLE [dbo].[LandingPageSubmissions] ADD  DEFAULT ((0)) FOR [is_processed]
-GO
-ALTER TABLE [dbo].[LandingPageSubmissions] ADD  DEFAULT (getdate()) FOR [submitted_at]
-GO
 ALTER TABLE [dbo].[LeadAssignments] ADD  DEFAULT (getdate()) FOR [assigned_at]
 GO
 ALTER TABLE [dbo].[LeadInteractions] ADD  DEFAULT (getdate()) FOR [created_at]
+GO
+ALTER TABLE [dbo].[LeadNotes] ADD  DEFAULT ('General') FOR [note_type]
+GO
+ALTER TABLE [dbo].[LeadNotes] ADD  DEFAULT ((0)) FOR [is_important]
+GO
+ALTER TABLE [dbo].[LeadNotes] ADD  DEFAULT (getdate()) FOR [created_at]
 GO
 ALTER TABLE [dbo].[Leads] ADD  DEFAULT ((0)) FOR [current_score]
 GO
@@ -812,6 +816,10 @@ GO
 ALTER TABLE [dbo].[LeadSources] ADD  DEFAULT (getdate()) FOR [created_at]
 GO
 ALTER TABLE [dbo].[LeadStatusHistory] ADD  DEFAULT (getdate()) FOR [changed_at]
+GO
+ALTER TABLE [dbo].[LeadSubmissions] ADD  DEFAULT ((0)) FOR [is_processed]
+GO
+ALTER TABLE [dbo].[LeadSubmissions] ADD  DEFAULT (getdate()) FOR [submitted_at]
 GO
 ALTER TABLE [dbo].[Notifications] ADD  DEFAULT ((0)) FOR [is_read]
 GO
@@ -918,12 +926,6 @@ REFERENCES [dbo].[Users] ([id])
 GO
 ALTER TABLE [dbo].[LandingPages] CHECK CONSTRAINT [FK_LandingPages_Users]
 GO
-ALTER TABLE [dbo].[LandingPageSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_LPSub_LP] FOREIGN KEY([landing_page_id])
-REFERENCES [dbo].[LandingPages] ([id])
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[LandingPageSubmissions] CHECK CONSTRAINT [FK_LPSub_LP]
-GO
 ALTER TABLE [dbo].[LeadAssignments]  WITH CHECK ADD  CONSTRAINT [FK_Assignments_Lead] FOREIGN KEY([lead_id])
 REFERENCES [dbo].[Leads] ([id])
 GO
@@ -953,6 +955,16 @@ ALTER TABLE [dbo].[LeadInteractions]  WITH CHECK ADD  CONSTRAINT [FK_Interaction
 REFERENCES [dbo].[ActivityTypes] ([id])
 GO
 ALTER TABLE [dbo].[LeadInteractions] CHECK CONSTRAINT [FK_Interactions_Type]
+GO
+ALTER TABLE [dbo].[LeadNotes]  WITH CHECK ADD  CONSTRAINT [FK_LeadNotes_Lead] FOREIGN KEY([lead_id])
+REFERENCES [dbo].[Leads] ([id])
+GO
+ALTER TABLE [dbo].[LeadNotes] CHECK CONSTRAINT [FK_LeadNotes_Lead]
+GO
+ALTER TABLE [dbo].[LeadNotes]  WITH CHECK ADD  CONSTRAINT [FK_LeadNotes_User] FOREIGN KEY([sales_id])
+REFERENCES [dbo].[Users] ([id])
+GO
+ALTER TABLE [dbo].[LeadNotes] CHECK CONSTRAINT [FK_LeadNotes_User]
 GO
 ALTER TABLE [dbo].[Leads]  WITH CHECK ADD  CONSTRAINT [FK_Leads_Campaign] FOREIGN KEY([campaign_id])
 REFERENCES [dbo].[Campaigns] ([id])
@@ -988,6 +1000,17 @@ ALTER TABLE [dbo].[LeadStatusHistory]  WITH CHECK ADD  CONSTRAINT [FK_StatusHist
 REFERENCES [dbo].[Users] ([id])
 GO
 ALTER TABLE [dbo].[LeadStatusHistory] CHECK CONSTRAINT [FK_StatusHistory_User]
+GO
+ALTER TABLE [dbo].[LeadSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_LeadSubmissions_Campaigns] FOREIGN KEY([campaign_id])
+REFERENCES [dbo].[Campaigns] ([id])
+GO
+ALTER TABLE [dbo].[LeadSubmissions] CHECK CONSTRAINT [FK_LeadSubmissions_Campaigns]
+GO
+ALTER TABLE [dbo].[LeadSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_LPSub_LP] FOREIGN KEY([landing_page_id])
+REFERENCES [dbo].[LandingPages] ([id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[LeadSubmissions] CHECK CONSTRAINT [FK_LPSub_LP]
 GO
 ALTER TABLE [dbo].[Notifications]  WITH CHECK ADD  CONSTRAINT [FK_Notifications_User] FOREIGN KEY([user_id])
 REFERENCES [dbo].[Users] ([id])
@@ -1079,7 +1102,7 @@ REFERENCES [dbo].[Users] ([id])
 GO
 ALTER TABLE [dbo].[Tickets] CHECK CONSTRAINT [FK_Tickets_Support]
 GO
-ALTER TABLE [dbo].[Campaigns]  WITH CHECK ADD CHECK  (([status]='Rejected' OR [status]='Finished' OR [status]='Active' OR [status]='Approved' OR [status]='Pending' OR [status]='Draft' OR [status]='Paused'))
+ALTER TABLE [dbo].[Campaigns]  WITH CHECK ADD CHECK  (([status]='Cancelled' OR [status]='Approved' OR [status]='Rejected' OR [status]='Pending' OR [status]='Finished' OR [status]='Paused' OR [status]='Active' OR [status]='Draft'))
 GO
 ALTER TABLE [dbo].[CampaignTransfers]  WITH CHECK ADD CHECK  (([transfer_status]='Cancelled' OR [transfer_status]='Rejected' OR [transfer_status]='Accepted' OR [transfer_status]='Pending'))
 GO
@@ -1092,6 +1115,8 @@ GO
 ALTER TABLE [dbo].[LandingPages]  WITH CHECK ADD  CONSTRAINT [CHK_LandingPages_Status] CHECK  (([status]='Paused' OR [status]='Archived' OR [status]='Active' OR [status]='Rejected' OR [status]='Approved' OR [status]='Pending' OR [status]='Draft'))
 GO
 ALTER TABLE [dbo].[LandingPages] CHECK CONSTRAINT [CHK_LandingPages_Status]
+GO
+ALTER TABLE [dbo].[LeadNotes]  WITH CHECK ADD CHECK  (([note_type]='FollowUp' OR [note_type]='General' OR [note_type]='Email' OR [note_type]='Meeting' OR [note_type]='Call'))
 GO
 ALTER TABLE [dbo].[Leads]  WITH CHECK ADD CHECK  (([status]='Junk' OR [status]='Assigned' OR [status]='Qualified' OR [status]='Nurturing' OR [status]='New'))
 GO
