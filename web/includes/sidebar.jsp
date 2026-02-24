@@ -130,6 +130,11 @@
                                                                 class="dropdown-item">Tickets</a>
                                                             <a href="${pageContext.request.contextPath}/surveys"
                                                                 class="dropdown-item">Khảo sát</a>
+                                                            <c:if test="${sessionScope.userRole == 'MANAGER'}">
+                                                                <a href="${pageContext.request.contextPath}/automation-rules"
+                                                                    class="dropdown-item ${currentPage == 'automation-rules' ? 'active' : ''}">Automation
+                                                                    Rules</a>
+                                                            </c:if>
                                                         </div>
                                                     </div>
                                                 </c:if>
