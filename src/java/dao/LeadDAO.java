@@ -36,4 +36,17 @@ public interface LeadDAO {
      * @return The Lead object if found, null otherwise
      */
     Lead findById(long id);
+
+    /**
+     * Find leads by campaign ID that have email addresses.
+     * @param campaignId The campaign ID
+     * @return List of Leads with email
+     */
+    List<Lead> findByCampaignIdWithEmail(long campaignId);
+
+    /**
+     * Find all leads that have email addresses.
+     * @return List of Leads with email
+     */
+    List<Lead> findAllWithEmail();
 }
