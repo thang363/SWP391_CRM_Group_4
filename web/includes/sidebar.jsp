@@ -30,21 +30,24 @@
                             </a>
 
                             <%-- CRM Sales Module --%>
-                                <div class="nav-item dropdown">
-                                    <a href="#"
-                                        class="nav-link dropdown-toggle ${currentPage == 'sales' || currentPage == 'sales-pipeline' ? 'active' : ''}"
-                                        data-bs-toggle="dropdown">
-                                        <i class="fa fa-chart-line me-2"></i>CRM Sales
-                                    </a>
-                                    <div class="dropdown-menu bg-transparent border-0">
-                                        <a href="${pageContext.request.contextPath}/sales-pipeline"
-                                            class="dropdown-item">Sales Pipeline</a>
-                                        <a href="${pageContext.request.contextPath}/leads"
-                                            class="dropdown-item">Leads</a>
-                                        <a href="${pageContext.request.contextPath}/quotes" class="dropdown-item">Báo
-                                            giá</a>
+                                <c:if test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SALE'}">
+                                    <div class="nav-item dropdown">
+                                        <a href="#"
+                                            class="nav-link dropdown-toggle ${currentPage == 'sales' || currentPage == 'sales-pipeline' ? 'active' : ''}"
+                                            data-bs-toggle="dropdown">
+                                            <i class="fa fa-chart-line me-2"></i>CRM Sales
+                                        </a>
+                                        <div class="dropdown-menu bg-transparent border-0">
+                                            <a href="${pageContext.request.contextPath}/sales-pipeline"
+                                                class="dropdown-item">Sales Pipeline</a>
+                                            <a href="${pageContext.request.contextPath}/leads"
+                                                class="dropdown-item">Leads</a>
+                                            <a href="${pageContext.request.contextPath}/quotes"
+                                                class="dropdown-item">Báo
+                                                giá</a>
+                                        </div>
                                     </div>
-                                </div>
+                                </c:if>
 
                                 <%-- Marketing Module --%>
                                     <c:if
@@ -85,48 +88,59 @@
                                     </c:if>
 
                                     <%-- Customers Module --%>
-                                        <div class="nav-item dropdown">
-                                            <a href="#"
-                                                class="nav-link dropdown-toggle ${currentPage == 'customers' ? 'active' : ''}"
-                                                data-bs-toggle="dropdown">
-                                                <i class="fa fa-users me-2"></i>Customers
-                                            </a>
-                                            <div class="dropdown-menu bg-transparent border-0">
-                                                <a href="${pageContext.request.contextPath}/customers"
-                                                    class="dropdown-item">Danh sách KH</a>
-                                                <a href="${pageContext.request.contextPath}/customers-vip"
-                                                    class="dropdown-item">Phân loại VIP</a>
-                                                <a href="${pageContext.request.contextPath}/contracts"
-                                                    class="dropdown-item">Hợp đồng</a>
+                                        <c:if
+                                            test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SALE'}">
+                                            <div class="nav-item dropdown">
+                                                <a href="#"
+                                                    class="nav-link dropdown-toggle ${currentPage == 'customers' ? 'active' : ''}"
+                                                    data-bs-toggle="dropdown">
+                                                    <i class="fa fa-users me-2"></i>Customers
+                                                </a>
+                                                <div class="dropdown-menu bg-transparent border-0">
+                                                    <a href="${pageContext.request.contextPath}/customers"
+                                                        class="dropdown-item">Danh sách KH</a>
+                                                    <a href="${pageContext.request.contextPath}/customers-vip"
+                                                        class="dropdown-item">Phân loại VIP</a>
+                                                    <a href="${pageContext.request.contextPath}/contracts"
+                                                        class="dropdown-item">Hợp đồng</a>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </c:if>
 
                                         <%-- Activities --%>
-                                            <a href="${pageContext.request.contextPath}/activities"
-                                                class="nav-item nav-link ${currentPage == 'activities' ? 'active' : ''}">
-                                                <i class="fa fa-tasks me-2"></i>Activities
-                                            </a>
+                                            <c:if
+                                                test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SALE'}">
+                                                <a href="${pageContext.request.contextPath}/activities"
+                                                    class="nav-item nav-link ${currentPage == 'activities' ? 'active' : ''}">
+                                                    <i class="fa fa-tasks me-2"></i>Activities
+                                                </a>
+                                            </c:if>
 
                                             <%-- Support Module --%>
-                                                <div class="nav-item dropdown">
-                                                    <a href="#"
-                                                        class="nav-link dropdown-toggle ${currentPage == 'support' ? 'active' : ''}"
-                                                        data-bs-toggle="dropdown">
-                                                        <i class="fa fa-headset me-2"></i>Support
-                                                    </a>
-                                                    <div class="dropdown-menu bg-transparent border-0">
-                                                        <a href="${pageContext.request.contextPath}/tickets"
-                                                            class="dropdown-item">Tickets</a>
-                                                        <a href="${pageContext.request.contextPath}/surveys"
-                                                            class="dropdown-item">Khảo sát</a>
+                                                <c:if
+                                                    test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SUPPORT'}">
+                                                    <div class="nav-item dropdown">
+                                                        <a href="#"
+                                                            class="nav-link dropdown-toggle ${currentPage == 'support' ? 'active' : ''}"
+                                                            data-bs-toggle="dropdown">
+                                                            <i class="fa fa-headset me-2"></i>Support
+                                                        </a>
+                                                        <div class="dropdown-menu bg-transparent border-0">
+                                                            <a href="${pageContext.request.contextPath}/tickets"
+                                                                class="dropdown-item">Tickets</a>
+                                                            <a href="${pageContext.request.contextPath}/surveys"
+                                                                class="dropdown-item">Khảo sát</a>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                </c:if>
 
                                                 <%-- Reports --%>
-                                                    <a href="${pageContext.request.contextPath}/reports"
-                                                        class="nav-item nav-link ${currentPage == 'reports' ? 'active' : ''}">
-                                                        <i class="fa fa-chart-bar me-2"></i>Reports
-                                                    </a>
+                                                    <c:if test="${sessionScope.userRole == 'MANAGER'}">
+                                                        <a href="${pageContext.request.contextPath}/reports"
+                                                            class="nav-item nav-link ${currentPage == 'reports' ? 'active' : ''}">
+                                                            <i class="fa fa-chart-bar me-2"></i>Reports
+                                                        </a>
+                                                    </c:if>
 
                                                     <hr class="my-2">
 
