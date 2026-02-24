@@ -68,9 +68,6 @@ public class TicketServlet extends HttpServlet {
             case "detail":
                 showTicketDetail(request, response);
                 break;
-            case "verify-ticket":
-                handleVerifyTicket(request, response);
-                break;
             default:
                 listTickets(request, response);
                 break;
@@ -567,29 +564,6 @@ public class TicketServlet extends HttpServlet {
             logSystemActivity(request, id, "Resolved ticket. Solution: " + note);
         }
         sendJsonResponse(response, success, success ? "Đã cập nhật trạng thái Resolved" : "Lỗi xử lý");
-    }
-
-    private void handleVerifyTicket(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String idStr = request.getParameter("id");
-        String decision = request.getParameter("decision"); // accept / reject
-
-        int id = Integer.parseInt(idStr);
-        boolean success = ticketService.processCustomerFeedback(id, decision);
-
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        out.println("<html><body>");
-        if (success) {
-            if ("accept".equals(decision)) {
-                out.println("<h1>Cảm ơn bạn! Ticket đã được đóng.</h1>");
-            } else {
-                out.println("<h1>Yêu cầu của bạn đã được ghi nhận. Chúng tôi sẽ xem xét lại ngay.</h1>");
-            }
-        } else {
-            out.println("<h1>Có lỗi xảy ra hoặc ticket không tồn tại.</h1>");
-        }
-        out.println("<p style='color: #666;'>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>");
-        out.println("</body></html>");
     }
 
     private void handleReopen(HttpServletRequest request, HttpServletResponse response) throws IOException {
