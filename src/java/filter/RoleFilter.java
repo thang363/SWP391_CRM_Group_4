@@ -27,7 +27,7 @@ public class RoleFilter implements Filter {
         roleRequirements = new HashMap<>();
         roleRequirements.put("/admin", Set.of(Role.MANAGER));
         roleRequirements.put("/users", Set.of(Role.MANAGER));
-        roleRequirements.put("/campaigns", Set.of(Role.MANAGER, Role.MARKETING));
+        roleRequirements.put("/campaigns", Set.of(Role.MANAGER));
         roleRequirements.put("/marketing", Set.of(Role.MARKETING));
         sortedRequirements = roleRequirements.entrySet().stream()
         .sorted((e1, e2) -> Integer.compare(e2.getKey().length(), e1.getKey().length()))

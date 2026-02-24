@@ -399,7 +399,7 @@
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Hủy</button>
                                         <button type="button" class="btn btn-primary" onclick="saveCampaign()">
-                                            <i class="fa fa-save me-2"></i>Lưu nháp
+                                            <i class="fa fa-save me-2"></i>Lưu 
                                         </button>
                                     </div>
                                 </div>

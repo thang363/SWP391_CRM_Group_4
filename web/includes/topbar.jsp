@@ -59,8 +59,8 @@
                                     <img class="rounded-circle me-lg-2"
                                         src="${pageContext.request.contextPath}/img/user.jpg" alt=""
                                         style="width: 40px; height: 40px;">
-                                    <span class="d-none d-lg-inline-flex">${sessionScope.userName != null ?
-                                        sessionScope.userName : 'Guest'}</span>
+                                    <span class="d-none d-lg-inline-flex">${sessionScope.fullName != null ?
+                                        sessionScope.fullName : 'Guest'}</span>
                                 </a>
                                 <div
                                     class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
