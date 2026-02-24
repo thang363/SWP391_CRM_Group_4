@@ -92,14 +92,60 @@ function openCreateModal() {
     document.getElementById('campaignForm').reset();
     document.getElementById('campaignId').value = '';
 
-    // Reset status to Draft
+    // Reset status to Draft and hide status container
     const statusSelect = document.getElementById('campaignStatus');
+    const statusContainer = document.getElementById('statusContainer');
     if (statusSelect) {
         statusSelect.value = 'Draft';
+    }
+    if (statusContainer) {
+        statusContainer.style.display = 'none';
     }
 
     document.getElementById('formErrorAlert').classList.add('d-none');
     document.getElementById('campaignForm').classList.remove('was-validated');
+}
+
+/**
+ * Filter available status options based on current status
+ */
+function filterStatusOptions(currentStatus) {
+    const statusSelect = document.getElementById('campaignStatus');
+    if (!statusSelect) return;
+    const options = statusSelect.options;
+
+    for (let i = 0; i < options.length; i++) {
+        const optValue = options[i].value;
+
+        // Hide all by default
+        options[i].disabled = true;
+        options[i].style.display = 'none';
+
+        // Always show the current status
+        if (optValue === currentStatus) {
+            options[i].disabled = false;
+            options[i].style.display = 'block';
+        }
+
+        // Allowed transitions logic
+        if (currentStatus === 'Draft') {
+            if (['Active', 'Finished'].includes(optValue)) {
+                options[i].disabled = false;
+                options[i].style.display = 'block';
+            }
+        } else if (currentStatus === 'Active') {
+            if (['Paused', 'Finished'].includes(optValue)) {
+                options[i].disabled = false;
+                options[i].style.display = 'block';
+            }
+        } else if (currentStatus === 'Paused') {
+            if (['Active', 'Finished'].includes(optValue)) {
+                options[i].disabled = false;
+                options[i].style.display = 'block';
+            }
+        }
+        // If 'Finished', no further transitions allowed, so only 'Finished' remains enabled and visible.
+    }
 }
 
 /**
@@ -109,6 +155,12 @@ function editCampaign(id) {
     isEditMode = true;
     document.getElementById('campaignModalLabel').textContent = 'Chỉnh sửa chiến dịch';
     document.getElementById('formErrorAlert').classList.add('d-none');
+
+    // Show status container for edit mode
+    const statusContainer = document.getElementById('statusContainer');
+    if (statusContainer) {
+        statusContainer.style.display = 'block';
+    }
 
     // Fetch campaign data
     fetch(`${contextPath}/campaigns?action=get&id=${id}`)
@@ -138,6 +190,9 @@ function editCampaign(id) {
 
                     statusSelect.value = statusToSet;
                     console.log("Set campaign status to:", statusToSet);
+
+                    // Filter status options to prevent invalid transitions
+                    filterStatusOptions(statusToSet);
                 }
 
                 // Show modal

@@ -116,6 +116,7 @@ public class PublicLandingPageServlet extends HttpServlet {
             request.setAttribute("pageTitle", lp.getName());
             request.setAttribute("heroTitle", heroTitle);
             request.setAttribute("heroDesc", heroDesc);
+            request.setAttribute("campaignStatus", campaignStatus);
             
             // Forward to JSP template
             request.getRequestDispatcher("/templates/standout/landing-page.jsp").forward(request, response);
@@ -213,6 +214,30 @@ public class PublicLandingPageServlet extends HttpServlet {
             LandingPage lp = lpDAO.findById(lpId);
             if(lp != null && lp.getCampaignId() != null) {
                 submission.setCampaignId(lp.getCampaignId());
+                
+                // --- Campaign Status Validation ---
+                model.entity.Campaign campaign = campaignDAO.findById(Long.valueOf(lp.getCampaignId()));
+                if (campaign != null) {
+                    String status = campaign.getStatus();
+                    if ("Paused".equalsIgnoreCase(status) || "Finished".equalsIgnoreCase(status)) {
+                         result.addProperty("success", false);
+                         result.addProperty("message", "Chiến dịch này hiện không nhận đăng ký do đã tạm dừng hoặc kết thúc.");
+                         out.print(gson.toJson(result));
+                         return;
+                    }
+                    
+                    boolean isLPPublic = "active".equalsIgnoreCase(lp.getStatus()) || "Approved".equalsIgnoreCase(lp.getStatus());
+                    
+                    if ("Draft".equalsIgnoreCase(status)) {
+                        submission.setSource("Internal Test (Draft Campaign)");
+                    } else if (!isLPPublic) {
+                        submission.setSource("Internal Test (Draft LP)");
+                    } else {
+                        submission.setSource("Landing Page"); // Default source for Web Form
+                    }
+                } else {
+                    submission.setSource("Landing Page");
+                }
             } else {
                  result.addProperty("success", false);
                  result.addProperty("message", "Error: Associated Campaign not found.");
@@ -220,7 +245,6 @@ public class PublicLandingPageServlet extends HttpServlet {
                  return;
             }
 
-            submission.setSource("Landing Page"); // Default source for Web Form
             submission.setFullName(fullName);
             submission.setEmail(email);
             submission.setPhone(phone);
