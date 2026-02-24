@@ -375,7 +375,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mb-3">
+                                            <div class="mb-3" id="statusContainer">
                                                 <label for="campaignStatus" class="form-label">Trạng thái</label>
                                                 <select class="form-select" id="campaignStatus" name="status">
                                                     <option value="Draft">Draft</option>
@@ -399,7 +399,7 @@
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Hủy</button>
                                         <button type="button" class="btn btn-primary" onclick="saveCampaign()">
-                                            <i class="fa fa-save me-2"></i>Lưu nháp
+                                            <i class="fa fa-save me-2"></i>Lưu 
                                         </button>
                                     </div>
                                 </div>

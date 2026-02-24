@@ -225,6 +225,7 @@
                                                                             <tr>
                                                                                 <th style="width:60px">ID</th>
                                                                                 <th>Thời gian</th>
+                                                                                <th>Chiến dịch</th>
                                                                                 <th>Nguồn</th>
                                                                                 <th>Khách hàng</th>
                                                                                 <th>Trạng thái</th>
@@ -235,7 +236,7 @@
                                                                             <c:choose>
                                                                                 <c:when test="${empty submissions}">
                                                                                     <tr>
-                                                                                        <td colspan="6"
+                                                                                        <td colspan="7"
                                                                                             class="text-center text-muted py-5">
                                                                                             <i
                                                                                                 class="fa fa-inbox fa-3x mb-3 d-block"></i>
@@ -258,10 +259,31 @@
                                                                                             <td>
                                                                                                 <c:choose>
                                                                                                     <c:when
+                                                                                                        test="${not empty sub.campaignName}">
+                                                                                                        <span
+                                                                                                            class="fw-bold text-primary">${sub.campaignName}</span>
+                                                                                                    </c:when>
+                                                                                                    <c:otherwise>
+                                                                                                        <span
+                                                                                                            class="text-muted">Direct
+                                                                                                            /
+                                                                                                            Other</span>
+                                                                                                    </c:otherwise>
+                                                                                                </c:choose>
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <c:choose>
+                                                                                                    <c:when
                                                                                                         test="${sub.landingPageId != null}">
                                                                                                         <span
-                                                                                                            class="badge bg-info source-badge">Landing
-                                                                                                            Page</span>
+                                                                                                            class="badge bg-info source-badge"
+                                                                                                            title="Landing Page">
+                                                                                                            <i
+                                                                                                                class="fa fa-laptop-code me-1"></i>
+                                                                                                            <c:out
+                                                                                                                value="${sub.landingPageName}"
+                                                                                                                default="Landing Page" />
+                                                                                                        </span>
                                                                                                     </c:when>
                                                                                                     <c:otherwise>
                                                                                                         <span
@@ -269,6 +291,8 @@
                                                                                                             <c:choose>
                                                                                                                 <c:when
                                                                                                                     test="${not empty sub.source}">
+                                                                                                                    <i
+                                                                                                                        class="fa fa-file-import me-1"></i>
                                                                                                                     ${sub.source}
                                                                                                                 </c:when>
                                                                                                                 <c:otherwise>
@@ -322,6 +346,13 @@
                                                                                                 </c:choose>
                                                                                             </td>
                                                                                             <td class="table-actions">
+                                                                                                <button
+                                                                                                    class="btn btn-sm btn-info text-white"
+                                                                                                    onclick='handleViewDetails(${sub.id}, "${sub.fullName}", "${sub.email}", "${sub.phone}", "${sub.campaignName}", "${sub.landingPageName}", "${sub.source}", "${sub.submittedAt}", "${sub.isProcessed}")'
+                                                                                                    title="Xem chi tiết">
+                                                                                                    <i
+                                                                                                        class="fa fa-eye"></i>
+                                                                                                </button>
                                                                                                 <c:if
                                                                                                     test="${!sub.isProcessed}">
                                                                                                     <button
@@ -346,6 +377,68 @@
                                                                             </c:choose>
                                                                         </tbody>
                                                                     </table>
+                                                                </div>
+
+                                                                <!-- Details Modal -->
+                                                                <div class="modal fade" id="detailsModal" tabindex="-1"
+                                                                    aria-hidden="true">
+                                                                    <div class="modal-dialog modal-dialog-centered">
+                                                                        <div class="modal-content">
+                                                                            <div
+                                                                                class="modal-header bg-primary text-white">
+                                                                                <h5 class="modal-title"><i
+                                                                                        class="fa fa-info-circle me-2"></i>Chi
+                                                                                    tiết Đăng ký</h5>
+                                                                                <button type="button"
+                                                                                    class="btn-close btn-close-white"
+                                                                                    data-bs-dismiss="modal"
+                                                                                    aria-label="Close"></button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                <div class="mb-3">
+                                                                                    <h6
+                                                                                        class="fw-bold text-primary border-bottom pb-2">
+                                                                                        Thông tin Khách hàng</h6>
+                                                                                    <p class="mb-1"><strong>Họ
+                                                                                            tên:</strong> <span
+                                                                                            id="modalFullName"></span>
+                                                                                    </p>
+                                                                                    <p class="mb-1">
+                                                                                        <strong>Email:</strong> <span
+                                                                                            id="modalEmail"></span>
+                                                                                    </p>
+                                                                                    <p class="mb-1"><strong>Số điện
+                                                                                            thoại:</strong> <span
+                                                                                            id="modalPhone"></span></p>
+                                                                                </div>
+                                                                                <div class="mb-3">
+                                                                                    
+                                                                                    <p class="mb-1"><strong>Chiến
+                                                                                            dịch:</strong> <span
+                                                                                            id="modalCampaign"></span>
+                                                                                    </p>
+                                                                                    <p class="mb-1">
+                                                                                        <strong>Nguồn:</strong> <span
+                                                                                            id="modalSource"></span>
+                                                                                    </p>
+                                                                                    <p class="mb-1"><strong>Thời gian
+                                                                                            gửi:</strong> <span
+                                                                                            id="modalTime"></span></p>
+                                                                                </div>
+                                                                                <div class="mb-3">
+                                                                                    <h6
+                                                                                        class="fw-bold text-primary border-bottom pb-2">
+                                                                                        Trạng thái</h6>
+                                                                                    <span id="modalStatus"></span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="button"
+                                                                                    class="btn btn-secondary"
+                                                                                    data-bs-dismiss="modal">Đóng</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
 
                                                                 <!-- Pagination -->
@@ -512,6 +605,32 @@
                                                 setTimeout(function () { toast.remove(); }, 300);
                                             }
                                         }, 3000);
+                                    }
+
+                                    // ==================== View Details ====================
+                                    function handleViewDetails(id, fullName, email, phone, campaign, landingPage, source, time, isProcessed) {
+                                        document.getElementById('modalFullName').textContent = fullName;
+                                        document.getElementById('modalEmail').textContent = email || 'N/A';
+                                        document.getElementById('modalPhone').textContent = phone || 'N/A';
+                                        document.getElementById('modalCampaign').textContent = campaign || 'Direct / Other';
+
+                                        var sourceText = source;
+                                        if (landingPage && landingPage !== 'null' && landingPage !== '') {
+                                            sourceText = 'Landing Page: ' + landingPage;
+                                        } else if (!source || source === 'null') {
+                                            sourceText = 'N/A';
+                                        }
+                                        document.getElementById('modalSource').textContent = sourceText;
+
+                                        document.getElementById('modalTime').textContent = time;
+
+                                        var statusHtml = isProcessed === 'true'
+                                            ? '<span class="badge bg-success">Đã xử lý</span>'
+                                            : '<span class="badge bg-warning text-dark">Chưa xử lý</span>';
+                                        document.getElementById('modalStatus').innerHTML = statusHtml;
+
+                                        var modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                                        modal.show();
                                     }
                                 </script>
                     </body>
