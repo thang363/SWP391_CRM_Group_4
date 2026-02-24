@@ -80,7 +80,14 @@ public class LeadBySaleServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        //processRequest(request, response);
+        try {
+            int leadID = Integer.parseInt(request.getParameter("leadId"));
+            String status = request.getParameter("status");
+            LeadDAO ld = new LeadDAOImpl();
+            ld.updateLeadStatus(leadID, status);
+        } catch (Exception e) {
+        }
+        response.sendRedirect("leads");
     }
 
     /**

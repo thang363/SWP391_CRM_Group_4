@@ -14,6 +14,10 @@ public interface LeadDAO {
      * @return List of Leads
      */
     List<Lead> findBySaleId(long saleId);
+    
+    void updateLeadStatus(int leadId, String status);
+    
+    void markAsConverted(int leadId);
 
     /**
      * Check if a lead with the given email or phone already exists.
