@@ -266,6 +266,44 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
+    public List<CampaignTransfer> findRecentTransfersBySender(Long managerId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<CampaignTransfer> transfers = new ArrayList<>();
+
+        try {
+            conn = dbUtil.getConnection();
+            String sql = "SELECT ct.*, " +
+                    "c.name as campaign_name, c.budget as campaign_budget, " +
+                    "u_from.full_name as from_manager_name, " +
+                    "u_to.full_name as to_manager_name " +
+                    "FROM CampaignTransfers ct " +
+                    "JOIN Campaigns c ON ct.campaign_id = c.id " +
+                    "JOIN Users u_from ON ct.from_manager_id = u_from.id " +
+                    "JOIN Users u_to ON ct.to_manager_id = u_to.id " +
+                    "WHERE ct.from_manager_id = ? AND (ct.transfer_status = 'Pending' OR ct.transfer_status = 'Rejected') " +
+                    "ORDER BY ct.requested_at DESC";
+
+            stmt = conn.prepareStatement(sql);
+            stmt.setLong(1, managerId);
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                transfers.add(mapResultSetToTransfer(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error finding recent transfers by sender: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+
+        return transfers;
+    }
+
+    @Override
     public List<CampaignTransfer> findHistoryByCampaign(Long campaignId) {
         Connection conn = null;
         PreparedStatement stmt = null;

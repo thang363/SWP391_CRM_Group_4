@@ -373,6 +373,13 @@ public class CampaignServlet extends HttpServlet {
             }
 
             Long id = Long.parseLong(idStr);
+
+            // Check if campaign has pending transfer - prevent deletion during handover
+            if (transferDAO.hasPendingTransfer(id)) {
+                sendJsonResponse(response, false, "Chiến dịch đang trong quá trình chuyển giao, không thể xóa", null);
+                return;
+            }
+
             boolean deleted = campaignService.deleteCampaign(id);
 
             if (deleted) {
