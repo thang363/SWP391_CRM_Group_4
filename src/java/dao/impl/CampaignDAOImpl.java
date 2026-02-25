@@ -324,16 +324,78 @@ public class CampaignDAOImpl implements CampaignDAO {
         
         try {
             conn = dbUtil.getConnection();
-            String sql = "DELETE FROM Campaigns WHERE id = ?";
+            conn.setAutoCommit(false); // Start transaction
             
+            // 1. Delete LeadSubmissions (directly linked to Campaign)
+            String delSubSql = "DELETE FROM LeadSubmissions WHERE campaign_id = ?";
+            stmt = conn.prepareStatement(delSubSql);
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+            stmt.close();
+            
+            // 2. Delete LeadInteractions (directly linked to Campaign)
+            String delIntSql = "DELETE FROM LeadInteractions WHERE campaign_id = ?";
+            stmt = conn.prepareStatement(delIntSql);
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+            stmt.close();
+            
+            // 3. Delete CampaignTransferHistory
+            String delTransHistSql = "DELETE FROM CampaignTransferHistory WHERE campaign_id = ?";
+            stmt = conn.prepareStatement(delTransHistSql);
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+            stmt.close();
+            
+            // 4. Delete CampaignTransfers
+            String delTransSql = "DELETE FROM CampaignTransfers WHERE campaign_id = ?";
+            stmt = conn.prepareStatement(delTransSql);
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+            stmt.close();
+            
+            // 5. Delete LeadSubmissions that are linked to LandingPages of this campaign
+            // (Note: Step 1 already covers LeadSubmissions with campaign_id, but some might only have landing_page_id)
+            String delLPSubSql = "DELETE FROM LeadSubmissions WHERE landing_page_id IN " +
+                                "(SELECT id FROM LandingPages WHERE campaign_id = ?)";
+            stmt = conn.prepareStatement(delLPSubSql);
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+            stmt.close();
+
+            // 6. Delete LandingPages
+            String delLPSql = "DELETE FROM LandingPages WHERE campaign_id = ?";
+            stmt = conn.prepareStatement(delLPSql);
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+            stmt.close();
+            
+            // 7. Unlink Leads (Set campaign_id to NULL)
+            String unlinkLeadsSql = "UPDATE Leads SET campaign_id = NULL WHERE campaign_id = ?";
+            stmt = conn.prepareStatement(unlinkLeadsSql);
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+            stmt.close();
+            
+            // 8. Finally delete the Campaign
+            String sql = "DELETE FROM Campaigns WHERE id = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setLong(1, id);
             
             int affectedRows = stmt.executeUpdate();
+            conn.commit(); // Commit transaction
+            
             return affectedRows > 0;
             
         } catch (SQLException e) {
-            System.err.println("Error deleting campaign: " + e.getMessage());
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            System.err.println("Error deleting campaign (Cascading): " + e.getMessage());
             e.printStackTrace();
             return false;
         } finally {

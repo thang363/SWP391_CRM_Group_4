@@ -11,13 +11,11 @@ public class EmailService {
     private static final String FROM_EMAIL = "he180827phammanhhiep@gmail.com";
     private static final String APP_PASSWORD = "akqf ltai htyr kxcw";
 
-    public void sendResolutionEmail(String toEmail, String customerName, int ticketId, String note) {
+    public void sendResolutionEmail(String toEmail, String customerName, int ticketId, String note, String token) {
         String subject = "[CRM] Ticket #" + ticketId + " đã được xử lý";
 
-        String acceptLink = "http://localhost:8080/CRM/tickets?action=verify-ticket&amp;id=" + ticketId
-                + "&amp;decision=accept";
-        String rejectLink = "http://localhost:8080/CRM/tickets?action=verify-ticket&amp;id=" + ticketId
-                + "&amp;decision=reject";
+        String acceptLink = "http://localhost:8080/CRM/ticket-verify?token=" + token + "&decision=accept";
+        String rejectLink = "http://localhost:8080/CRM/ticket-verify?token=" + token + "&decision=reject";
 
         StringBuilder content = new StringBuilder();
         content.append("<html><body style='font-family: Arial, sans-serif;'>");
@@ -49,6 +47,23 @@ public class EmailService {
         content.append("</body></html>");
 
         sendEmailHtml(toManagerEmail, subject, content.toString());
+    }
+
+    /**
+     * Send a marketing email to a lead.
+     * @param toEmail Recipient email
+     * @param subject Email subject
+     * @param htmlContent HTML body content
+     * @return true if sent successfully, false otherwise
+     */
+    public boolean sendMarketingEmail(String toEmail, String subject, String htmlContent) {
+        try {
+            sendEmailHtml(toEmail, subject, htmlContent);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to send marketing email to " + toEmail + ": " + e.getMessage());
+            return false;
+        }
     }
 
     private void sendEmailHtml(String to, String subject, String htmlBody) {

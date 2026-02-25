@@ -122,6 +122,17 @@
                                         </div>
 
                                         <div class="mb-3">
+                                            <label for="campaignSelect" class="form-label">Chiến dịch (Campaign) <span
+                                                    class="text-danger">*</span></label>
+                                            <select class="form-select" id="campaignSelect" name="campaignId" required>
+                                                <option value="">-- Chọn Chiến dịch --</option>
+                                                <c:forEach var="campaign" items="${campaigns}">
+                                                    <option value="${campaign.id}">${campaign.name}</option>
+                                                </c:forEach>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
                                             <label for="sourceInput" class="form-label">Nguồn dữ liệu</label>
                                             <input type="text" class="form-control" id="sourceInput" name="source"
                                                 list="sourceOptions" placeholder="VD: Hội thảo Blockchain 2026...">

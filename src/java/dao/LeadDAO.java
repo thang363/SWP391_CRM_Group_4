@@ -42,10 +42,24 @@ public interface LeadDAO {
     Lead findById(long id);
 
     /**
+
      * Update lead's basic info (name and phone).
      * @param id The ID of the lead
      * @param name New name
      * @param phone New phone
      */
     void updateLeadInfo(int id, String name, String phone);
+    /*
+     * Find leads by campaign ID that have email addresses.
+     * @param campaignId The campaign ID
+     * @return List of Leads with email
+     */
+    List<Lead> findByCampaignIdWithEmail(long campaignId);
+
+    /**
+     * Find all leads that have email addresses.
+     * @return List of Leads with email
+     */
+    List<Lead> findAllWithEmail();
+
 }
