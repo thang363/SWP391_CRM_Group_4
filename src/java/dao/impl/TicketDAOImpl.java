@@ -19,7 +19,7 @@ public class TicketDAOImpl implements TicketDAO {
     @Override
     public List<Ticket> getAllTickets() {
         String sql = "SELECT t.id, t.customer_id, t.title, t.description, t.status, t.priority, " +
-                "t.assigned_to, t.created_at, t.updated_at, " +
+                "t.assigned_to, t.solution_note, t.created_at, t.updated_at, " +
                 "c.company_name as customer_name, " +
                 "u.full_name as assigned_to_name " +
                 "FROM Tickets t " +
@@ -54,7 +54,7 @@ public class TicketDAOImpl implements TicketDAO {
             boolean isUnassigned) {
         StringBuilder sql = new StringBuilder(
                 "SELECT t.id, t.customer_id, t.title, t.description, t.status, t.priority, " +
-                        "t.assigned_to, t.created_at, t.updated_at, " +
+                        "t.assigned_to, t.solution_note, t.created_at, t.updated_at, " +
                         "c.company_name as customer_name, " +
                         "u.full_name as assigned_to_name " +
                         "FROM Tickets t " +
@@ -128,7 +128,7 @@ public class TicketDAOImpl implements TicketDAO {
     @Override
     public Ticket getTicketById(int id) {
         String sql = "SELECT t.id, t.customer_id, t.title, t.description, t.status, t.priority, " +
-                "t.assigned_to, t.created_at, t.updated_at, " +
+                "t.assigned_to, t.solution_note, t.created_at, t.updated_at, " +
                 "c.company_name as customer_name, " +
                 "u.full_name as assigned_to_name " +
                 "FROM Tickets t " +
@@ -172,6 +172,21 @@ public class TicketDAOImpl implements TicketDAO {
     }
 
     @Override
+    public boolean updateStatusAndNote(int ticketId, String status, String note) {
+        String sql = "UPDATE Tickets SET status = ?, solution_note = ?, updated_at = GETDATE() WHERE id = ?";
+        try (Connection conn = dbUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, status);
+            stmt.setString(2, note);
+            stmt.setInt(3, ticketId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
     public boolean updatePriority(int ticketId, String priority) {
         String sql = "UPDATE Tickets SET priority = ?, updated_at = GETDATE() WHERE id = ?";
         try (Connection conn = dbUtil.getConnection();
@@ -187,7 +202,6 @@ public class TicketDAOImpl implements TicketDAO {
 
     @Override
     public boolean assignTicket(int ticketId, Integer userId) {
-        System.out.println("DEBUG: DAO assignTicket called. TicketId: " + ticketId + ", UserId: " + userId);
 
         String statusToUpdate = (userId != null) ? "In Progress" : "Open";
         String sql = "UPDATE Tickets SET assigned_to = ?, status = ?, updated_at = GETDATE() WHERE id = ?";
@@ -208,16 +222,10 @@ public class TicketDAOImpl implements TicketDAO {
             stmt.setString(2, statusToUpdate);
             stmt.setInt(3, ticketId);
 
-            System.out.println("DEBUG: Executing UPDATE: " + sql + " [Params: " + userId + ", " + statusToUpdate + ", "
-                    + ticketId + "]");
-
             int rows = stmt.executeUpdate();
-            System.out.println("DEBUG: Rows affected: " + rows);
-
             return rows > 0;
 
         } catch (SQLException e) {
-            System.out.println("DEBUG: SQLException in assignTicket: " + e.getMessage());
             e.printStackTrace();
             return false;
         } finally {
@@ -286,6 +294,7 @@ public class TicketDAOImpl implements TicketDAO {
         ticket.setDescription(rs.getString("description"));
         ticket.setStatus(rs.getString("status"));
         ticket.setPriority(rs.getString("priority"));
+        ticket.setSolutionNote(rs.getString("solution_note"));
 
         int assignedTo = rs.getInt("assigned_to");
         if (rs.wasNull()) {

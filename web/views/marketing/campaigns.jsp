@@ -35,6 +35,12 @@
                                     background-color: #dc3545;
                                 }
 
+                                .badge-paused {
+                                    background-color: #fd7e14;
+                                    /* Orange */
+                                    color: white;
+                                }
+
                                 .filter-section {
                                     background-color: #f8f9fa;
                                     padding: 1.5rem;
@@ -106,20 +112,13 @@
                                                                         <option value="">Tất cả</option>
                                                                         <option value="Draft" ${param.status=='Draft'
                                                                             ? 'selected' : '' }>Draft</option>
-                                                                        <option value="Pending"
-                                                                            ${param.status=='Pending' ? 'selected' : ''
-                                                                            }>Pending</option>
-                                                                        <option value="Approved"
-                                                                            ${param.status=='Approved' ? 'selected' : ''
-                                                                            }>Approved</option>
                                                                         <option value="Active" ${param.status=='Active'
                                                                             ? 'selected' : '' }>Active</option>
+                                                                        <option value="Paused" ${param.status=='Paused'
+                                                                            ? 'selected' : '' }>Paused</option>
                                                                         <option value="Finished"
                                                                             ${param.status=='Finished' ? 'selected' : ''
                                                                             }>Finished</option>
-                                                                        <option value="Rejected"
-                                                                            ${param.status=='Rejected' ? 'selected' : ''
-                                                                            }>Rejected</option>
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-md-2">
@@ -193,23 +192,15 @@
                                                                                                 </c:if>
                                                                                             </td>
                                                                                             <td>
-                                                                                                <fmt:formatNumber
-                                                                                                    value="${campaign.budget}"
-                                                                                                    type="currency"
-                                                                                                    currencySymbol="₫"
-                                                                                                    groupingUsed="true" />
+                                                                                                ${campaign.formattedBudget}
                                                                                             </td>
                                                                                             <td>
-                                                                                                <fmt:formatDate
-                                                                                                    value="${campaign.startDate}"
-                                                                                                    pattern="dd/MM/yyyy" />
+                                                                                                ${campaign.formattedStartDate}
                                                                                                 <br>
                                                                                                 <small
                                                                                                     class="text-muted">đến</small>
                                                                                                 <br>
-                                                                                                <fmt:formatDate
-                                                                                                    value="${campaign.endDate}"
-                                                                                                    pattern="dd/MM/yyyy" />
+                                                                                                ${campaign.formattedEndDate}
                                                                                             </td>
                                                                                             <td>${campaign.managerName
                                                                                                 != null ?
@@ -269,6 +260,12 @@
                                                                                                         </button>
                                                                                                     </c:otherwise>
                                                                                                 </c:choose>
+                                                                                                <a href="${pageContext.request.contextPath}/landing-pages?campaignId=${campaign.id}"
+                                                                                                    class="btn btn-sm btn-dark"
+                                                                                                    title="Xem Landing Pages">
+                                                                                                    <i
+                                                                                                        class="fa fa-file-code"></i>
+                                                                                                </a>
                                                                                             </td>
                                                                                         </tr>
                                                                                     </c:forEach>
@@ -378,6 +375,16 @@
                                                 </div>
                                             </div>
 
+                                            <div class="mb-3" id="statusContainer">
+                                                <label for="campaignStatus" class="form-label">Trạng thái</label>
+                                                <select class="form-select" id="campaignStatus" name="status">
+                                                    <option value="Draft">Draft</option>
+                                                    <option value="Active">Active</option>
+                                                    <option value="Paused">Paused</option>
+                                                    <option value="Finished">Finished</option>
+                                                </select>
+                                            </div>
+
                                             <div class="mb-3">
                                                 <label for="campaignDescription" class="form-label">Mô tả / Ghi
                                                     chú</label>
@@ -392,7 +399,7 @@
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Hủy</button>
                                         <button type="button" class="btn btn-primary" onclick="saveCampaign()">
-                                            <i class="fa fa-save me-2"></i>Lưu nháp
+                                            <i class="fa fa-save me-2"></i>Lưu 
                                         </button>
                                     </div>
                                 </div>
@@ -444,6 +451,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- LP Assignment Modal (REMOVED - Moved to /landing-pages) -->
 
                         <%-- Include Scripts --%>
                             <%@ include file="/includes/scripts.jsp" %>

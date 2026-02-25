@@ -71,6 +71,14 @@ public class Constants {
     
     public static final String SERVLET_TRANSFERS = "/transfers";
     
+    // Submissions constants
+    public static final String PAGE_SUBMISSIONS = "/views/marketing/submissions.jsp";
+    public static final String SERVLET_SUBMISSIONS = "/marketing/submissions";
+    
+    // Bulk Email constants
+    public static final String PAGE_BULK_EMAIL = "/views/marketing/bulk-email.jsp";
+    public static final String SERVLET_BULK_EMAIL = "/marketing/bulk-email";
+    
     public static final String SUCCESS_CAMPAIGN_CREATED = "Tạo chiến dịch thành công.";
     public static final String SUCCESS_CAMPAIGN_UPDATED = "Cập nhật chiến dịch thành công.";
     public static final String SUCCESS_CAMPAIGN_DELETED = "Xóa chiến dịch thành công.";

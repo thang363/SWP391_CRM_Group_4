@@ -10,14 +10,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-@WebFilter(filterName = "RoleFilter", urlPatterns = {"/admin/*", "/users/*", "/campaigns/*"})
+@WebFilter(filterName = "RoleFilter", urlPatterns = {"/admin/*", "/users/*", "/campaigns/*", "/marketing/*"})
 public class RoleFilter implements Filter {
     
     private Map<String, Set<Role>> roleRequirements;
-    
+    private List<Map.Entry<String, Set<Role>>> sortedRequirements;
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         System.out.println("RoleFilter initialized");
@@ -25,7 +27,11 @@ public class RoleFilter implements Filter {
         roleRequirements = new HashMap<>();
         roleRequirements.put("/admin", Set.of(Role.MANAGER));
         roleRequirements.put("/users", Set.of(Role.MANAGER));
-        roleRequirements.put("/campaigns", Set.of(Role.MANAGER, Role.MARKETING));
+        roleRequirements.put("/campaigns", Set.of(Role.MANAGER));
+        roleRequirements.put("/marketing", Set.of(Role.MARKETING));
+        sortedRequirements = roleRequirements.entrySet().stream()
+        .sorted((e1, e2) -> Integer.compare(e2.getKey().length(), e1.getKey().length()))
+        .collect(Collectors.toList());
     }
     
     @Override
@@ -84,14 +90,15 @@ public class RoleFilter implements Filter {
     }
     
     private Set<Role> getRequiredRoles(String path) {
-        for (Map.Entry<String, Set<Role>> entry : roleRequirements.entrySet()) {
-            if (path.startsWith(entry.getKey())) {
-                return entry.getValue();
-            }
-        }
-        return null;
-    }
     
+    for (Map.Entry<String, Set<Role>> entry : sortedRequirements) {
+        if (path.startsWith(entry.getKey())) {
+            return entry.getValue();
+        }
+    }
+    return null;
+}
+            
     @Override
     public void destroy() {
         System.out.println("RoleFilter destroyed");

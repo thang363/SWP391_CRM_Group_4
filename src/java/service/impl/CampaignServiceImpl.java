@@ -42,7 +42,28 @@ public class CampaignServiceImpl implements CampaignService {
     public List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit) {
         if (offset < 0) offset = 0;
         if (limit <= 0) limit = 10;
-        return campaignDAO.findByFilters(name, status, startDate, endDate, managerId, offset, limit);
+        if (offset < 0) offset = 0;
+        if (limit <= 0) limit = 10;
+        
+        // Auto-finish expired campaigns (Lazy check)
+        // Ideally this should be a background job, but for simplicity we check on access
+        List<Campaign> campaigns = campaignDAO.findByFilters(name, status, startDate, endDate, managerId, offset, limit);
+        
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        boolean needsRefetch = false;
+        
+        for (Campaign c : campaigns) {
+            if ("Active".equals(c.getStatus()) && c.getEndDate().before(now)) {
+                c.setStatus("Finished");
+                campaignDAO.update(c); // Update DB
+                needsRefetch = true;
+            }
+        }
+        
+        // If we updated any status, we might need to refetch to ensure consistency/order 
+        // if the filter relied on status, but for now just updating the object is enough for display
+        
+        return campaigns;
     }
 
     @Override
@@ -132,9 +153,11 @@ public class CampaignServiceImpl implements CampaignService {
         // Validate status
         if (campaign.getStatus() != null && !campaign.getStatus().trim().isEmpty()) {
             String status = campaign.getStatus();
-            if (!status.equals("Draft") && !status.equals("Pending") && 
-                !status.equals("Approved") && !status.equals("Active") && 
-                !status.equals("Finished") && !status.equals("Rejected")) {
+            // Simplified status list for Manager-led workflow
+            if (!status.equals("Draft") && 
+                !status.equals("Active") && 
+                !status.equals("Paused") && 
+                !status.equals("Finished")) {
                 return "Trạng thái không hợp lệ";
             }
         }

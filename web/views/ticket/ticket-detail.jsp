@@ -77,6 +77,15 @@
                         .status-Closed {
                             color: #6c757d;
                         }
+
+                        .readonly-select {
+                            appearance: none;
+                            -webkit-appearance: none;
+                            -moz-appearance: none;
+                            background-image: none !important;
+                            background-color: #f8f9fa !important;
+                            cursor: default;
+                        }
                     </style>
             </head>
 
@@ -97,6 +106,13 @@
                                         <div class="col-md-9">
 
                                             <!-- Part A: Basic Info Header -->
+                                            <c:if test="${ticket.status == 'Closed'}">
+                                                <div class="alert alert-warning" role="alert">
+                                                    <i class="fa fa-lock me-2"></i>
+                                                    Ticket này đã được đóng. Vui lòng tạo ticket mới nếu có vấn đề phát
+                                                    sinh.
+                                                </div>
+                                            </c:if>
                                             <div class="bg-light rounded p-4 mb-4">
                                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                                     <div>
@@ -110,55 +126,52 @@
                                                     </div>
                                                     <div class="d-flex flex-column gap-2"
                                                         style="min-width: 200px; align-items: flex-end;">
-                                                        <!-- Back Button -->
-                                                        <a href="${pageContext.request.contextPath}/tickets"
-                                                            class="btn btn-sm btn-outline-secondary mb-2">
-                                                            <i class="fa fa-arrow-left me-1"></i> Quay lại
-                                                        </a>
 
-                                                        <!-- Status -->
-                                                        <div
-                                                            class="d-flex justify-content-between align-items-center w-100">
-                                                            <label class="fw-bold me-2">Trạng thái:</label>
-                                                            <select class="form-select form-select-sm w-auto"
-                                                                id="statusSelect" onchange="updateStatus(${ticket.id})">
-                                                                <option value="Open" ${ticket.status=='Open'
-                                                                    ? 'selected' : '' }>Mới (Open)</option>
-                                                                <option value="In Progress"
-                                                                    ${ticket.status=='In Progress' ? 'selected' : '' }>
-                                                                    Đang xử lý</option>
-                                                                <option value="Resolved" ${ticket.status=='Resolved'
-                                                                    ? 'selected' : '' }>Đã giải quyết</option>
-                                                                <option value="Closed" ${ticket.status=='Closed'
-                                                                    ? 'selected' : '' }>Đóng</option>
-                                                            </select>
-                                                        </div>
+
 
                                                         <!-- Assign -->
-                                                        <div
-                                                            class="d-flex justify-content-between align-items-center w-100">
-                                                            <label class="fw-bold me-2">Assign:</label>
-                                                            <div class="d-flex gap-1">
-                                                                <select class="form-select form-select-sm w-auto"
-                                                                    id="assignSelect" ${sessionScope.userRole
-                                                                    !='MANAGER' ? 'disabled' : '' }>
-                                                                    <option value="">-- Chưa gán --</option>
-                                                                    <c:forEach var="agent" items="${agents}">
-                                                                        <option value="${agent.id}"
-                                                                            ${ticket.assignedTo==agent.id ? 'selected'
-                                                                            : '' }>
-                                                                            ${agent.fullName}
-                                                                        </option>
-                                                                    </c:forEach>
-                                                                </select>
-                                                                <button type="button" class="btn btn-sm btn-primary"
-                                                                    onclick="assignTicket(${ticket.id}, this)"
-                                                                    ${sessionScope.userRole !='MANAGER' ? 'disabled'
-                                                                    : '' }>
-                                                                    <i class="fa fa-check"></i>
-                                                                </button>
+                                                        <c:if test="${sessionScope.userRole.name == 'MANAGER'}">
+                                                            <div
+                                                                class="d-flex justify-content-between align-items-center w-100">
+                                                                <label class="fw-bold me-2">Assign:</label>
+                                                                <div
+                                                                    class="d-flex gap-1 align-items-start position-relative w-100">
+                                                                    <div class="position-relative w-100">
+                                                                        <input type="text"
+                                                                            class="form-control form-control-sm"
+                                                                            id="assignSearchInput"
+                                                                            placeholder="Tìm nhân viên..."
+                                                                            autocomplete="off"
+                                                                            value="${ticket.assignedToName}">
+                                                                        <input type="hidden" id="assignSelect"
+                                                                            value="${ticket.assignedTo}">
+
+                                                                        <div id="assignDropdownList"
+                                                                            class="position-absolute bg-white border w-100 shadow rounded mt-1"
+                                                                            style="display:none; max-height: 200px; overflow-y: auto; z-index: 1050;">
+                                                                            <!-- "Unassigned" option -->
+                                                                            <div class="assign-option p-2 border-bottom text-muted"
+                                                                                data-id="" data-name="None"
+                                                                                style="cursor: pointer;">
+                                                                                None
+                                                                            </div>
+                                                                            <c:forEach var="agent" items="${agents}">
+                                                                                <div class="assign-option p-2 border-bottom"
+                                                                                    data-id="${agent.id}"
+                                                                                    data-name="${agent.fullName}"
+                                                                                    style="cursor: pointer;">
+                                                                                    ${agent.fullName}
+                                                                                </div>
+                                                                            </c:forEach>
+                                                                        </div>
+                                                                    </div>
+                                                                    <button type="button" class="btn btn-sm btn-primary"
+                                                                        onclick="assignTicket(${ticket.id}, this)">
+                                                                        <i class="fa fa-check"></i>
+                                                                    </button>
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                        </c:if>
                                                     </div>
                                                 </div>
                                                 <div class="p-3 bg-white border rounded">
@@ -204,7 +217,8 @@
                                                 </div>
 
                                                 <!-- Input Form -->
-                                                <div class="mt-3">
+                                                <div class="mt-3" ${ticket.status=='Closed' ? 'style="display:none;"'
+                                                    : '' }>
                                                     <form id="activityForm">
                                                         <input type="hidden" name="ticketId" value="${ticket.id}">
                                                         <input type="hidden" name="action" value="add-activity">
@@ -248,9 +262,8 @@
                                         <!-- Part C: Sidebar (Management) -->
                                         <div class="col-md-3">
 
-                                            <!-- Claim Button for Support/Manager if unassigned -->
-                                            <c:if
-                                                test="${(empty ticket.assignedTo or ticket.assignedTo == 0) and (sessionScope.userRole.name == 'SUPPORT' or sessionScope.userRole.name == 'MANAGER')}">
+                                            <!-- Claim Button -->
+                                            <c:if test="${canClaim}">
                                                 <div class="mb-4">
                                                     <button class="btn btn-warning w-100 fw-bold"
                                                         onclick="claimTicket(${ticket.id})">
@@ -259,16 +272,56 @@
                                                 </div>
                                             </c:if>
 
+                                            <!-- Resolve Button -->
+                                            <c:if
+                                                test="${ticket.status != 'Closed' && ticket.status != 'Resolved' && (canEdit || sessionScope.userRole.name == 'MANAGER')}">
+                                                <div class="mb-4">
+                                                    <button class="btn btn-success w-100 fw-bold" data-bs-toggle="modal"
+                                                        data-bs-target="#resolveModal">
+                                                        <i class="fa fa-check-circle me-2"></i>Xử lý xong (Resolve)
+                                                    </button>
+                                                </div>
+                                            </c:if>
+
+                                            <!-- Re-open Button (Manager only) -->
+                                            <c:if
+                                                test="${ticket.status == 'Closed' && sessionScope.userRole.name == 'MANAGER'}">
+                                                <div class="mb-4">
+                                                    <button class="btn btn-danger w-100 fw-bold"
+                                                        onclick="reopenTicket(${ticket.id})">
+                                                        <i class="fa fa-undo me-2"></i>Mở lại ticket (Re-open)
+                                                    </button>
+                                                </div>
+                                            </c:if>
+
                                             <!-- Ticket Metadata -->
                                             <div class="bg-light rounded p-4 mb-4">
                                                 <h6 class="mb-3 fw-bold border-bottom pb-2">Thông tin ticket</h6>
                                                 <div class="mb-3">
-                                                    <small class="text-muted d-block">Mã Ticket</small>
+                                                    <small class="text-muted d-block mb-3">Mã Ticket :
+                                                        ${ticket.id}</small>
+
+                                                    <!-- Status -->
+                                                    <div class="mb-3">
+                                                        <small class="text-muted d-block mb-1">Trạng thái</small>
+                                                        <select class="form-select form-select-sm readonly-select"
+                                                            id="statusSelect" disabled>
+                                                            <option value="Open" ${ticket.status=='Open' ? 'selected'
+                                                                : '' }>Mới (Open)</option>
+                                                            <option value="In Progress" ${ticket.status=='In Progress'
+                                                                ? 'selected' : '' }>
+                                                                Đang xử lý</option>
+                                                            <option value="Resolved" ${ticket.status=='Resolved'
+                                                                ? 'selected' : '' }>Đã giải quyết</option>
+                                                            <option value="Closed" ${ticket.status=='Closed'
+                                                                ? 'selected' : '' }>Đóng</option>
+                                                        </select>
+                                                    </div>
                                                     <!-- Priority -->
                                                     <div class="mb-3">
                                                         <small class="text-muted d-block mb-1">Độ ưu tiên</small>
-                                                        <select class="form-select form-select-sm" id="prioritySelect"
-                                                            onchange="updatePriority(${ticket.id})"
+                                                        <select class="form-select form-select-sm readonly-select"
+                                                            id="prioritySelect" onchange="updatePriority(${ticket.id})"
                                                             ${sessionScope.userRole.name !='MANAGER' ? 'disabled' : ''
                                                             }>
                                                             <option value="Low" ${ticket.priority=='Low' ? 'selected'
@@ -281,10 +334,6 @@
                                                                 ? 'selected' : '' }>Khẩn cấp (Critical)</option>
                                                         </select>
                                                     </div>
-
-                                                    <!-- Info Only -->
-                                                    <p class="text-muted small">Thông tin quản lý đã được chuyển lên đầu
-                                                        trang.</p>
                                                 </div>
 
                                                 <!-- Back Button -->
@@ -345,7 +394,6 @@
 
                                 // Assign Ticket
                                 function assignTicket(ticketId, btnElement) {
-                                    console.log('assignTicket called with ticketId:', ticketId);
 
                                     const selectElement = document.getElementById('assignSelect');
                                     if (!selectElement) {
@@ -354,7 +402,6 @@
                                         return;
                                     }
                                     const userId = selectElement.value;
-                                    console.log('Selected userId:', userId);
 
 
                                     let confirmMsg = 'Phân công ticket cho nhân viên này?';
@@ -367,13 +414,11 @@
                                     // Disable button
                                     if (btnElement) btnElement.disabled = true;
 
-                                    console.log('Sending POST request...');
                                     $.post('${pageContext.request.contextPath}/tickets', {
                                         action: 'assign',
                                         id: ticketId,
                                         userId: userId
                                     }, function (response) {
-                                        console.log('Response received:', response);
                                         if (response.success) {
                                             alert(response.message);
                                             window.location.href = '${pageContext.request.contextPath}/tickets';
@@ -382,7 +427,6 @@
                                             if (btnElement) btnElement.disabled = false;
                                         }
                                     }).fail(function (xhr, status, error) {
-                                        console.error('AJAX error:', xhr, status, error);
                                         let msg = 'Lỗi kết nối server: ' + error;
                                         if (xhr.status === 200) {
                                             msg = 'Lỗi xử lý phản hồi (Invalid JSON). Xem console để biết thêm chi tiết.';
@@ -434,7 +478,123 @@
                                     const stream = document.getElementById('activityStream');
                                     stream.scrollTop = stream.scrollHeight;
                                 });
+
+                                // Searchable Assign Logic
+                                $(document).ready(function () {
+                                    const $input = $('#assignSearchInput');
+                                    const $dropdown = $('#assignDropdownList');
+                                    const $hiddenInput = $('#assignSelect');
+                                    const $options = $('.assign-option');
+
+                                    // Show dropdown on focus or click
+                                    $input.on('focus click', function () {
+                                        $dropdown.show();
+                                    });
+
+                                    // Filter options
+                                    $input.on('input', function () {
+                                        const query = $(this).val().toLowerCase();
+                                        $options.each(function () {
+                                            const name = $(this).data('name').toLowerCase();
+                                            if (name.includes(query)) {
+                                                $(this).show();
+                                            } else {
+                                                $(this).hide();
+                                            }
+                                        });
+                                        $dropdown.show();
+                                    });
+
+                                    // Handle selection
+                                    $dropdown.on('click', '.assign-option', function () {
+                                        const id = $(this).data('id');
+                                        const name = $(this).data('name');
+
+                                        $hiddenInput.val(id);
+                                        $input.val(name);
+                                        $dropdown.hide();
+                                    });
+
+                                    // Close dropdown when clicking outside
+                                    $(document).on('click', function (e) {
+                                        if (!$(e.target).closest('.position-relative').length) {
+                                            $dropdown.hide();
+                                        }
+                                    });
+                                });
+
+                                // Resolve Ticket
+                                function submitResolve() {
+                                    const note = document.getElementById('solutionNote').value;
+                                    if (!note.trim()) {
+                                        alert('Vui lòng nhập giải pháp xử lý.');
+                                        return;
+                                    }
+
+                                    if (!confirm('Xác nhận đã xử lý xong ticket này?')) return;
+
+                                    $.post('${pageContext.request.contextPath}/tickets', {
+                                        action: 'resolve',
+                                        ticketId: ${ ticket.id },
+                                        solutionNote: note
+                                    }, function (response) {
+                                    if (response.success) {
+                                        alert(response.message);
+                                        location.reload();
+                                    } else {
+                                        alert(response.message);
+                                    }
+                                });
+                                }
+
+                                // Re-open Ticket
+                                function reopenTicket(ticketId) {
+                                    if (!confirm('Bạn có chắc muốn mở lại ticket này?')) return;
+                                    $.post('${pageContext.request.contextPath}/tickets', {
+                                        action: 'reopen',
+                                        ticketId: ticketId
+                                    }, function (response) {
+                                        if (response.success) {
+                                            alert(response.message);
+                                            location.reload();
+                                        } else {
+                                            alert(response.message);
+                                        }
+                                    });
+                                }
                             </script>
+
+                            <!-- Resolve Modal -->
+                            <div class="modal fade" id="resolveModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Xác nhận xử lý xong</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="solutionNote" class="form-label">Giải pháp / Ghi chú <span
+                                                        class="text-danger">*</span></label>
+                                                <textarea class="form-control" id="solutionNote" rows="4"
+                                                    placeholder="Mô tả cách bạn đã giải quyết vấn đề..."></textarea>
+                                            </div>
+                                            <div class="alert alert-info small">
+                                                <i class="fa fa-info-circle me-1"></i>
+                                                Sau khi xác nhận, hệ thống sẽ gửi email cho khách hàng để họ kiểm tra
+                                                lại.
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Hủy</button>
+                                            <button type="button" class="btn btn-success" onclick="submitResolve()">Xác
+                                                nhận Resolve</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
             </body>
 
             </html>

@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.io.PrintWriter;
-import com.google.gson.Gson; // Assuming Gson is available or I will use manual JSON
 
 @WebServlet(name = "TicketServlet", urlPatterns = { "/tickets" })
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
@@ -104,17 +103,14 @@ public class TicketServlet extends HttpServlet {
                 isUnassigned = true;
             }
         } else if (Role.SUPPORT.equals(role)) {
-            // Support: Mặc định xem ticket của mình + chưa gán
+            // Support: Xem tất cả tickets
             if ("my".equals(view) && userId != null) {
                 assignedTo = userId.intValue();
             } else if ("unassigned".equals(view)) {
                 isUnassigned = true;
-            } else {
-                // Default: Show assigned to me
-                if (userId != null) {
-                    assignedTo = userId.intValue();
-                }
             }
+            // Mặc định (view=all hoặc null) -> Xem tất cả (assignedTo = null, isUnassigned
+            // = false)
         } else {
             // Marketing/Sale hoặc không có role
             assignedTo = -1; // Không có ticket nào
@@ -125,14 +121,14 @@ public class TicketServlet extends HttpServlet {
         request.setAttribute("tickets", tickets);
         request.setAttribute("currentPage", "support");
         request.setAttribute("pageTitle", "Quản lý Ticket");
-        request.getRequestDispatcher("/views/tickets.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/ticket/tickets.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setAttribute("currentPage", "support");
         request.setAttribute("pageTitle", "Tạo Ticket Mới");
-        request.getRequestDispatcher("/views/ticket-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/ticket/ticket-form.jsp").forward(request, response);
     }
 
     private void searchCustomers(HttpServletRequest request, HttpServletResponse response)
@@ -149,7 +145,6 @@ public class TicketServlet extends HttpServlet {
 
         List<Customer> customers = customerDAO.searchCustomers(keyword);
 
-        // Manual JSON construction to avoid Gson dependency issues if missing
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < customers.size(); i++) {
             Customer c = customers.get(i);
@@ -180,6 +175,10 @@ public class TicketServlet extends HttpServlet {
             handleAddActivity(request, response);
         } else if ("claim".equals(action)) {
             handleClaim(request, response);
+        } else if ("resolve".equals(action)) {
+            handleResolve(request, response);
+        } else if ("reopen".equals(action)) {
+            handleReopen(request, response);
         } else {
             doGet(request, response);
         }
@@ -205,22 +204,12 @@ public class TicketServlet extends HttpServlet {
             int customerId = Integer.parseInt(customerIdStr);
             String fullTitle = (category != null && !category.isEmpty()) ? "[" + category + "] " + subject : subject;
 
-            // Create Ticket Object
             Ticket ticket = new Ticket();
             ticket.setCustomerId(customerId);
             ticket.setTitle(fullTitle);
             ticket.setDescription(description);
             ticket.setPriority(priority);
-            ticket.setStatus("Open"); // Default status
-
-            // Assign to current user (creator) ?? Or Unassigned?
-            // Usually unassigned or auto-assigned. Let's leave unassigned for Support
-            // Manager to dispatch.
-            // Or assign to self if Support Staff creates it?
-            // Logic: "Nhân viên Support nhập liệu". Likely they take it.
-            // But let's leave unassigned or prompt? Unassigned is safer.
-            // Actually user request: "Assign To: ...".
-            // I'll leave it unassigned (null) by default.
+            ticket.setStatus("Open");
 
             int ticketId = ticketService.createTicket(ticket);
 
@@ -313,14 +302,8 @@ public class TicketServlet extends HttpServlet {
             // Manager xem tất cả
             hasAccess = true;
         } else if (Role.SUPPORT.equals(role)) {
-            // Support xem: ticket của mình HOẶC ticket chưa gán
-            if (ticket.getAssignedTo() == null || ticket.getAssignedTo() == 0) {
-                // Ticket chưa gán
-                hasAccess = true;
-            } else if (userId != null && ticket.getAssignedTo() == userId.intValue()) {
-                // Ticket được gán cho mình
-                hasAccess = true;
-            }
+            // Support: Xem tất cả
+            hasAccess = true;
         } else if (Role.MARKETING.equals(role) || Role.SALE.equals(role)) {
             // Marketing/Sale: Chỉ xem ticket do mình tạo
             // (Cần thêm field createdBy trong Ticket entity)
@@ -332,7 +315,6 @@ public class TicketServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/tickets?error=access_denied");
             return;
         }
-        // === End RBAC ===
 
         List<model.entity.TicketActivity> activities = ticketService.getActivitiesByTicketId(id);
 
@@ -354,22 +336,70 @@ public class TicketServlet extends HttpServlet {
             e.printStackTrace();
         }
 
+        // Permissions Flags for JSP
+        boolean canEdit = false;
+        boolean canClaim = false;
+
+        if (Role.MANAGER.equals(role)) {
+            canEdit = true;
+            canClaim = (ticket.getAssignedTo() == null || ticket.getAssignedTo() == 0);
+        } else if (Role.SUPPORT.equals(role)) {
+            if (userId != null && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue()) {
+                canEdit = true; // Chỉ sửa ticket của mình
+            }
+            if (ticket.getAssignedTo() == null || ticket.getAssignedTo() == 0) {
+                canClaim = true; // Chỉ nhận ticket chưa gán
+            }
+        }
+
         request.setAttribute("ticket", ticket);
         request.setAttribute("activities", activities);
         request.setAttribute("agents", agents);
+        request.setAttribute("canEdit", canEdit);
+        request.setAttribute("canClaim", canClaim);
         request.setAttribute("currentPage", "support");
         request.setAttribute("pageTitle", "Chi tiết Ticket #" + id);
 
-        request.getRequestDispatcher("/views/ticket-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/ticket/ticket-detail.jsp").forward(request, response);
     }
 
     private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         String status = request.getParameter("status");
+
+        // Backend Permission Check
+        HttpSession session = request.getSession(false);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
+        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
+
+        if (role == null) {
+            sendJsonResponse(response, false, "Chưa đăng nhập");
+            return;
+        }
+
+        Ticket ticket = ticketService.getTicketById(id);
+        if (ticket == null) {
+            sendJsonResponse(response, false, "Ticket không tồn tại");
+            return;
+        }
+
+        boolean allowed = false;
+        if (Role.MANAGER.equals(role)) {
+            allowed = true;
+        } else if (Role.SUPPORT.equals(role)) {
+            if (userId != null && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue()) {
+                allowed = true;
+            }
+        }
+
+        if (!allowed) {
+            sendJsonResponse(response, false, "Bạn chỉ có thể thay đổi trạng thái ticket được giao cho bạn.");
+            return;
+        }
+
         boolean success = ticketService.updateStatus(id, status);
 
         if (success) {
-            Role role = (Role) request.getSession().getAttribute(Constants.SESSION_ROLE);
             String actor = (role != null) ? role.getValue() : "System";
             logSystemActivity(request, id, "Changed status to: " + status + " (" + actor + ")");
         }
@@ -393,12 +423,10 @@ public class TicketServlet extends HttpServlet {
     }
 
     private void handleAssign(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        System.out.println("DEBUG: handleAssign started");
         HttpSession session = request.getSession(false);
         Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
 
         if (!Role.MANAGER.equals(role)) {
-            System.out.println("DEBUG: Permission denied. Role: " + role);
             sendJsonResponse(response, false, "Bạn không có quyền phân công ticket.");
             return;
         }
@@ -406,25 +434,25 @@ public class TicketServlet extends HttpServlet {
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             String userIdStr = request.getParameter("userId");
-            System.out.println("DEBUG: Assigning Ticket ID: " + id + ", User ID Str: '" + userIdStr + "'");
-
-            Integer userId = (userIdStr != null && !userIdStr.trim().isEmpty()) ? Integer.parseInt(userIdStr) : null;
-            System.out.println("DEBUG: Parsed User ID: " + userId);
+            Integer userId = (userIdStr != null && !userIdStr.trim().isEmpty())
+                    ? Integer.parseInt(userIdStr)
+                    : null;
 
             boolean success = ticketService.assignTicket(id, userId);
-            System.out.println("DEBUG: ticketService.assignTicket result: " + success);
 
             if (success) {
-                logSystemActivity(request, id,
-                        "Assigned ticket to User ID: " + (userId != null ? userId : "Unassigned"));
+                String assignMsg = (userId != null)
+                        ? "Assigned ticket to userId=" + userId
+                        : "Unassigned ticket (None)";
+                logSystemActivity(request, id, assignMsg);
             }
+
             sendJsonResponse(response, success, success ? "Phân công thành công" : "Lỗi phân công");
+
         } catch (NumberFormatException e) {
-            System.out.println("DEBUG: Invalid number format: " + e.getMessage());
             e.printStackTrace();
             sendJsonResponse(response, false, "Dữ liệu không hợp lệ.");
         } catch (Exception e) {
-            System.out.println("DEBUG: Exception in handleAssign: " + e.getMessage());
             e.printStackTrace();
             sendJsonResponse(response, false, "Lỗi server: " + e.getMessage());
         }
@@ -487,14 +515,12 @@ public class TicketServlet extends HttpServlet {
             Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
             Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
-            // === RBAC: Kiểm tra quyền tạo Internal Note ===
             if (isInternal) {
                 if (!Role.SUPPORT.equals(role) && !Role.MANAGER.equals(role)) {
                     sendJsonResponse(response, false, "Bạn không có quyền tạo ghi chú nội bộ.");
                     return;
                 }
             }
-            // === End RBAC ===
 
             model.entity.TicketActivity activity = new model.entity.TicketActivity();
             activity.setTicketId(ticketId);
@@ -505,10 +531,6 @@ public class TicketServlet extends HttpServlet {
             boolean success = ticketService.addActivity(activity);
 
             if (success) {
-                // Return the activity object structure so JS can append it without reload
-                // Or just success true and reload page? Reload is easier for MVP.
-                // But requested "Chat stream" implies dynamic appends.
-                // Let's return success and let JS reload or handle it.
                 sendJsonResponse(response, success, "Đã gửi phản hồi");
             } else {
                 sendJsonResponse(response, false, "Lỗi gửi phản hồi");
@@ -526,4 +548,55 @@ public class TicketServlet extends HttpServlet {
         response.getWriter()
                 .print(String.format("{\"success\": %b, \"message\": \"%s\"}", success, escapeJson(message)));
     }
+
+    private void handleResolve(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
+        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
+
+        if (role == null) {
+            sendJsonResponse(response, false, "Chưa đăng nhập");
+            return;
+        }
+
+        int id = Integer.parseInt(request.getParameter("ticketId"));
+        String note = request.getParameter("solutionNote");
+
+        // Validate permission (Support assigned or Manager)
+        Ticket ticket = ticketService.getTicketById(id);
+        boolean allowed = false;
+        if (Role.MANAGER.equals(role))
+            allowed = true;
+        if (Role.SUPPORT.equals(role) && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue())
+            allowed = true;
+
+        if (!allowed) {
+            sendJsonResponse(response, false, "Bạn không có quyền xử lý ticket này.");
+            return;
+        }
+
+        boolean success = ticketService.resolveTicket(id, note);
+        if (success) {
+            logSystemActivity(request, id, "Resolved ticket. Solution: " + note);
+        }
+        sendJsonResponse(response, success, success ? "Đã cập nhật trạng thái Resolved" : "Lỗi xử lý");
+    }
+
+    private void handleReopen(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
+
+        if (!Role.MANAGER.equals(role)) {
+            sendJsonResponse(response, false, "Chỉ Manager mới có quyền mở lại ticket.");
+            return;
+        }
+
+        int id = Integer.parseInt(request.getParameter("ticketId"));
+        boolean success = ticketService.updateStatus(id, "In Progress"); // Re-open logic simple
+        if (success) {
+            logSystemActivity(request, id, "Re-opened ticket (Manager Override)");
+        }
+        sendJsonResponse(response, success, success ? "Đã mở lại ticket" : "Lỗi mở lại");
+    }
+
 }

@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 @WebFilter(filterName = "AuthFilter", urlPatterns = { "/dashboard/*", "/profile/*", "/sales-pipeline/*", "/customers/*",
-        "/users/*", "/api/*", "/campaigns/*", "/tickets/*" })
+        "/users/*", "/api/*", "/campaigns/*", "/tickets/*", "/marketing/*" })
 public class AuthFilter implements Filter {
 
     private static final String[] EXCLUDED_URLS = {
@@ -32,7 +32,7 @@ public class AuthFilter implements Filter {
         String requestURI = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
         String path = requestURI.substring(contextPath.length());
-
+         
         if (isExcluded(path)) {
             chain.doFilter(request, response);
             return;

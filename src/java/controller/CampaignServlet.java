@@ -13,6 +13,7 @@ import dao.impl.CampaignTransferDAOImpl;
 import model.entity.Campaign;
 import model.entity.Role;
 import model.entity.User;
+import model.viewmodel.CampaignViewModel;
 import service.CampaignService;
 import service.UserService;
 import service.impl.CampaignServiceImpl;
@@ -25,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +37,14 @@ public class CampaignServlet extends HttpServlet {
     private final CampaignService campaignService;
     private final UserService userService;
     private final CampaignTransferDAO transferDAO;
+    private final service.LandingPageService lpService;
     private final Gson gson;
 
     public CampaignServlet() {
         this.campaignService = new CampaignServiceImpl();
         this.userService = new UserServiceImpl();
         this.transferDAO = new CampaignTransferDAOImpl();
+        this.lpService = new service.impl.LandingPageServiceImpl();
         this.gson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd HH:mm:ss")
                 .create();
@@ -64,6 +68,7 @@ public class CampaignServlet extends HttpServlet {
             return;
         }
 
+        // Get filter parameters
         // Get filter parameters
         String nameFilter = request.getParameter("name");
         String statusFilter = request.getParameter("status");
@@ -106,20 +111,78 @@ public class CampaignServlet extends HttpServlet {
         }
 
         // Get campaigns
-        List<Campaign> campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter, offset, pageSize);
+        // Get campaigns
+        List<Campaign> campaigns;
+        String idFilterStr = request.getParameter("id");
+        if (idFilterStr != null && !idFilterStr.trim().isEmpty()) {
+            // Filter by specific ID (from LP list link)
+            try {
+                Long idFilter = Long.parseLong(idFilterStr);
+                Campaign specificCampaign = campaignService.getCampaignById(idFilter);
+                if (specificCampaign != null) {
+                    // Check manager permission
+                    if (!Role.MANAGER.equals(currentUserRole) || 
+                        specificCampaign.getManagerId() != null && specificCampaign.getManagerId().equals(currentUserId)) {
+                         campaigns = new ArrayList<>();
+                         campaigns.add(specificCampaign);
+                    } else {
+                        campaigns = new ArrayList<>(); // Found but no permission
+                    }
+                } else {
+                    campaigns = new ArrayList<>(); // Not found
+                }
+                totalItems = campaigns.size(); // Reset totals
+            } catch (NumberFormatException e) {
+                 campaigns = new ArrayList<>();
+            }
+        } else {
+            // Normal search
+             campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter, offset, pageSize);
+        }
 
-        // Populate pending transfer status for UI display
-        for (Campaign campaign : campaigns) {
-            boolean hasPending = transferDAO.hasPendingTransfer(campaign.getId());
-            campaign.setHasPendingTransfer(hasPending);
+        // Convert to ViewModels
+        List<CampaignViewModel> viewModels = new ArrayList<>();
+
+        for (Campaign c : campaigns) {
+            // Get manager name
+            String managerName = "Unknown";
+            User manager = userService.getUserById(c.getManagerId());
+            if (manager != null) {
+                managerName = manager.getFullName();
+            }
+            
+            // Check pending transfer
+            boolean hasPending = transferDAO.hasPendingTransfer(c.getId());
+            
+            // Get Landing Page info
+            String lpStatus = "null";
+            Long assigneeId = null;
+            String assigneeName = "-";
+            
+            model.entity.LandingPage lp = lpService.getLandingPageByCampaignId(c.getId().intValue());
+            if (lp != null) {
+                lpStatus = lp.getStatus();
+                if (lp.getCreatedBy() != null) {
+                    assigneeId = Long.valueOf(lp.getCreatedBy());
+                    User assignee = userService.getUserById(assigneeId);
+                    assigneeName = (assignee != null) ? assignee.getFullName() : "Unknown ID: " + assigneeId;
+                }
+            }
+            
+            // Create ViewModel
+            viewModels.add(CampaignViewModel.fromEntity(c, managerName, hasPending, lpStatus, assigneeId, assigneeName));
         }
 
         // Get all managers for Transfer dropdown
         List<User> managers = userService.getUsersByRole(Role.MANAGER);
+        
+        // Get all Marketing staff for Assignment dropdown
+        List<User> marketingStaffs = userService.getUsersByRole(Role.MARKETING);
 
         // Set attributes
-        request.setAttribute("campaigns", campaigns);
+        request.setAttribute("campaigns", viewModels);
         request.setAttribute("managers", managers);
+        request.setAttribute("marketingStaffs", marketingStaffs);
         request.setAttribute("currentPageNumber", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalItems", totalItems);
@@ -166,15 +229,21 @@ public class CampaignServlet extends HttpServlet {
             case "get":
                 handleGet(request, response);
                 break;
+            // LP Assignment moved to /landing-pages
             default:
                 sendJsonResponse(response, false, "Action không hợp lệ", null);
         }
     }
 
+    // handleAssign moved to LandingPageServlet
+
     private void handleCreate(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         try {
             Campaign campaign = extractCampaignFromRequest(request);
+            
+            // Force status to Draft for newly created campaigns
+            campaign.setStatus("Draft");
 
             // Auto-assign current user as campaign manager
             HttpSession session = request.getSession(false);
@@ -243,12 +312,42 @@ public class CampaignServlet extends HttpServlet {
             // Preserve managerId - it should only change via Transfer, not direct edit
             campaign.setManagerId(existingCampaign.getManagerId());
 
+            // Check status transition validity
+            String oldStatus = existingCampaign.getStatus();
+            String newStatus = campaign.getStatus();
+
+            if (oldStatus != null && newStatus != null && !oldStatus.equals(newStatus)) {
+                boolean validTransition = false;
+                switch (oldStatus) {
+                    case "Draft":
+                        if (newStatus.equals("Active") || newStatus.equals("Finished")) validTransition = true;
+                        break;
+                    case "Active":
+                        if (newStatus.equals("Paused") || newStatus.equals("Finished")) validTransition = true;
+                        break;
+                    case "Paused":
+                        if (newStatus.equals("Active") || newStatus.equals("Finished")) validTransition = true;
+                        break;
+                    case "Finished":
+                        // No transitions allowed from Finished
+                        break;
+                }
+                
+                if (!validTransition) {
+                    sendJsonResponse(response, false, "Chuyển đổi trạng thái từ " + oldStatus + " sang " + newStatus + " không hợp lệ", null);
+                    return;
+                }
+            }
+
             // Validate
             String validationError = campaignService.validateCampaign(campaign);
             if (validationError != null) {
+                System.out.println("Update failed validation: " + validationError);
                 sendJsonResponse(response, false, validationError, null);
                 return;
             }
+
+            System.out.println("Updating campaign: " + campaign.toString());
 
             // Update
             boolean updated = campaignService.updateCampaign(campaign);
@@ -354,7 +453,7 @@ public class CampaignServlet extends HttpServlet {
 
         String status = request.getParameter("status");
         if (status != null && !status.trim().isEmpty()) {
-            campaign.setStatus(status);
+            campaign.setStatus(status.trim());
         } else {
             campaign.setStatus("Draft");
         }

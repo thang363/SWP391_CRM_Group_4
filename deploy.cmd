@@ -1,3 +1,0 @@
-@echo off
-echo Đang triển khai ứng dụng CRM................
-pause
