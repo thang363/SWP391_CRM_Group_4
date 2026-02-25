@@ -126,6 +126,9 @@
                                                             <i class="fa fa-headset me-2"></i>Support
                                                         </a>
                                                         <div class="dropdown-menu bg-transparent border-0">
+                                                            <a href="${pageContext.request.contextPath}/my-tasks"
+                                                                class="dropdown-item ${currentPage == 'my-tasks' ? 'active' : ''}">My
+                                                                Tasks</a>
                                                             <a href="${pageContext.request.contextPath}/tickets"
                                                                 class="dropdown-item">Tickets</a>
                                                             <a href="${pageContext.request.contextPath}/surveys"

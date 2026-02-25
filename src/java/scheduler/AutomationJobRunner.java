@@ -6,9 +6,9 @@ import dao.impl.AutomationRuleDAOImpl;
 import dao.impl.SystemJobLogDAOImpl;
 import model.entity.AutomationRule;
 import model.entity.SystemJobLog;
-import model.entity.Ticket;
-import service.TicketService;
-import service.impl.TicketServiceImpl;
+import model.entity.Task;
+import service.TaskService;
+import service.impl.TaskServiceImpl;
 import util.DatabaseUtil;
 
 import java.sql.*;
@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  * Logic chạy automation rules hàng đêm:
  * 1) Lấy tất cả rules Active
  * 2) Với mỗi rule → query customers phù hợp điều kiện
- * 3) Tạo Ticket (task) cho nhân viên Support
+ * 3) Tạo Task cho nhân viên Support
  * 4) Ghi log vào SystemJobLogs
  */
 public class AutomationJobRunner implements Runnable {
@@ -30,13 +30,13 @@ public class AutomationJobRunner implements Runnable {
 
     private final AutomationRuleDAO ruleDAO;
     private final SystemJobLogDAO jobLogDAO;
-    private final TicketService ticketService;
+    private final TaskService taskService;
     private final DatabaseUtil dbUtil;
 
     public AutomationJobRunner() {
         this.ruleDAO = new AutomationRuleDAOImpl();
         this.jobLogDAO = new SystemJobLogDAOImpl();
-        this.ticketService = new TicketServiceImpl();
+        this.taskService = new TaskServiceImpl();
         this.dbUtil = DatabaseUtil.getInstance();
     }
 
@@ -76,10 +76,10 @@ public class AutomationJobRunner implements Runnable {
                 return;
             }
 
-            // 2) Tạo ticket cho mỗi customer
+            // 2) Tạo task cho mỗi customer
             int created = 0;
             for (int customerId : matchedCustomerIds) {
-                boolean ok = createTicketForCustomer(rule, customerId);
+                boolean ok = createTaskForCustomer(rule, customerId);
                 if (ok)
                     created++;
             }
@@ -89,7 +89,7 @@ public class AutomationJobRunner implements Runnable {
             jobLog.setRecordsCreated(created);
             jobLogDAO.create(jobLog);
 
-            LOG.info("[Rule: " + rule.getRuleName() + "] Tạo thành công " + created + " tickets.");
+            LOG.info("[Rule: " + rule.getRuleName() + "] Tạo thành công " + created + " tasks.");
 
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "[Rule: " + rule.getRuleName() + "] LỖI: " + e.getMessage(), e);
@@ -103,31 +103,21 @@ public class AutomationJobRunner implements Runnable {
 
     /**
      * Query customers theo conditions_json của rule.
-     * Hỗ trợ:
-     * - targetType "Expiring": lastCareDate >= N ngày
-     * - targetType "HighPotential": totalRevenue >= X
-     * - conditions_json chứa các điều kiện bổ sung (tier, lastCareDate days,
-     * totalRevenue)
      */
     private List<Integer> findMatchingCustomers(AutomationRule rule) throws SQLException {
-        // Build dynamic SQL dựa trên targetType và conditions
         StringBuilder sql = new StringBuilder("SELECT id FROM Customers WHERE status = 'Active'");
         List<Object> params = new ArrayList<>();
 
         String condJson = rule.getConditionsJson();
         if (condJson != null && !condJson.isEmpty() && !"[]".equals(condJson)) {
-            // Parse đơn giản — conditionsJson format:
-            // [{"field":"lastCareDate","operator":">=","value":"30"}]
-            // Dùng string parsing nhẹ thay vì import thêm Gson
             parseAndApplyConditions(sql, params, condJson);
         } else {
-            // Fallback: dùng targetType mặc định
             switch (rule.getTargetType()) {
                 case "Expiring":
                     sql.append(" AND (last_care_date IS NULL OR DATEDIFF(DAY, last_care_date, GETDATE()) >= 30)");
                     break;
                 case "HighPotential":
-                    sql.append(" AND total_revenue >= 100000000"); // 100 triệu
+                    sql.append(" AND total_revenue >= 100000000");
                     break;
                 default:
                     break;
@@ -166,20 +156,13 @@ public class AutomationJobRunner implements Runnable {
         return ids;
     }
 
-    /**
-     * Parse conditions_json đơn giản:
-     * [{"field":"lastCareDate","operator":">=","value":"30"},{"field":"tier","operator":"=","value":"VIP"}]
-     */
     private void parseAndApplyConditions(StringBuilder sql, List<Object> params, String condJson) {
-        // Tách từng condition object
-        // Format: [{ ... }, { ... }]
         String inner = condJson.trim();
         if (inner.startsWith("["))
             inner = inner.substring(1);
         if (inner.endsWith("]"))
             inner = inner.substring(0, inner.length() - 1);
 
-        // Split by "},{"
         String[] parts = inner.split("\\},\\s*\\{");
 
         for (String part : parts) {
@@ -196,28 +179,21 @@ public class AutomationJobRunner implements Runnable {
 
             switch (field) {
                 case "lastCareDate":
-                    // value = số ngày, VD: "30"
                     sql.append(" AND (last_care_date IS NULL OR DATEDIFF(DAY, last_care_date, GETDATE()) ");
                     sql.append(sanitizeOperator(operator));
                     sql.append(" ?)");
                     params.add(Integer.parseInt(value));
                     break;
                 case "tier":
-                    sql.append(" AND tier ");
-                    sql.append(sanitizeOperator(operator));
-                    sql.append(" ?");
+                    sql.append(" AND tier ").append(sanitizeOperator(operator)).append(" ?");
                     params.add(value);
                     break;
                 case "totalRevenue":
-                    sql.append(" AND total_revenue ");
-                    sql.append(sanitizeOperator(operator));
-                    sql.append(" ?");
+                    sql.append(" AND total_revenue ").append(sanitizeOperator(operator)).append(" ?");
                     params.add(Double.parseDouble(value));
                     break;
                 case "industry":
-                    sql.append(" AND industry ");
-                    sql.append(sanitizeOperator(operator));
-                    sql.append(" ?");
+                    sql.append(" AND industry ").append(sanitizeOperator(operator)).append(" ?");
                     params.add(value);
                     break;
                 default:
@@ -226,14 +202,10 @@ public class AutomationJobRunner implements Runnable {
         }
     }
 
-    /**
-     * Trích giá trị JSON đơn giản: "key":"value"
-     */
     private String extractJsonValue(String json, String key) {
         String search = "\"" + key + "\":\"";
         int idx = json.indexOf(search);
         if (idx == -1) {
-            // Thử number format: "key":30
             search = "\"" + key + "\":";
             idx = json.indexOf(search);
             if (idx == -1)
@@ -273,30 +245,46 @@ public class AutomationJobRunner implements Runnable {
     }
 
     /**
-     * Tạo một Ticket nhắc việc cho NV Support.
+     * Tạo một Task cho NV Support (insert vào bảng Tasks).
      */
-    private boolean createTicketForCustomer(AutomationRule rule, int customerId) {
+    private boolean createTaskForCustomer(AutomationRule rule, int customerId) {
         try {
-            Ticket ticket = new Ticket();
-            ticket.setCustomerId(customerId);
-            ticket.setTitle("[Auto] " + rule.getRuleName());
-            ticket.setDescription("Ticket tự động từ kịch bản: " + rule.getRuleName()
-                    + ". Loại: " + rule.getTargetType()
+            Task task = new Task();
+            task.setTitle(rule.getRuleName());
+            task.setDescription("Công việc tự động từ kịch bản: " + rule.getRuleName()
                     + ". Hành động: " + rule.getActionType());
-            ticket.setStatus("Open");
-            ticket.setPriority("Medium");
+            task.setStatus("Pending");
+            task.setRelatedToEntity("Customer");
+            task.setRelatedRecordId(customerId);
+
+            // Map targetType → taskType
+            String taskType = mapTargetTypeToTaskType(rule.getTargetType());
+            task.setTaskType(taskType);
 
             // Gán cho NV Support đã chọn trong rule
             if (rule.getAssignToUser() != null) {
-                ticket.setAssignedTo(rule.getAssignToUser());
+                task.setAssignedTo(rule.getAssignToUser());
             }
 
-            int ticketId = ticketService.createTicket(ticket);
-            return ticketId > 0;
+            int taskId = taskService.createTask(task);
+            return taskId > 0;
 
         } catch (Exception e) {
-            LOG.log(Level.WARNING, "Lỗi tạo ticket cho customer " + customerId, e);
+            LOG.log(Level.WARNING, "Lỗi tạo task cho customer " + customerId, e);
             return false;
+        }
+    }
+
+    private String mapTargetTypeToTaskType(String targetType) {
+        if (targetType == null)
+            return null;
+        switch (targetType) {
+            case "Expiring":
+                return "Renewal";
+            case "HighPotential":
+                return "Upsell";
+            default:
+                return targetType;
         }
     }
 }
