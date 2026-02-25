@@ -120,7 +120,8 @@
                         <div
                             class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="mb-0"><i
-                                    class="fa fa-funnel-dollar me-2"></i>Lead List</h3>
+                                    class="fa fa-funnel-dollar me-2"></i>Lead List
+                            </h3>
                         </div>
 
                         <!-- Search and Filter Form -->
@@ -182,7 +183,8 @@
                                                     </td>
                                                 </tr>
                                             </c:if>
-                                            <c:forEach var="lead" items="${leadList}">
+                                            <c:forEach var="lead"
+                                                       items="${leadList}">
                                                 <tr>
                                                     <td>${lead.id}</td>
                                                     <td><strong>${lead.fullName}</strong>
@@ -196,28 +198,46 @@
                                                                 class="fa fa-phone me-2 text-primary small"></i>${lead.phone}</a>
                                                     </td>
                                                     <td>
-                                                        <form action="${pageContext.request.contextPath}/leads" method="post" style="display:inline;">
+                                                        <form
+                                                            action="${pageContext.request.contextPath}/leads"
+                                                            method="post"
+                                                            style="display:inline;">
 
-                                                            <input type="hidden" name="leadId" value="${lead.id}" />
+                                                            <input type="hidden"
+                                                                   name="leadId"
+                                                                   value="${lead.id}" />
 
-                                                            <select name="status" class="form-select form-select-sm"
+                                                            <select name="status"
+                                                                    class="form-select form-select-sm"
                                                                     onchange="this.form.submit()">
-                                                                <option value="Assigned"
-                                                                        ${lead.status == 'Assigned' ? 'selected' : ''}>
+                                                                <option
+                                                                    value="Assigned"
+                                                                    ${lead.status=='Assigned'
+                                                                      ? 'selected'
+                                                                      : '' }>
                                                                     Assigned
                                                                 </option>
-                                                                <option value="Contacted"
-                                                                        ${lead.status == 'Contacted' ? 'selected' : ''}>
+                                                                <option
+                                                                    value="Contacted"
+                                                                    ${lead.status=='Contacted'
+                                                                      ? 'selected'
+                                                                      : '' }>
                                                                     Contacted
                                                                 </option>
 
-                                                                <option value="Nurturing"
-                                                                        ${lead.status == 'Nurturing' ? 'selected' : ''}>
+                                                                <option
+                                                                    value="Nurturing"
+                                                                    ${lead.status=='Nurturing'
+                                                                      ? 'selected'
+                                                                      : '' }>
                                                                     Nurturing
                                                                 </option>
 
-                                                                <option value="Qualified"
-                                                                        ${lead.status == 'Qualified' ? 'selected' : ''}>
+                                                                <option
+                                                                    value="Qualified"
+                                                                    ${lead.status=='Qualified'
+                                                                      ? 'selected'
+                                                                      : '' }>
                                                                     Qualified
                                                                 </option>
 
@@ -241,35 +261,33 @@
                                                     <td>
                                                         <div class="d-flex gap-2">
                                                             <button type="button"
-                                                                    class="btn btn-sm btn-outline-info"
-                                                                    title="View Details"
-                                                                    data-id="${lead.id}"
-                                                                    data-name="${fn:escapeXml(lead.fullName)}"
-                                                                    data-email="${fn:escapeXml(lead.email)}"
-                                                                    data-phone="${fn:escapeXml(lead.phone)}"
-                                                                    data-status="${lead.status}"
-                                                                    data-converted="${lead.isConverted}"
-                                                                    onclick="showLeadDetails(this)">
-                                                                <i class="fa fa-eye"></i>
-                                                            </button>
-                                                            <button type="button"
                                                                     class="btn btn-sm btn-outline-primary"
                                                                     title="Edit Lead"
-                                                                    onclick="alert('Edit Lead logic coming soon')">
+                                                                    data-id="${lead.id}"
+                                                                    data-name="${fn:escapeXml(lead.fullName)}"
+                                                                    data-phone="${fn:escapeXml(lead.phone)}"
+                                                                    onclick="showEditLeadModal(this)">
                                                                 <i
                                                                     class="fa fa-edit"></i>
                                                             </button>
                                                             <button type="button"
                                                                     class="btn btn-sm btn-outline-warning"
                                                                     title="Log Interaction"
-                                                                    onclick="alert('Log interaction logic coming soon')">
+                                                                    data-id="${lead.id}"
+                                                                    data-name="${fn:escapeXml(lead.fullName)}"
+                                                                    onclick="showInteractionModal(this)">
                                                                 <i
                                                                     class="fa fa-history"></i>
                                                             </button>
-                                                            <button class="btn btn-sm btn-outline-success"
-                                                                    ${lead.status != 'Qualified' or lead.isConverted ? 'disabled' : ''}
-                                                                    onclick="location.href = '${pageContext.request.contextPath}/convertLead?leadId=${lead.id}'">
-                                                                <i class="fa fa-exchange-alt"></i>
+                                                            <button
+                                                                class="btn btn-sm btn-outline-success"
+                                                                ${lead.status
+                                                                  !='Qualified' or
+                                                                  lead.isConverted
+                                                                  ? 'disabled' : '' }
+                                                                onclick="location.href = '${pageContext.request.contextPath}/convertLead?leadId=${lead.id}'">
+                                                                <i
+                                                                    class="fa fa-exchange-alt"></i>
                                                             </button>
                                                         </div>
                                                     </td>
@@ -285,102 +303,109 @@
 
                 <%@ include file="/includes/footer.jsp" %>
 
-                <!-- Lead View Modal -->
-                <div class="modal fade" id="leadViewModal" tabindex="-1"
-                     aria-labelledby="leadViewModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" id="modalConvertBtn">
+
+                <!-- Lead Edit Modal -->
+                <div class="modal fade" id="leadEditModal" tabindex="-1"
+                     aria-labelledby="leadEditModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="leadViewModalLabel">Chi
-                                    tiết Lead</h5>
-                                <button type="button" class="btn-close"
-                                        data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body p-4">
-                                <div class="row g-4">
-                                    <!-- Left Column: Info -->
-                                    <div class="col-md-5 border-end">
-                                        <h6 class="text-primary mb-3"><i
-                                                class="fa fa-info-circle me-2"></i>Thông
-                                            tin cơ bản</h6>
-                                        <div class="mb-2">
-                                            <label
-                                                class="small text-muted d-block">Họ
-                                                và Tên</label>
-                                            <span id="modalFullName"
-                                                  class="fw-bold"></span>
-                                        </div>
-                                        <div class="mb-2">
-                                            <label
-                                                class="small text-muted d-block">Email</label>
-                                            <a id="modalEmailLink" href="#"
-                                               class="text-secondary"><span
-                                                    id="modalEmail"></span></a>
-                                        </div>
-                                        <div class="mb-2">
-                                            <label
-                                                class="small text-muted d-block">Số
-                                                điện thoại</label>
-                                            <a id="modalPhoneLink" href="#"
-                                               class="text-secondary"><span
-                                                    id="modalPhone"></span></a>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label
-                                                class="small text-muted d-block">Trạng
-                                                thái</label>
-                                            <span id="modalStatusBadge"
-                                                  class="badge bg-primary"></span>
-                                            <span id="modalConvertedBadge"
-                                                  class="badge bg-success d-none">Converted</span>
-                                        </div>
-
-
+                            <form
+                                action="${pageContext.request.contextPath}/EditLeadbySaleServlet"
+                                method="get">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="leadEditModalLabel">Chỉnh sửa Lead
+                                    </h5>
+                                    <button type="button" class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="leadId"
+                                           id="editLeadId">
+                                    <div class="mb-3">
+                                        <label for="editFullName"
+                                               class="form-label">Họ và Tên</label>
+                                        <input type="text" class="form-control"
+                                               id="editFullName" name="name"
+                                               required>
                                     </div>
-                                    <!-- Right Column: Timeline -->
-                                    <div class="col-md-7">
-                                        <h6 class="text-primary mb-3"><i
-                                                class="fa fa-history me-2"></i>Lịch
-                                            sử giao tiếp</h6>
-                                            <c:forEach var="note" items="${leadNotes}">
-                                            <div class="p-2 border-start border-primary border-3 bg-white mb-2 small">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">
-                                                    ${note.createdAt}
-                                                </span>
-                                                ${note.content}
-                                            </div>
-                                        </c:forEach>
-
-                                        <c:if test="${empty leadNotes}">
-                                            <div class="text-muted small">Chưa có lịch sử giao tiếp.</div>
-                                        </c:if>
-
-                                        <div class="text-center mt-3">
-
-                                            <form action="${pageContext.request.contextPath}/addLeadNote" method="post">
-
-                                                <input type="hidden" name="leadId" value="${lead.id}" />
-
-                                                <div class="mb-2">
-                                                    <textarea name="content"
-                                                              class="form-control form-control-sm"
-                                                              placeholder="Nhập nội dung ghi chú..."
-                                                              required></textarea>
-                                                </div>
-
-                                                <button type="submit"
-                                                        class="btn btn-sm btn-outline-secondary px-3">
-                                                    <i class="fa fa-plus me-1"></i>
-                                                    Thêm ghi chú
-                                                </button>
-
-                                            </form>
-
-                                        </div>
+                                    <div class="mb-3">
+                                        <label for="editPhone"
+                                               class="form-label">Số điện
+                                            thoại</label>
+                                        <input type="text" class="form-control"
+                                               id="editPhone" name="phone"
+                                               required>
                                     </div>
                                 </div>
-                            </div>
+                                <div class="modal-footer">
+                                    <button type="button"
+                                            class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit"
+                                            class="btn btn-primary">Lưu thay
+                                        đổi</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lead Interaction Modal -->
+                <div class="modal fade" id="leadInteractionModal" tabindex="-1"
+                     aria-labelledby="leadInteractionModalLabel"
+                     aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form
+                                action="${pageContext.request.contextPath}/addLeadNote"
+                                method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"
+                                        id="leadInteractionModalLabel">Ghi
+                                        chú tương tác: <span
+                                            id="interactionLeadName"></span>
+                                    </h5>
+                                    <button type="button" class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="leadId"
+                                           id="interactionLeadId">
+
+                                    <!-- Timeline in Interaction Modal -->
+                                    <h6 class="small fw-bold mb-2">Lịch sử
+                                        gần đây:</h6>
+                                    <div id="interactionLeadNotesTimeline"
+                                         class="interaction-timeline mb-3"
+                                         style="max-height: 200px; overflow-y: auto;">
+                                        <div class="text-muted small">Đang
+                                            tải...</div>
+                                    </div>
+                                    <hr>
+
+                                    <div class="mb-3">
+                                        <label for="interactionContent"
+                                               class="form-label">Nội dung trao
+                                            đổi mới</label>
+                                        <textarea class="form-control"
+                                                  id="interactionContent"
+                                                  name="content" rows="3"
+                                                  placeholder="Nhập tóm tắt buổi làm việc, cuộc gọi..."
+                                                  required></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button"
+                                            class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit"
+                                            class="btn btn-primary">Lưu ghi
+                                        chú</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -408,40 +433,71 @@
                 }
             });
 
-            function showLeadDetails(button) {
-
+            function showEditLeadModal(button) {
                 const id = button.dataset.id;
                 const name = button.dataset.name;
-                const email = button.dataset.email;
                 const phone = button.dataset.phone;
-                const status = button.dataset.status;
-                const isConverted = button.dataset.converted === "true";
 
-                document.getElementById('modalFullName').innerText = name;
-                document.getElementById('modalEmail').innerText = email;
-                document.getElementById('modalEmailLink').href = "mailto:" + email;
-                document.getElementById('modalPhone').innerText = phone;
-                document.getElementById('modalPhoneLink').href = "tel:" + phone;
+                document.getElementById('editLeadId').value = id;
+                document.getElementById('editFullName').value = name;
+                document.getElementById('editPhone').value = phone;
 
-                const statusBadge = document.getElementById('modalStatusBadge');
-                statusBadge.innerText = status;
+                var editModal = new bootstrap.Modal(document.getElementById('leadEditModal'));
+                editModal.show();
+            }
 
-                const convertedBadge = document.getElementById('modalConvertedBadge');
+            function showInteractionModal(button) {
+                const id = button.dataset.id;
+                const name = button.dataset.name;
 
-                const convertBtn = document.getElementById('modalConvertBtn');
+                document.getElementById('interactionLeadId').value = id;
+                document.getElementById('interactionLeadName').innerText = name;
+                document.getElementById('interactionContent').value = '';
 
-                if (isConverted) {
-                    convertedBadge.classList.remove('d-none');
-                    convertBtn.disabled = true;
-                    convertBtn.title = "This lead is already converted";
-                } else {
-                    convertedBadge.classList.add('d-none');
-                    convertBtn.disabled = false;
-                    convertBtn.title = "";
-                }
+                var interactionModal = new bootstrap.Modal(document.getElementById('leadInteractionModal'));
+                interactionModal.show();
 
-                var myModal = new bootstrap.Modal(document.getElementById('leadViewModal'));
-                myModal.show();
+                // Load notes via AJAX
+                loadLeadNotes(id, 'interactionLeadNotesTimeline');
+            }
+
+            function loadLeadNotes(leadId, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container)
+                    return;
+
+                // Clear previous content and show loading message
+                container.innerHTML = '<div class="text-muted small">Đang tải lịch sử...</div>';
+                        fetch('${pageContext.request.contextPath}/getLeadNotes?leadId=' + leadId)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                container.innerHTML = `<div class="text-danger small">Lỗi: ${data.error}</div>`;
+                                return;
+                            }
+                            const notes = data;
+                            if (notes.length === 0) {
+                                container.innerHTML = '<div class="text-muted small">Chưa có lịch sử giao tiếp.</div>';
+                                return;
+                            }
+                            let html = '';
+                            notes.forEach(note => {
+                                html += `
+                                <div class="p-2 border-start border-primary border-3 bg-white mb-2 small shadow-sm">
+                                    <span class="text-muted d-block" style="font-size: 0.7rem;">
+                                        <i class="fa fa-calendar-alt me-1"></i>${note.createdAt || 'N/A'} 
+                                        <span class="badge bg-light text-dark ms-2">${note.noteType || 'General'}</span>
+                                    </span>
+                                    <div class="mt-1">${note.noteContent}</div>
+                                </div>
+                             `;
+                            });
+                            container.innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('Error loading notes:', error);
+                            container.innerHTML = '<div class="text-danger small">Lỗi kết nối máy chủ.</div>';
+                        });
             }
         </script>
     </body>

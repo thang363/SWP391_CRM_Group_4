@@ -4,7 +4,9 @@
  */
 package dao;
 
+import java.util.List;
 import model.entity.Lead;
+import model.entity.Opportunity;
 
 /**
  *
@@ -12,4 +14,10 @@ import model.entity.Lead;
  */
 public interface OpportunityDAO {
     void createFromLead(int leadID,String leadName,long saleID);
+    
+    List<Opportunity> getOpportunitiesBySalesId(long salesId);
+    
+    void updateStage(long id, String stage, int probability);
+    
+    void updateOpportunityInfo(int id, String name);
 }

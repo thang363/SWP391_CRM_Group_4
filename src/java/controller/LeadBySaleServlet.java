@@ -52,7 +52,6 @@ public class LeadBySaleServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setAttribute("pageTitle", "Sales Pipeline");
         List<Lead> lead_list = new ArrayList<>();
-        DatabaseUtil dbUtil = DatabaseUtil.getInstance();
         LeadDAO ld = new LeadDAOImpl();
         try {
             HttpSession session = request.getSession();

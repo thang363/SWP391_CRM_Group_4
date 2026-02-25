@@ -75,13 +75,12 @@ public class ConvertLeadServlet extends HttpServlet {
             op.createFromLead(leadID, leadName, saleID);
             
             ld.markAsConverted(leadID);
+            response.sendRedirect(request.getContextPath() + "/leads");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/sales/opportunity-list.jsp");
-        dispatcher.forward(request, response);
     } 
 
     /** 

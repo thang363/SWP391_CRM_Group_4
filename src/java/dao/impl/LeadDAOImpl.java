@@ -224,6 +224,25 @@ public class LeadDAOImpl implements LeadDAO {
         return lead;
     }
 
+    @Override
+    public void updateLeadInfo(int id, String name, String phone) {
+        String sql = "UPDATE Leads SET full_name = ?, phone = ? WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = dbUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setString(2, phone);
+            ps.setInt(3, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, conn);
+        }
+    }
+
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
         dbUtil.closeConnection(conn);
         try {

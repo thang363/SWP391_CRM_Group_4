@@ -40,4 +40,12 @@ public interface LeadDAO {
      * @return The Lead object if found, null otherwise
      */
     Lead findById(long id);
+
+    /**
+     * Update lead's basic info (name and phone).
+     * @param id The ID of the lead
+     * @param name New name
+     * @param phone New phone
+     */
+    void updateLeadInfo(int id, String name, String phone);
 }
