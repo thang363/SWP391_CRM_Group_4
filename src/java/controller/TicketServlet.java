@@ -433,6 +433,22 @@ public class TicketServlet extends HttpServlet {
 
         try {
             int id = Integer.parseInt(request.getParameter("id"));
+            String userIdStr = request.getParameter("userId");
+            Integer userId = (userIdStr != null && !userIdStr.trim().isEmpty())
+                    ? Integer.parseInt(userIdStr)
+                    : null;
+
+            boolean success = ticketService.assignTicket(id, userId);
+
+            if (success) {
+                String assignMsg = (userId != null)
+                        ? "Assigned ticket to userId=" + userId
+                        : "Unassigned ticket (None)";
+                logSystemActivity(request, id, assignMsg);
+            }
+
+            sendJsonResponse(response, success, success ? "Phân công thành công" : "Lỗi phân công");
+
         } catch (NumberFormatException e) {
             e.printStackTrace();
             sendJsonResponse(response, false, "Dữ liệu không hợp lệ.");

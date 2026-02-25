@@ -77,6 +77,15 @@
                         .status-Closed {
                             color: #6c757d;
                         }
+
+                        .readonly-select {
+                            appearance: none;
+                            -webkit-appearance: none;
+                            -moz-appearance: none;
+                            background-image: none !important;
+                            background-color: #f8f9fa !important;
+                            cursor: default;
+                        }
                     </style>
             </head>
 
@@ -295,9 +304,8 @@
                                                     <!-- Status -->
                                                     <div class="mb-3">
                                                         <small class="text-muted d-block mb-1">Trạng thái</small>
-                                                        <select class="form-select form-select-sm" id="statusSelect"
-                                                            onchange="updateStatus(${ticket.id})" ${!canEdit ||
-                                                            ticket.status=='Closed' ? 'disabled' : '' }>
+                                                        <select class="form-select form-select-sm readonly-select"
+                                                            id="statusSelect" disabled>
                                                             <option value="Open" ${ticket.status=='Open' ? 'selected'
                                                                 : '' }>Mới (Open)</option>
                                                             <option value="In Progress" ${ticket.status=='In Progress'
@@ -312,8 +320,8 @@
                                                     <!-- Priority -->
                                                     <div class="mb-3">
                                                         <small class="text-muted d-block mb-1">Độ ưu tiên</small>
-                                                        <select class="form-select form-select-sm" id="prioritySelect"
-                                                            onchange="updatePriority(${ticket.id})"
+                                                        <select class="form-select form-select-sm readonly-select"
+                                                            id="prioritySelect" onchange="updatePriority(${ticket.id})"
                                                             ${sessionScope.userRole.name !='MANAGER' ? 'disabled' : ''
                                                             }>
                                                             <option value="Low" ${ticket.priority=='Low' ? 'selected'
@@ -408,7 +416,6 @@
 
                                     $.post('${pageContext.request.contextPath}/tickets', {
                                         action: 'assign',
-                                        id: ticketId,
                                         id: ticketId,
                                         userId: userId
                                     }, function (response) {
