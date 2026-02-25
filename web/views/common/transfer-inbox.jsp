@@ -157,8 +157,9 @@
                                                                                 <th>Chiến dịch</th>
                                                                                 <th>Đến Manager</th>
                                                                                 <th>Ngày gửi yêu cầu</th>
-                                                                                <th>Lý do</th>
+                                                                                <th>Lý do gửi</th>
                                                                                 <th>Trạng thái</th>
+                                                                                <th>Phản hồi từ người nhận</th>
                                                                                 <th>Thao tác</th>
                                                                             </tr>
                                                                         </thead>
@@ -166,10 +167,10 @@
                                                                             <c:choose>
                                                                                 <c:when test="${empty pendingOutgoing}">
                                                                                     <tr>
-                                                                                        <td colspan="6"
+                                                                                        <td colspan="7"
                                                                                             class="text-center text-muted">
-                                                                                            Không có yêu cầu nào đang
-                                                                                            chờ</td>
+                                                                                            Không có yêu cầu nào gần đây
+                                                                                        </td>
                                                                                     </tr>
                                                                                 </c:when>
                                                                                 <c:otherwise>
@@ -189,17 +190,43 @@
                                                                                             <td>${transfer.transferReason}
                                                                                             </td>
                                                                                             <td>
-                                                                                                <span
-                                                                                                    class="badge bg-warning text-dark">Pending</span>
+                                                                                                <c:choose>
+                                                                                                    <c:when
+                                                                                                        test="${transfer.transferStatus == 'Pending'}">
+                                                                                                        <span
+                                                                                                            class="badge bg-warning text-dark">Chờ
+                                                                                                            duyệt</span>
+                                                                                                    </c:when>
+                                                                                                    <c:when
+                                                                                                        test="${transfer.transferStatus == 'Rejected'}">
+                                                                                                        <span
+                                                                                                            class="badge bg-danger">Bị
+                                                                                                            từ
+                                                                                                            chối</span>
+                                                                                                    </c:when>
+                                                                                                    <c:otherwise>
+                                                                                                        <span
+                                                                                                            class="badge bg-secondary">${transfer.transferStatus}</span>
+                                                                                                    </c:otherwise>
+                                                                                                </c:choose>
+                                                                                            </td>
+                                                                                            <td class="text-danger">
+                                                                                                ${transfer.responseNotes
+                                                                                                != null ?
+                                                                                                transfer.responseNotes :
+                                                                                                '-'}
                                                                                             </td>
                                                                                             <td>
-                                                                                                <button
-                                                                                                    class="btn btn-sm btn-secondary"
-                                                                                                    onclick="cancelTransfer(${transfer.id}, '${transfer.campaignName}')">
-                                                                                                    <i
-                                                                                                        class="fa fa-times me-1"></i>Hủy
-                                                                                                    bỏ
-                                                                                                </button>
+                                                                                                <c:if
+                                                                                                    test="${transfer.transferStatus == 'Pending'}">
+                                                                                                    <button
+                                                                                                        class="btn btn-sm btn-secondary"
+                                                                                                        onclick="cancelTransfer(${transfer.id}, '${transfer.campaignName}')">
+                                                                                                        <i
+                                                                                                            class="fa fa-times me-1"></i>Hủy
+                                                                                                        bỏ
+                                                                                                    </button>
+                                                                                                </c:if>
                                                                                             </td>
                                                                                         </tr>
                                                                                     </c:forEach>

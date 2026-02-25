@@ -22,6 +22,8 @@ public interface CampaignTransferService {
     
     List<CampaignTransfer> getPendingTransfersForSender(Long managerId);
     
+    List<CampaignTransfer> getRecentTransfersForSender(Long managerId);
+    
     List<CampaignTransfer> getTransferHistory(Long campaignId);
     
     CampaignTransfer getTransferById(Long id);

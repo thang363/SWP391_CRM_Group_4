@@ -19,5 +19,6 @@ public interface CampaignTransferDAO {
     // List Queries
     List<CampaignTransfer> findPendingTransfersByRecipient(Long managerId);
     List<CampaignTransfer> findPendingTransfersBySender(Long managerId);
+    List<CampaignTransfer> findRecentTransfersBySender(Long managerId);
     List<CampaignTransfer> findHistoryByCampaign(Long campaignId);
 }

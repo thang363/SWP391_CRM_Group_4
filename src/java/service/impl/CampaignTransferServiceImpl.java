@@ -184,6 +184,11 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
     }
     
     @Override
+    public List<CampaignTransfer> getRecentTransfersForSender(Long managerId) {
+         return transferDAO.findRecentTransfersBySender(managerId);
+    }
+    
+    @Override
     public List<CampaignTransfer> getTransferHistory(Long campaignId) {
         return transferDAO.findHistoryByCampaign(campaignId);
     }
