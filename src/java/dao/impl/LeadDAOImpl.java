@@ -17,10 +17,10 @@ public class LeadDAOImpl implements LeadDAO {
     public LeadDAOImpl() {
         this.dbUtil = DatabaseUtil.getInstance();
     }
-
+    //AND is_converted = 0
     @Override
     public List<Lead> findBySaleId(long saleId) {
-        String sql = "SELECT * FROM Leads WHERE assigned_to = ?";
+        String sql = "SELECT * FROM Leads WHERE assigned_to = ? ";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -40,6 +40,38 @@ public class LeadDAOImpl implements LeadDAO {
             closeResources(rs, stmt, conn);
         }
         return list;
+    }
+
+    @Override
+    public void updateLeadStatus(int leadId, String status) {
+        String sql = "UPDATE Leads SET status = ? WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = dbUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, status);
+            ps.setInt(2, leadId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void markAsConverted(int leadId) {
+        String sql = "UPDATE Leads SET is_converted = 1 WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = dbUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, leadId);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -85,38 +117,47 @@ public class LeadDAOImpl implements LeadDAO {
     public boolean insert(Lead lead) {
         // Note: Assuming 'Leads' table has columns: 
         // full_name, email, phone, campaign_id, source_id, status, is_converted, created_at, current_score
-        String sql = "INSERT INTO Leads (full_name, email, phone, campaign_id, source_id, status, is_converted, created_at, current_score) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
+        String sql = "INSERT INTO Leads (full_name, email, phone, campaign_id, source_id, status, is_converted, created_at, current_score) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         Connection conn = null;
         PreparedStatement stmt = null;
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            
+
             stmt.setString(1, lead.getFullName());
             stmt.setString(2, lead.getEmail());
             stmt.setString(3, lead.getPhone());
-            
-            if (lead.getCampaignId() != null) stmt.setLong(4, lead.getCampaignId());
-            else stmt.setNull(4, Types.INTEGER);
-            
-            if (lead.getSourceId() != null) stmt.setLong(5, lead.getSourceId());
-            else stmt.setNull(5, Types.INTEGER);
-            
+
+            if (lead.getCampaignId() != null) {
+                stmt.setLong(4, lead.getCampaignId());
+            } else {
+                stmt.setNull(4, Types.INTEGER);
+            }
+
+            if (lead.getSourceId() != null) {
+                stmt.setLong(5, lead.getSourceId());
+            } else {
+                stmt.setNull(5, Types.INTEGER);
+            }
+
             stmt.setString(6, lead.getStatus() != null ? lead.getStatus() : "New");
             stmt.setBoolean(7, lead.getIsConverted() != null ? lead.getIsConverted() : false);
-            
+
             // created_at default getdate() in DB, but we can set it if needed. 
             // Lead entity uses LocalDateTime.
-            if (lead.getCreatedAt() != null) stmt.setTimestamp(8, Timestamp.valueOf(lead.getCreatedAt()));
-            else stmt.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
+            if (lead.getCreatedAt() != null) {
+                stmt.setTimestamp(8, Timestamp.valueOf(lead.getCreatedAt()));
+            } else {
+                stmt.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
+            }
 
             stmt.setInt(9, lead.getCurrentScore() != null ? lead.getCurrentScore() : 0);
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error inserting lead: " + e.getMessage());
             e.printStackTrace(); // For debugging schema mismatches
@@ -204,17 +245,23 @@ public class LeadDAOImpl implements LeadDAO {
         lead.setStatus(rs.getString("status"));
         lead.setCurrentScore(rs.getInt("current_score"));
         lead.setIsConverted(rs.getBoolean("is_converted"));
-        
+
         // Handling potential null for campaign/source if they exist
         try {
             long cId = rs.getLong("campaign_id");
-            if (!rs.wasNull()) lead.setCampaignId(cId);
-            
+            if (!rs.wasNull()) {
+                lead.setCampaignId(cId);
+            }
+
             long sId = rs.getLong("source_id");
-            if (!rs.wasNull()) lead.setSourceId(sId);
-            
+            if (!rs.wasNull()) {
+                lead.setSourceId(sId);
+            }
+
             long aId = rs.getLong("assigned_to");
-            if (!rs.wasNull()) lead.setAssignedTo(aId);
+            if (!rs.wasNull()) {
+                lead.setAssignedTo(aId);
+            }
         } catch (SQLException ignored) {
             // Columns might not exist in old schema, ignore or handle
         }
@@ -224,9 +271,38 @@ public class LeadDAOImpl implements LeadDAO {
         return lead;
     }
 
+    @Override
+    public void updateLeadInfo(int id, String name, String phone) {
+        String sql = "UPDATE Leads SET full_name = ?, phone = ? WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = dbUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setString(2, phone);
+            ps.setInt(3, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, conn);
+        }
+    }
+
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
         dbUtil.closeConnection(conn);
-        try { if (rs != null) rs.close(); } catch (SQLException e) {}
-        try { if (stmt != null) stmt.close(); } catch (SQLException e) {}
+        try {
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (SQLException e) {
+        }
+        try {
+            if (stmt != null) {
+                stmt.close();
+            }
+        } catch (SQLException e) {
+        }
     }
 }
