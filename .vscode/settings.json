@@ -1,0 +1,6 @@
+{
+    "java.project.referencedLibraries": [
+        "web/WEB-INF/lib/**/*.jar",
+        "lib-provided/**/*.jar"
+    ]
+}
