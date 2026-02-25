@@ -132,9 +132,8 @@
                                             <!-- Pipeline Board -->
                                             <div class="container-fluid px-4">
                                                 <div class="row g-3">
-                                                    <!-- Lead Column -->
                                                     <div class="col-12 col-lg">
-                                                        <div class="pipeline-column">
+                                                        <div class="pipeline-column" data-stage="lead">
                                                             <div
                                                                 class="pipeline-header lead d-flex justify-content-between align-items-center">
                                                                 <span><i class="fa fa-user-plus me-2"></i>Lead</span>
@@ -170,9 +169,8 @@
                                                         </div>
                                                     </div>
 
-                                                    <!-- Qualified Column -->
                                                     <div class="col-12 col-lg">
-                                                        <div class="pipeline-column">
+                                                        <div class="pipeline-column" data-stage="qualified">
                                                             <div
                                                                 class="pipeline-header qualified d-flex justify-content-between align-items-center">
                                                                 <span><i
@@ -200,9 +198,8 @@
                                                         </div>
                                                     </div>
 
-                                                    <!-- Proposal Column -->
                                                     <div class="col-12 col-lg">
-                                                        <div class="pipeline-column">
+                                                        <div class="pipeline-column" data-stage="proposal">
                                                             <div
                                                                 class="pipeline-header proposal d-flex justify-content-between align-items-center">
                                                                 <span><i
@@ -230,9 +227,8 @@
                                                         </div>
                                                     </div>
 
-                                                    <!-- Negotiation Column -->
                                                     <div class="col-12 col-lg">
-                                                        <div class="pipeline-column">
+                                                        <div class="pipeline-column" data-stage="negotiation">
                                                             <div
                                                                 class="pipeline-header negotiation d-flex justify-content-between align-items-center">
                                                                 <span><i
@@ -251,9 +247,8 @@
                                                         </div>
                                                     </div>
 
-                                                    <!-- Closed Won Column -->
                                                     <div class="col-12 col-lg">
-                                                        <div class="pipeline-column">
+                                                        <div class="pipeline-column" data-stage="closed">
                                                             <div
                                                                 class="pipeline-header closed d-flex justify-content-between align-items-center">
                                                                 <span><i class="fa fa-trophy me-2"></i>Closed Won</span>
@@ -379,6 +374,33 @@
                         </div>
                     </div>
 
+                    <!-- Confirmation Modal for Closed Won -->
+                    <div class="modal fade" id="confirmWonModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title"><i class="fa fa-trophy me-2"></i>Xác nhận Chốt Thắng</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center py-4">
+                                    <h4 class="mb-3">Chúc mừng!</h4>
+                                    <p>Bạn có chắc chắn muốn chuyển Deal này sang giai đoạn <strong>Closed Won</strong>
+                                        không?</p>
+                                    <div class="alert alert-info small mb-0">
+                                        Hành động này sẽ ghi nhận doanh thu vào hệ thống.
+                                    </div>
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal"
+                                        id="cancelWonBtn">Hủy bỏ</button>
+                                    <button type="button" class="btn btn-success px-4" id="confirmWonBtn">Xác nhận
+                                        Thắng</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <%-- Include Scripts --%>
                         <%@ include file="/includes/scripts.jsp" %>
 
@@ -388,6 +410,142 @@
                                     var spinner = document.getElementById('spinner');
                                     if (spinner) {
                                         spinner.classList.remove('show');
+                                    }
+
+                                    // Kanban Drag and Drop Logic
+                                    const cards = document.querySelectorAll('.deal-card');
+                                    const columns = document.querySelectorAll('.pipeline-column');
+                                    let draggedCard = null;
+                                    let sourceColumn = null;
+                                    let targetColumn = null;
+
+                                    cards.forEach(card => {
+                                        card.addEventListener('dragstart', function (e) {
+                                            draggedCard = this;
+                                            sourceColumn = this.parentElement;
+                                            this.classList.add('opacity-50');
+                                            e.dataTransfer.setData('text/plain', this.getAttribute('data-deal-id'));
+                                        });
+
+                                        card.addEventListener('dragend', function () {
+                                            this.classList.remove('opacity-50');
+                                        });
+                                    });
+
+                                    columns.forEach(column => {
+                                        column.addEventListener('dragover', function (e) {
+                                            e.preventDefault();
+                                            this.style.backgroundColor = 'rgba(13, 110, 253, 0.05)';
+                                        });
+
+                                        column.addEventListener('dragleave', function () {
+                                            this.style.backgroundColor = '';
+                                        });
+
+                                        column.addEventListener('drop', function (e) {
+                                            e.preventDefault();
+                                            this.style.backgroundColor = '';
+                                            targetColumn = this;
+                                            const stage = this.getAttribute('data-stage');
+
+                                            if (stage === 'closed') {
+                                                // Show confirmation for Closed Won
+                                                const wonModal = new bootstrap.Modal(document.getElementById('confirmWonModal'));
+                                                wonModal.show();
+
+                                                // Handle confirmation
+                                                document.getElementById('confirmWonBtn').onclick = function () {
+                                                    targetColumn.appendChild(draggedCard);
+                                                    wonModal.hide();
+                                                    updateColumnStats();
+                                                    showToast('Thắng Deal!', 'Chúc mừng bạn đã chốt thành công!');
+                                                };
+
+                                                // Snapback if cancelled
+                                                document.getElementById('cancelWonBtn').onclick = function () {
+                                                    sourceColumn.appendChild(draggedCard);
+                                                    wonModal.hide();
+                                                };
+
+                                                // Handle modal hide (clicking outside or ESC)
+                                                document.getElementById('confirmWonModal').addEventListener('hidden.bs.modal', function () {
+                                                    if (draggedCard.parentElement !== targetColumn) {
+                                                        sourceColumn.appendChild(draggedCard);
+                                                    }
+                                                }, { once: true });
+
+                                            } else {
+                                                // Direct drop for other stages
+                                                this.appendChild(draggedCard);
+                                                updateColumnStats();
+                                                showToast('Cập nhật thành công', 'Đã chuyển Deal sang giai đoạn ' + stage);
+                                            }
+                                        });
+                                    });
+
+                                    function updateColumnStats() {
+                                        let globalTotal = 0;
+                                        let globalCount = 0;
+                                        let wonTotal = 0;
+
+                                        columns.forEach(col => {
+                                            const cardsInCol = col.querySelectorAll('.deal-card');
+                                            const countLabel = col.querySelector('.stage-total');
+                                            let colMoney = 0;
+
+                                            cardsInCol.forEach(card => {
+                                                const valText = card.querySelector('.deal-value').innerText;
+                                                const valNum = parseInt(valText.replace(/[^0-9]/g, '')) || 0;
+                                                colMoney += valNum;
+                                                globalTotal += valNum;
+                                                globalCount++;
+                                                if (col.getAttribute('data-stage') === 'closed') {
+                                                    wonTotal += valNum;
+                                                }
+                                            });
+
+                                            if (countLabel) {
+                                                countLabel.innerHTML = `<i class="fa fa-tag me-1"></i>${cardsInCol.length} deals - $${colMoney.toLocaleString()}`;
+                                            }
+                                        });
+
+                                        // Update global stats
+                                        const totalPipelineEl = document.getElementById('totalPipelineValue');
+                                        const closedWonEl = document.getElementById('closedWonValue');
+                                        const totalCountEl = document.getElementById('totalDealsCount');
+
+                                        if (totalPipelineEl) totalPipelineEl.innerText = '$' + globalTotal.toLocaleString();
+                                        if (closedWonEl) closedWonEl.innerText = '$' + wonTotal.toLocaleString();
+                                        if (totalCountEl) totalCountEl.innerText = globalCount + ' deals';
+                                    }
+
+                                    function showToast(title, message, type = 'success') {
+                                        var container = document.getElementById('toast-container');
+                                        if (!container) {
+                                            container = document.createElement('div');
+                                            container.id = 'toast-container';
+                                            container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;';
+                                            document.body.appendChild(container);
+                                        }
+
+                                        var toast = document.createElement('div');
+                                        toast.className = 'alert alert-' + type + ' alert-dismissible fade show';
+                                        toast.style.cssText = 'min-width:300px;box-shadow:0 10px 30px rgba(0,0,0,0.15); border:none; border-left: 5px solid ' + (type === 'success' ? '#28a745' : '#dc3545');
+                                        toast.innerHTML =
+                                            '<div class="d-flex align-items-center">' +
+                                            '<i class="fa ' + (type === 'success' ? 'fa-check-circle' : 'fa-info-circle') + ' fs-4 me-3"></i>' +
+                                            '<div>' +
+                                            '<div class="fw-bold">' + title + '</div>' +
+                                            '<div class="small">' + message + '</div>' +
+                                            '</div>' +
+                                            '<button type="button" class="btn-close" data-bs-dismiss="alert" style="padding: 1.25rem;"></button>' +
+                                            '</div>';
+
+                                        container.appendChild(toast);
+                                        setTimeout(() => {
+                                            toast.classList.remove('show');
+                                            setTimeout(() => toast.remove(), 300);
+                                        }, 4000);
                                     }
                                 });
                             </script>
