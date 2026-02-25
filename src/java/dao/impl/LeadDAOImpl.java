@@ -17,10 +17,10 @@ public class LeadDAOImpl implements LeadDAO {
     public LeadDAOImpl() {
         this.dbUtil = DatabaseUtil.getInstance();
     }
-
+    //AND is_converted = 0
     @Override
     public List<Lead> findBySaleId(long saleId) {
-        String sql = "SELECT * FROM Leads WHERE assigned_to = ? AND is_converted = 0";
+        String sql = "SELECT * FROM Leads WHERE assigned_to = ? ";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;

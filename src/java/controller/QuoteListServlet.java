@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 
-@WebServlet(name = "QuoteListServlet", urlPatterns = {"/quotes"})
+@WebServlet(name = "QuoteListServlet", urlPatterns = {"/sales/quotes"})
 public class QuoteListServlet extends HttpServlet {
 
     @Override

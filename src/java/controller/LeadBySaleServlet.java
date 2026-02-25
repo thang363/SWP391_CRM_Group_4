@@ -26,7 +26,7 @@ import util.Constants;
  *
  * @author ADMIN
  */
-@WebServlet(name = "LeadBySaleServlet", urlPatterns = {"/leads"})
+@WebServlet(name = "LeadBySaleServlet", urlPatterns = {"/sales/leads"})
 public class LeadBySaleServlet extends HttpServlet {
 
     /**
@@ -86,7 +86,7 @@ public class LeadBySaleServlet extends HttpServlet {
             ld.updateLeadStatus(leadID, status);
         } catch (Exception e) {
         }
-        response.sendRedirect("leads");
+        response.sendRedirect("leads"); // relative redirect still works within /sales/
     }
 
     /**

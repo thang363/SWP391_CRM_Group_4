@@ -75,7 +75,7 @@ public class ConvertLeadServlet extends HttpServlet {
             op.createFromLead(leadID, leadName, saleID);
             
             ld.markAsConverted(leadID);
-            response.sendRedirect(request.getContextPath() + "/leads");
+            response.sendRedirect(request.getContextPath() + "/sales/leads");
             }
         } catch (Exception e) {
             e.printStackTrace();

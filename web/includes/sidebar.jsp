@@ -40,11 +40,12 @@
                                         <div class="dropdown-menu bg-transparent border-0">
                                             <a href="${pageContext.request.contextPath}/sales-pipeline"
                                                 class="dropdown-item">Sales Pipeline</a>
-                                            <a href="${pageContext.request.contextPath}/leads"
+                                            <a href="${pageContext.request.contextPath}/sales/leads"
                                                 class="dropdown-item">Leads</a>
-                                            <a href="${pageContext.request.contextPath}/quotes"
-                                                class="dropdown-item">Báo
-                                                giá</a>
+                                            <a href="${pageContext.request.contextPath}/sales/opportunities"
+                                                class="dropdown-item">Opportunity</a>
+                                            <a href="${pageContext.request.contextPath}/sales/quotes"
+                                                class="dropdown-item">Quotes</a>
                                         </div>
                                     </div>
                                 </c:if>

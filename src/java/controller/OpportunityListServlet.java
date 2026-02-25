@@ -18,7 +18,7 @@ import model.entity.Opportunity;
 import model.entity.User;
 import util.DatabaseUtil;
 
-@WebServlet(name = "OpportunityListServlet", urlPatterns = {"/opportunities"})
+@WebServlet(name = "OpportunityListServlet", urlPatterns = {"/sales/opportunities"})
 public class OpportunityListServlet extends HttpServlet {
 
     @Override
