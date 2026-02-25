@@ -134,6 +134,9 @@
                                                                 <a href="${pageContext.request.contextPath}/automation-rules"
                                                                     class="dropdown-item ${currentPage == 'automation-rules' ? 'active' : ''}">Automation
                                                                     Rules</a>
+                                                                <a href="${pageContext.request.contextPath}/system-job-logs"
+                                                                    class="dropdown-item ${currentPage == 'system-job-logs' ? 'active' : ''}">System
+                                                                    Job Logs</a>
                                                             </c:if>
                                                         </div>
                                                     </div>
