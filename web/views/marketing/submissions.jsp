@@ -412,7 +412,7 @@
                                                                                             id="modalPhone"></span></p>
                                                                                 </div>
                                                                                 <div class="mb-3">
-                                                                                    
+
                                                                                     <p class="mb-1"><strong>Chiến
                                                                                             dịch:</strong> <span
                                                                                             id="modalCampaign"></span>
@@ -512,68 +512,71 @@
 
                                     // ==================== Convert to Lead ====================
                                     function handleConvert(id) {
-                                        if (!confirm('Bạn có muốn chuyển đổi đăng ký #' + id + ' thành Lead?')) return;
-
-                                        fetch(contextPath + '/marketing/submissions', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                            body: 'action=convert&id=' + id
-                                        })
-                                            .then(function (res) { return res.json(); })
-                                            .then(function (data) {
-                                                if (data.success) {
-                                                    // Update row in-place
-                                                    var row = document.getElementById('submission-row-' + id);
-                                                    if (row) {
-                                                        // Update badge
-                                                        var badgeCell = row.cells[4];
-                                                        badgeCell.innerHTML = '<span class="badge badge-processed">Đã xử lý</span>';
-
-                                                        // Remove convert button, keep delete
-                                                        var actionCell = row.cells[5];
-                                                        actionCell.innerHTML =
-                                                            '<button class="btn btn-sm btn-danger" onclick="handleDelete(' + id + ')" title="Xóa">' +
-                                                            '<i class="fa fa-trash"></i></button>';
-                                                    }
-                                                    showToast('success', data.message);
-                                                } else {
-                                                    showToast('error', data.message);
-                                                }
-                                            })
-                                            .catch(function (err) {
-                                                showToast('error', 'Lỗi kết nối server');
-                                                console.error(err);
-                                            });
+                                        showConfirmDialog(
+                                            'Bạn có muốn chuyển đổi đăng ký <strong>#' + id + '</strong> thành Lead?',
+                                            function () {
+                                                fetch(contextPath + '/marketing/submissions', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                                    body: 'action=convert&id=' + id
+                                                })
+                                                    .then(function (res) { return res.json(); })
+                                                    .then(function (data) {
+                                                        if (data.success) {
+                                                            var row = document.getElementById('submission-row-' + id);
+                                                            if (row) {
+                                                                var badgeCell = row.cells[4];
+                                                                badgeCell.innerHTML = '<span class="badge badge-processed">Đã xử lý</span>';
+                                                                var actionCell = row.cells[5];
+                                                                actionCell.innerHTML =
+                                                                    '<button class="btn btn-sm btn-danger" onclick="handleDelete(' + id + ')" title="Xóa">' +
+                                                                    '<i class="fa fa-trash"></i></button>';
+                                                            }
+                                                            showToast('success', data.message);
+                                                        } else {
+                                                            showToast('error', data.message);
+                                                        }
+                                                    })
+                                                    .catch(function (err) {
+                                                        showToast('error', 'Lỗi kết nối server');
+                                                        console.error(err);
+                                                    });
+                                            },
+                                            { title: 'Chuyển đổi thành Lead', confirmText: 'Chuyển đổi', confirmClass: 'btn-success' }
+                                        );
                                     }
 
                                     // ==================== Delete ====================
                                     function handleDelete(id) {
-                                        if (!confirm('Bạn có chắc chắn muốn xóa bản ghi #' + id + '? Hành động này không thể hoàn tác.')) return;
-
-                                        fetch(contextPath + '/marketing/submissions', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                            body: 'action=delete&id=' + id
-                                        })
-                                            .then(function (res) { return res.json(); })
-                                            .then(function (data) {
-                                                if (data.success) {
-                                                    // Remove row from table
-                                                    var row = document.getElementById('submission-row-' + id);
-                                                    if (row) {
-                                                        row.style.transition = 'opacity 0.3s';
-                                                        row.style.opacity = '0';
-                                                        setTimeout(function () { row.remove(); }, 300);
-                                                    }
-                                                    showToast('success', data.message);
-                                                } else {
-                                                    showToast('error', data.message);
-                                                }
-                                            })
-                                            .catch(function (err) {
-                                                showToast('error', 'Lỗi kết nối server');
-                                                console.error(err);
-                                            });
+                                        showConfirmDialog(
+                                            'Bạn có chắc chắn muốn xóa bản ghi <strong>#' + id + '</strong>? Hành động này không thể hoàn tác.',
+                                            function () {
+                                                fetch(contextPath + '/marketing/submissions', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                                    body: 'action=delete&id=' + id
+                                                })
+                                                    .then(function (res) { return res.json(); })
+                                                    .then(function (data) {
+                                                        if (data.success) {
+                                                            var row = document.getElementById('submission-row-' + id);
+                                                            if (row) {
+                                                                row.style.transition = 'opacity 0.3s';
+                                                                row.style.opacity = '0';
+                                                                setTimeout(function () { row.remove(); }, 300);
+                                                            }
+                                                            showToast('success', data.message);
+                                                        } else {
+                                                            showToast('error', data.message);
+                                                        }
+                                                    })
+                                                    .catch(function (err) {
+                                                        showToast('error', 'Lỗi kết nối server');
+                                                        console.error(err);
+                                                    });
+                                            },
+                                            { title: 'Xóa bản ghi', confirmText: 'Xóa', confirmClass: 'btn-danger' }
+                                        );
                                     }
 
                                     // ==================== Toast Notification ====================

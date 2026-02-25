@@ -23,3 +23,6 @@
 
     <!-- Template Javascript -->
     <script src="${pageContext.request.contextPath}/js/main.js"></script>
+
+    <%-- Reusable Confirm Dialog --%>
+        <%@ include file="/includes/confirm-modal.jsp" %>

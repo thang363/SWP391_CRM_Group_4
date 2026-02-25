@@ -67,12 +67,12 @@
                                                     </h3>
                                                     <div>
                                                         <span class="text-muted me-3">Nhật ký hoạt động hệ thống</span>
-                                                        <form method="post"
+                                                        <form method="post" id="runNowForm"
                                                             action="${pageContext.request.contextPath}/system-job-logs"
                                                             style="display:inline">
                                                             <input type="hidden" name="action" value="runNow">
-                                                            <button type="submit" class="btn btn-warning"
-                                                                onclick="return confirm('Chạy tất cả Automation Rules ngay bây giờ?')">
+                                                            <button type="button" class="btn btn-warning"
+                                                                onclick="confirmRunNow()">
                                                                 <i class="fa fa-play me-1"></i>Chạy ngay
                                                             </button>
                                                         </form>
@@ -206,6 +206,16 @@
                                 var spinner = document.getElementById('spinner');
                                 if (spinner) spinner.classList.remove('show');
                             });
+
+                            function confirmRunNow() {
+                                showConfirmDialog(
+                                    'Chạy tất cả Automation Rules ngay bây giờ?',
+                                    function () {
+                                        document.getElementById('runNowForm').submit();
+                                    },
+                                    { title: 'Chạy Automation', confirmText: 'Chạy ngay', confirmClass: 'btn-warning' }
+                                );
+                            }
                         </script>
                 </body>
 

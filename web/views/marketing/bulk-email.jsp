@@ -508,50 +508,51 @@
                                             return;
                                         }
 
-                                        if (!confirm('Bạn có chắc chắn muốn gửi email đến ' + checkedBoxes.length + ' người nhận?')) {
-                                            return;
-                                        }
+                                        showConfirmDialog(
+                                            'Bạn có chắc chắn muốn gửi email đến <strong>' + checkedBoxes.length + '</strong> người nhận?',
+                                            function () {
+                                                // Build form data
+                                                var formData = new URLSearchParams();
+                                                formData.append('action', 'send');
+                                                formData.append('subject', subject);
+                                                formData.append('content', content);
+                                                checkedBoxes.forEach(function (cb) {
+                                                    formData.append('leadIds[]', cb.value);
+                                                });
 
-                                        // Build form data
-                                        var formData = new URLSearchParams();
-                                        formData.append('action', 'send');
-                                        formData.append('subject', subject);
-                                        formData.append('content', content);
-                                        checkedBoxes.forEach(function (cb) {
-                                            formData.append('leadIds[]', cb.value);
-                                        });
+                                                // Show overlay
+                                                document.getElementById('sendingOverlay').classList.add('active');
+                                                document.getElementById('btnSend').disabled = true;
 
-                                        // Show overlay
-                                        document.getElementById('sendingOverlay').classList.add('active');
-                                        document.getElementById('btnSend').disabled = true;
+                                                fetch(contextPath + '/marketing/bulk-email', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                                    body: formData.toString()
+                                                })
+                                                    .then(function (res) { return res.json(); })
+                                                    .then(function (data) {
+                                                        document.getElementById('sendingOverlay').classList.remove('active');
+                                                        document.getElementById('btnSend').disabled = false;
 
-                                        fetch(contextPath + '/marketing/bulk-email', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                            body: formData.toString()
-                                        })
-                                            .then(function (res) { return res.json(); })
-                                            .then(function (data) {
-                                                document.getElementById('sendingOverlay').classList.remove('active');
-                                                document.getElementById('btnSend').disabled = false;
-
-                                                if (data.success) {
-                                                    showToast('success', data.message);
-                                                    // Update sent stat
-                                                    var currentSent = parseInt(document.getElementById('statSent').textContent) || 0;
-                                                    if (data.data && data.data.successCount) {
-                                                        document.getElementById('statSent').textContent = currentSent + data.data.successCount;
-                                                    }
-                                                } else {
-                                                    showToast('error', data.message);
-                                                }
-                                            })
-                                            .catch(function (err) {
-                                                document.getElementById('sendingOverlay').classList.remove('active');
-                                                document.getElementById('btnSend').disabled = false;
-                                                showToast('error', 'Lỗi kết nối server');
-                                                console.error(err);
-                                            });
+                                                        if (data.success) {
+                                                            showToast('success', data.message);
+                                                            var currentSent = parseInt(document.getElementById('statSent').textContent) || 0;
+                                                            if (data.data && data.data.successCount) {
+                                                                document.getElementById('statSent').textContent = currentSent + data.data.successCount;
+                                                            }
+                                                        } else {
+                                                            showToast('error', data.message);
+                                                        }
+                                                    })
+                                                    .catch(function (err) {
+                                                        document.getElementById('sendingOverlay').classList.remove('active');
+                                                        document.getElementById('btnSend').disabled = false;
+                                                        showToast('error', 'Lỗi kết nối server');
+                                                        console.error(err);
+                                                    });
+                                            },
+                                            { title: 'Gửi email hàng loạt', confirmText: 'Gửi', confirmClass: 'btn-primary' }
+                                        );
                                     }
 
                                     // ==================== Toast Notification ====================
