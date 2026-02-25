@@ -127,10 +127,21 @@
                                                             <i class="fa fa-headset me-2"></i>Support
                                                         </a>
                                                         <div class="dropdown-menu bg-transparent border-0">
+                                                            <a href="${pageContext.request.contextPath}/my-tasks"
+                                                                class="dropdown-item ${currentPage == 'my-tasks' ? 'active' : ''}">My
+                                                                Tasks</a>
                                                             <a href="${pageContext.request.contextPath}/tickets"
                                                                 class="dropdown-item">Tickets</a>
                                                             <a href="${pageContext.request.contextPath}/surveys"
                                                                 class="dropdown-item">Khảo sát</a>
+                                                            <c:if test="${sessionScope.userRole == 'MANAGER'}">
+                                                                <a href="${pageContext.request.contextPath}/automation-rules"
+                                                                    class="dropdown-item ${currentPage == 'automation-rules' ? 'active' : ''}">Automation
+                                                                    Rules</a>
+                                                                <a href="${pageContext.request.contextPath}/system-job-logs"
+                                                                    class="dropdown-item ${currentPage == 'system-job-logs' ? 'active' : ''}">System
+                                                                    Job Logs</a>
+                                                            </c:if>
                                                         </div>
                                                     </div>
                                                 </c:if>
