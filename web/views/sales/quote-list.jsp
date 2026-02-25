@@ -2,7 +2,7 @@
     <%@ page contentType="text/html;charset=UTF-8" language="java" %>
         <%-- Đặt biến currentPage để highlight menu active --%>
             <% request.setAttribute("currentPage", "quotes" ); %>
-                <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+                <%@ taglib uri="jakarta.tags.core" prefix="c" %>
                     <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
                         <!DOCTYPE html>

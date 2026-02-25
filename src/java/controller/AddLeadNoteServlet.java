@@ -52,10 +52,10 @@ public class AddLeadNoteServlet extends HttpServlet {
             }
             
             // Redirect back to leads list
-            response.sendRedirect(request.getContextPath() + "/leads");
+            response.sendRedirect(request.getContextPath() + "/sales/leads");
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/leads?error=note");
+            response.sendRedirect(request.getContextPath() + "/sales/leads?error=note");
         }
     }
 }

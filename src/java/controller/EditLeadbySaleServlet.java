@@ -28,10 +28,10 @@ public class EditLeadbySaleServlet extends HttpServlet {
             leadDAO.updateLeadInfo(id, name, phone);
 
             // Quay lại danh sách lead sau khi cập nhật thành công
-            response.sendRedirect(request.getContextPath() + "/leads");
+            response.sendRedirect(request.getContextPath() + "/sales/leads");
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/leads?error=1");
+            response.sendRedirect(request.getContextPath() + "/sales/leads?error=1");
         }
     }
 
@@ -43,7 +43,7 @@ public class EditLeadbySaleServlet extends HttpServlet {
            String name = request.getParameter("name");
            OpportunityDAO oop = new OpportunitiesDaoImpl();
            oop.updateOpportunityInfo(id, name);
-           response.sendRedirect(request.getContextPath() + "/opportunities");
+           response.sendRedirect(request.getContextPath() + "/sales/opportunities");
        }catch(Exception e){
            e.printStackTrace();
        }
