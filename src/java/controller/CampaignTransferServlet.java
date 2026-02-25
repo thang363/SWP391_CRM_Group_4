@@ -61,8 +61,8 @@ public class CampaignTransferServlet extends HttpServlet {
         // Fetch pending incoming transfers
         List<CampaignTransfer> pendingIncoming = transferService.getPendingTransfersForRecipient(userId);
         
-        // Fetch pending outgoing transfers
-        List<CampaignTransfer> pendingOutgoing = transferService.getPendingTransfersForSender(userId);
+        // Fetch pending outgoing transfers (now includes Rejected to show rejection reasons)
+        List<CampaignTransfer> pendingOutgoing = transferService.getRecentTransfersForSender(userId);
 
         request.setAttribute("pendingIncoming", pendingIncoming);
         request.setAttribute("pendingOutgoing", pendingOutgoing);

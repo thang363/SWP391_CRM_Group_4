@@ -232,13 +232,27 @@
                                                                                                         </button>
                                                                                                     </c:otherwise>
                                                                                                 </c:choose>
-                                                                                                <button
-                                                                                                    class="btn btn-sm btn-danger"
-                                                                                                    onclick="deleteCampaign(${campaign.id}, '${campaign.name}')"
-                                                                                                    title="Xóa">
-                                                                                                    <i
-                                                                                                        class="fa fa-trash"></i>
-                                                                                                </button>
+                                                                                                <c:choose>
+                                                                                                    <c:when
+                                                                                                        test="${campaign.hasPendingTransfer}">
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-secondary"
+                                                                                                            disabled
+                                                                                                            title="Đang chuyển giao - không thể xóa">
+                                                                                                            <i
+                                                                                                                class="fa fa-lock"></i>
+                                                                                                        </button>
+                                                                                                    </c:when>
+                                                                                                    <c:otherwise>
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-danger"
+                                                                                                            onclick="deleteCampaign(${campaign.id}, '${campaign.name}')"
+                                                                                                            title="Xóa">
+                                                                                                            <i
+                                                                                                                class="fa fa-trash"></i>
+                                                                                                        </button>
+                                                                                                    </c:otherwise>
+                                                                                                </c:choose>
                                                                                                 <c:choose>
                                                                                                     <c:when
                                                                                                         test="${campaign.hasPendingTransfer}">
@@ -399,7 +413,7 @@
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Hủy</button>
                                         <button type="button" class="btn btn-primary" onclick="saveCampaign()">
-                                            <i class="fa fa-save me-2"></i>Lưu 
+                                            <i class="fa fa-save me-2"></i>Lưu
                                         </button>
                                     </div>
                                 </div>
