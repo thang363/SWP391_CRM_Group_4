@@ -148,6 +148,53 @@ public class LeadDAOImpl implements LeadDAO {
         return null;
     }
 
+    @Override
+    public List<Lead> findByCampaignIdWithEmail(long campaignId) {
+        String sql = "SELECT * FROM Leads WHERE campaign_id = ? AND email IS NOT NULL AND email != '' ORDER BY created_at DESC";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<Lead> list = new ArrayList<>();
+
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setLong(1, campaignId);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToLead(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error finding leads by campaign ID with email: " + e.getMessage());
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return list;
+    }
+
+    @Override
+    public List<Lead> findAllWithEmail() {
+        String sql = "SELECT * FROM Leads WHERE email IS NOT NULL AND email != '' ORDER BY created_at DESC";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<Lead> list = new ArrayList<>();
+
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToLead(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error finding all leads with email: " + e.getMessage());
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return list;
+    }
+
     private Lead mapResultSetToLead(ResultSet rs) throws SQLException {
         Lead lead = new Lead();
         lead.setId(rs.getLong("id"));

@@ -54,7 +54,7 @@
                                         test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'MARKETING'}">
                                         <div class="nav-item dropdown">
                                             <a href="#"
-                                                class="nav-link dropdown-toggle ${currentPage == 'marketing' || currentPage == 'campaigns' || currentPage == 'transfers' || currentPage == 'landing-pages' || currentPage == 'submissions' || currentPage == 'import-leads' ? 'active' : ''}"
+                                                class="nav-link dropdown-toggle ${currentPage == 'marketing' || currentPage == 'campaigns' || currentPage == 'transfers' || currentPage == 'landing-pages' || currentPage == 'submissions' || currentPage == 'import-leads' || currentPage == 'bulk-email' ? 'active' : ''}"
                                                 data-bs-toggle="dropdown">
                                                 <i class="fa fa-bullhorn me-2"></i>Marketing
                                             </a>
@@ -68,8 +68,9 @@
                                                         Campaigns</a>
                                                 </c:if>
                                                 <c:if test="${sessionScope.userRole == 'MARKETING'}">
-                                                    <a href="${pageContext.request.contextPath}/email-marketing"
-                                                        class="dropdown-item">Email Marketing</a>
+                                                    <a href="${pageContext.request.contextPath}/marketing/bulk-email"
+                                                        class="dropdown-item ${currentPage == 'bulk-email' ? 'active' : ''}">
+                                                        <i class="fa fa-envelope me-1"></i>Email Marketing</a>
                                                     <a href="${pageContext.request.contextPath}/lead-sources"
                                                         class="dropdown-item">Lead Sources</a>
                                                     <a href="${pageContext.request.contextPath}/marketing/submissions"

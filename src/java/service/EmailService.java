@@ -49,6 +49,23 @@ public class EmailService {
         sendEmailHtml(toManagerEmail, subject, content.toString());
     }
 
+    /**
+     * Send a marketing email to a lead.
+     * @param toEmail Recipient email
+     * @param subject Email subject
+     * @param htmlContent HTML body content
+     * @return true if sent successfully, false otherwise
+     */
+    public boolean sendMarketingEmail(String toEmail, String subject, String htmlContent) {
+        try {
+            sendEmailHtml(toEmail, subject, htmlContent);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to send marketing email to " + toEmail + ": " + e.getMessage());
+            return false;
+        }
+    }
+
     private void sendEmailHtml(String to, String subject, String htmlBody) {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
