@@ -2,9 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
+
 package controller;
 
-import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -12,36 +12,47 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-import model.entity.Lead;
 import dao.LeadDAO;
+import dao.OpportunityDAO;
 import dao.impl.LeadDAOImpl;
-import jakarta.servlet.http.HttpSession;
-import model.entity.User;
-import util.DatabaseUtil;
-import util.Constants;
+import dao.impl.OpportunitiesDaoImpl;
+import jakarta.servlet.RequestDispatcher;
+import model.entity.Lead;
 
 /**
  *
  * @author ADMIN
  */
-@WebServlet(name = "LeadBySaleServlet", urlPatterns = {"/leads"})
-public class LeadBySaleServlet extends HttpServlet {
-
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
+@WebServlet(name="ConvertLeadServlet", urlPatterns={"/convertLead"})
+public class ConvertLeadServlet extends HttpServlet {
+   
+    /** 
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet ConvertLeadServlet</title>");  
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet ConvertLeadServlet at " + request.getContextPath () + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    } 
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
+    /** 
      * Handles the HTTP <code>GET</code> method.
-     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -49,28 +60,31 @@ public class LeadBySaleServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        request.setAttribute("pageTitle", "Sales Pipeline");
-        List<Lead> lead_list = new ArrayList<>();
+    throws ServletException, IOException {
+        int leadID = Integer.parseInt(request.getParameter("leadId"));
         LeadDAO ld = new LeadDAOImpl();
+        Lead lead = ld.findById(leadID);
+        String leadName = lead.getFullName();
+        long saleID = lead.getAssignedTo();
+        OpportunityDAO op = new OpportunitiesDaoImpl();
         try {
-            HttpSession session = request.getSession();
-            User user = (User) session.getAttribute("currentUser"); // Get User object from session
-            if (user != null) {
-                lead_list = ld.findBySaleId(user.getId());
+            if (lead != null 
+            && !lead.getIsConverted()
+            && "Qualified".equals(lead.getStatus())) {
+
+            op.createFromLead(leadID, leadName, saleID);
+            
+            ld.markAsConverted(leadID);
+            response.sendRedirect(request.getContextPath() + "/leads");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        request.setAttribute("leadList", lead_list);
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/sales/leadbysale.jsp");
-        dispatcher.forward(request, response);
-    }
+    } 
 
-    /**
+    /** 
      * Handles the HTTP <code>POST</code> method.
-     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -78,20 +92,12 @@ public class LeadBySaleServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            int leadID = Integer.parseInt(request.getParameter("leadId"));
-            String status = request.getParameter("status");
-            LeadDAO ld = new LeadDAOImpl();
-            ld.updateLeadStatus(leadID, status);
-        } catch (Exception e) {
-        }
-        response.sendRedirect("leads");
+    throws ServletException, IOException {
+        processRequest(request, response);
     }
 
-    /**
+    /** 
      * Returns a short description of the servlet.
-     *
      * @return a String containing servlet description
      */
     @Override

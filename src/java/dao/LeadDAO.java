@@ -14,6 +14,10 @@ public interface LeadDAO {
      * @return List of Leads
      */
     List<Lead> findBySaleId(long saleId);
+    
+    void updateLeadStatus(int leadId, String status);
+    
+    void markAsConverted(int leadId);
 
     /**
      * Check if a lead with the given email or phone already exists.
@@ -38,6 +42,14 @@ public interface LeadDAO {
     Lead findById(long id);
 
     /**
+
+     * Update lead's basic info (name and phone).
+     * @param id The ID of the lead
+     * @param name New name
+     * @param phone New phone
+     */
+    void updateLeadInfo(int id, String name, String phone);
+    /*
      * Find leads by campaign ID that have email addresses.
      * @param campaignId The campaign ID
      * @return List of Leads with email
@@ -49,4 +61,5 @@ public interface LeadDAO {
      * @return List of Leads with email
      */
     List<Lead> findAllWithEmail();
+
 }
