@@ -255,9 +255,20 @@
                                 </div>
                                 <!-- Content End -->
 
-                                <!-- Back to Top -->
-                                <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i
-                                        class="bi bi-arrow-up"></i></a>
+                    </div>
+
+                    <!-- Toast Container -->
+                    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060;">
+                        <div id="liveToast" class="toast align-items-center border-0" role="alert" aria-live="assertive"
+                            aria-atomic="true">
+                            <div class="d-flex">
+                                <div class="toast-body" id="toastMessage">
+                                    Thông báo ở đây.
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                                    data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Create/Edit Rule Modal -->
@@ -360,9 +371,30 @@
                                 });
 
                                 let ruleModal;
+                                let toastElement;
+                                let toast;
+
                                 $(document).ready(function () {
                                     ruleModal = new bootstrap.Modal(document.getElementById('ruleModal'));
+                                    toastElement = document.getElementById('liveToast');
+                                    toast = new bootstrap.Toast(toastElement, { delay: 3000 });
                                 });
+
+                                function showAlert(message, type = 'success') {
+                                    const toastMsg = document.getElementById('toastMessage');
+                                    toastMsg.textContent = message;
+
+                                    // Reset classes
+                                    toastElement.classList.remove('bg-success', 'bg-danger', 'text-white');
+
+                                    if (type === 'success') {
+                                        toastElement.classList.add('bg-success', 'text-white');
+                                    } else {
+                                        toastElement.classList.add('bg-danger', 'text-white');
+                                    }
+
+                                    toast.show();
+                                }
 
                                 // ======= CONDITION ROWS =======
                                 function addConditionRow(field, operator, value) {
@@ -454,11 +486,11 @@
 
                                                 ruleModal.show();
                                             } else {
-                                                alert(response.message);
+                                                showAlert(response.message, 'danger');
                                             }
                                         },
                                         error: function () {
-                                            alert('Lỗi tải dữ liệu rule!');
+                                            showAlert('Lỗi tải dữ liệu rule!', 'danger');
                                         }
                                     });
                                 }
@@ -488,13 +520,13 @@
 
                                     $.post('${pageContext.request.contextPath}/automation-rules', params, function (response) {
                                         if (response.success) {
-                                            alert(response.message);
-                                            location.reload();
+                                            showAlert(response.message);
+                                            setTimeout(() => location.reload(), 1000);
                                         } else {
-                                            alert(response.message);
+                                            showAlert(response.message, 'danger');
                                         }
                                     }, 'json').fail(function () {
-                                        alert('Lỗi kết nối server!');
+                                        showAlert('Lỗi kết nối server!', 'danger');
                                     });
                                 }
 
@@ -507,14 +539,15 @@
                                         status: status
                                     }, function (response) {
                                         if (response.success) {
-                                            location.reload();
+                                            showAlert(response.message);
+                                            setTimeout(() => location.reload(), 500);
                                         } else {
-                                            alert(response.message);
-                                            location.reload();
+                                            showAlert(response.message, 'danger');
+                                            setTimeout(() => location.reload(), 1000);
                                         }
                                     }, 'json').fail(function () {
-                                        alert('Lỗi kết nối server!');
-                                        location.reload();
+                                        showAlert('Lỗi kết nối server!', 'danger');
+                                        setTimeout(() => location.reload(), 1000);
                                     });
                                 }
 
@@ -528,13 +561,13 @@
                                                 id: id
                                             }, function (response) {
                                                 if (response.success) {
-                                                    alert(response.message);
-                                                    location.reload();
+                                                    showAlert(response.message);
+                                                    setTimeout(() => location.reload(), 1000);
                                                 } else {
-                                                    alert(response.message);
+                                                    showAlert(response.message, 'danger');
                                                 }
                                             }, 'json').fail(function () {
-                                                alert('Lỗi kết nối server!');
+                                                showAlert('Lỗi kết nối server!', 'danger');
                                             });
                                         },
                                         { title: 'Xóa Rule', confirmText: 'Xóa', confirmClass: 'btn-danger' }

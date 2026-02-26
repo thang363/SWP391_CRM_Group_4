@@ -90,15 +90,32 @@
                             }
 
                             .task-title-cell {
-                                max-width: 300px;
+                                max-width: 280px;
+                                word-wrap: break-word;
+                                overflow-wrap: break-word;
+                                white-space: normal;
+                            }
+
+                            .customer-cell {
+                                max-width: 200px;
+                                word-wrap: break-word;
+                                overflow-wrap: break-word;
+                                white-space: normal;
                             }
 
                             .desc-tooltip {
-                                max-width: 200px;
+                                display: block;
+                                max-width: 100%;
                                 white-space: nowrap;
                                 overflow: hidden;
                                 text-overflow: ellipsis;
                                 cursor: help;
+                            }
+
+                            /* Ensure table doesn't force page overflow */
+                            .table {
+                                table-layout: fixed;
+                                width: 100%;
                             }
                         </style>
                 </head>
@@ -185,13 +202,13 @@
                                                         <table class="table table-hover align-middle" id="tasksTable">
                                                             <thead>
                                                                 <tr>
-                                                                    <th style="width:5%">#</th>
-                                                                    <th style="width:25%">Tên công việc</th>
-                                                                    <th style="width:18%">Khách hàng</th>
-                                                                    <th style="width:10%">Loại</th>
-                                                                    <th style="width:12%">Trạng thái</th>
-                                                                    <th style="width:12%">Ngày tạo</th>
-                                                                    <th style="width:18%">Hành động</th>
+                                                                    <th style="width: 5%">#</th>
+                                                                    <th style="width: 25%">Tên công việc</th>
+                                                                    <th style="width: 20%">Khách hàng</th>
+                                                                    <th style="width: 12%">Loại</th>
+                                                                    <th style="width: 13%">Trạng thái</th>
+                                                                    <th style="width: 15%">Ngày tạo</th>
+                                                                    <th style="width: 10%">Hành động</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -225,12 +242,14 @@
                                                                                             title="${task.description}">${task.description}</small>
                                                                                     </c:if>
                                                                                 </td>
-                                                                                <td>
+                                                                                <td class="customer-cell">
                                                                                     <c:choose>
                                                                                         <c:when
                                                                                             test="${not empty task.customerName}">
-                                                                                            <a href="${pageContext.request.contextPath}/customers?action=view&id=${task.relatedRecordId}"
-                                                                                                class="customer-link">
+                                                                                            <a href="javascript:void(0)"
+                                                                                                onclick="showCustomerInfo(${task.relatedRecordId})"
+                                                                                                class="customer-link"
+                                                                                                title="Xem thông tin nhanh">
                                                                                                 <i
                                                                                                     class="fa fa-building me-1"></i>${task.customerName}
                                                                                             </a>
@@ -360,14 +379,8 @@
                                                                                             </button>
                                                                                         </form>
                                                                                     </c:if>
-                                                                                    <c:if
-                                                                                        test="${not empty task.customerName}">
-                                                                                        <a href="${pageContext.request.contextPath}/customers?action=view&id=${task.relatedRecordId}"
-                                                                                            class="btn btn-outline-info btn-action ms-1"
-                                                                                            title="Xem khách hàng">
-                                                                                            <i class="fa fa-eye"></i>
-                                                                                        </a>
-                                                                                    </c:if>
+                                                                                    <%-- Icon mắt đã được xóa theo yêu
+                                                                                        cầu --%>
                                                                                 </td>
                                                                             </tr>
                                                                         </c:forEach>
@@ -385,6 +398,76 @@
                                     <%@ include file="/includes/footer.jsp" %>
                             </div>
                             <!-- Content End -->
+
+                            <!-- Customer Info Modal -->
+                            <div class="modal fade" id="customerInfoModal" tabindex="-1"
+                                aria-labelledby="customerInfoModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title" id="customerInfoModalLabel">
+                                                <i class="fa fa-info-circle me-2"></i>Thông tin khách hàng
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" id="customerInfoBody">
+                                            <!-- Nội dung sẽ được load qua AJAX -->
+                                            <div class="text-center py-4" id="modalLoader">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="sr-only">Đang tải...</span>
+                                                </div>
+                                            </div>
+                                            <div id="modalContent" style="display: none;">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <h4 id="modalCompanyName" class="mb-0 me-2"></h4>
+                                                    <span id="modalTier" class="badge"></span>
+                                                </div>
+                                                <hr>
+                                                <div class="row g-3">
+                                                    <div class="col-sm-6">
+                                                        <label class="text-muted small d-block">Điện thoại</label>
+                                                        <a href="" id="modalPhoneLink"
+                                                            class="text-dark fw-bold text-decoration-none">
+                                                            <i class="fa fa-phone-alt me-1 text-primary"></i> <span
+                                                                id="modalPhone"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <label class="text-muted small d-block">Email</label>
+                                                        <span id="modalEmail" class="fw-bold"></span>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <label class="text-muted small d-block">Ngành nghề</label>
+                                                        <span id="modalIndustry" class="fw-bold"></span>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <label class="text-muted small d-block">CS cuối</label>
+                                                        <span id="modalLastCare" class="fw-bold"></span>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <label class="text-muted small d-block">Địa điểm</label>
+                                                        <span id="modalLocation" class="fw-bold"></span>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <label class="text-muted small d-block">Website</label>
+                                                        <a href="" id="modalWebsiteLink" target="_blank"
+                                                            class="fw-bold text-truncate d-block">
+                                                            <span id="modalWebsite"></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Đóng</button>
+                                            <a href="#" id="viewFullProfileBtn" class="btn btn-primary">Xem hồ sơ đầy
+                                                đủ</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
 
                     <!-- JavaScript Libraries -->
@@ -413,6 +496,58 @@
                                     row.style.display = '';
                                 } else {
                                     row.style.display = 'none';
+                                }
+                            });
+                        }
+
+                        function showCustomerInfo(customerId) {
+                            var modal = new bootstrap.Modal(document.getElementById('customerInfoModal'));
+                            var loader = document.getElementById('modalLoader');
+                            var content = document.getElementById('modalContent');
+
+                            loader.style.display = 'block';
+                            content.style.display = 'none';
+                            modal.show();
+
+                            $.ajax({
+                                url: '${pageContext.request.contextPath}/customer-info',
+                                data: { id: customerId },
+                                type: 'GET',
+                                success: function (data) {
+                                    if (data.error) {
+                                        alert('Lỗi: ' + data.error);
+                                        modal.hide();
+                                        return;
+                                    }
+
+                                    // Điền dữ liệu
+                                    $('#modalCompanyName').text(data.companyName || '—');
+                                    $('#modalPhone').text(data.phone || '—');
+                                    $('#modalPhoneLink').attr('href', data.phone ? 'tel:' + data.phone : 'javascript:void(0)');
+                                    $('#modalEmail').text(data.email || '—');
+                                    $('#modalIndustry').text(data.industry || '—');
+                                    $('#modalLastCare').text(data.lastCareDate || 'Chưa chăm sóc');
+                                    $('#modalLocation').text((data.city || '') + (data.city && data.country ? ', ' : '') + (data.country || '') || '—');
+                                    $('#modalWebsite').text(data.website || '—');
+                                    $('#modalWebsiteLink').attr('href', data.website ? (data.website.startsWith('http') ? data.website : 'http://' + data.website) : 'javascript:void(0)');
+
+                                    // Tier Badge logic
+                                    var tierClass = 'bg-secondary';
+                                    if (data.tier === 'VIP') tierClass = 'bg-danger';
+                                    else if (data.tier === 'Premium') tierClass = 'bg-success';
+                                    else if (data.tier === 'Standard') tierClass = 'bg-info text-dark';
+
+                                    $('#modalTier').text(data.tier || 'Standard').removeClass().addClass('badge ' + tierClass);
+
+                                    // Link full profile
+                                    $('#viewFullProfileBtn').attr('href', '${pageContext.request.contextPath}/customers?action=view&id=' + data.id);
+
+                                    loader.style.display = 'none';
+                                    content.style.display = 'block';
+                                },
+                                error: function () {
+                                    alert('Không thể kết nối đến máy chủ. Vui lòng thử lại.');
+                                    modal.hide();
                                 }
                             });
                         }

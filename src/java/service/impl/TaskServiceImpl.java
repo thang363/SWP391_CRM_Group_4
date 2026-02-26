@@ -10,9 +10,11 @@ import java.util.List;
 public class TaskServiceImpl implements TaskService {
 
     private final TaskDAO taskDAO;
+    private final dao.CustomerDAO customerDAO;
 
     public TaskServiceImpl() {
         this.taskDAO = new TaskDAOImpl();
+        this.customerDAO = new dao.impl.CustomerDAOImpl();
     }
 
     @Override
@@ -37,6 +39,18 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public boolean updateTaskStatus(int taskId, String status) {
-        return taskDAO.updateStatus(taskId, status);
+        boolean updated = taskDAO.updateStatus(taskId, status);
+
+        // Nếu task được hoàn thành, tự động update last_care_date cho khách hàng liên
+        // quan
+        if (updated && "Completed".equals(status)) {
+            Task task = taskDAO.findById(taskId);
+            if (task != null && "Customer".equals(task.getRelatedToEntity()) && task.getRelatedRecordId() != null) {
+                customerDAO.updateLastCareDate(task.getRelatedRecordId(),
+                        new java.sql.Timestamp(System.currentTimeMillis()));
+            }
+        }
+
+        return updated;
     }
 }

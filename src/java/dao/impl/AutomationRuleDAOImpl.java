@@ -148,20 +148,50 @@ public class AutomationRuleDAOImpl implements AutomationRuleDAO {
 
     @Override
     public boolean delete(int id) {
-        String sql = "DELETE FROM AutomationRules WHERE id = ?";
+        String deleteLogsSql = "DELETE FROM SystemJobLogs WHERE rule_id = ?";
+        String deleteRuleSql = "DELETE FROM AutomationRules WHERE id = ?";
         Connection conn = null;
-        PreparedStatement stmt = null;
+        PreparedStatement stmtLogs = null;
+        PreparedStatement stmtRule = null;
 
         try {
             conn = dbUtil.getConnection();
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
+            conn.setAutoCommit(false); // Bắt đầu transaction
+
+            // 1. Xóa các log liên quan
+            stmtLogs = conn.prepareStatement(deleteLogsSql);
+            stmtLogs.setInt(1, id);
+            stmtLogs.executeUpdate();
+
+            // 2. Xóa rule
+            stmtRule = conn.prepareStatement(deleteRuleSql);
+            stmtRule.setInt(1, id);
+            int affectedRows = stmtRule.executeUpdate();
+
+            conn.commit(); // Hoàn tất transaction
+            return affectedRows > 0;
         } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Hoàn tác nếu có lỗi
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
             e.printStackTrace();
             return false;
         } finally {
-            closeResources(null, stmt, conn);
+            // Đóng tài nguyên thủ công vì không dùng try-with-resources cho Statement riêng
+            // lẻ ở đây để dễ rollback
+            try {
+                if (stmtLogs != null)
+                    stmtLogs.close();
+                if (stmtRule != null)
+                    stmtRule.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            dbUtil.closeConnection(conn);
         }
     }
 
