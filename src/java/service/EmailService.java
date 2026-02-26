@@ -82,7 +82,7 @@ public class EmailService {
 
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(FROM_EMAIL, "CRM Support System"));
+            message.setFrom(new InternetAddress(FROM_EMAIL, "CRM  System"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(MimeUtility.encodeText(subject, "UTF-8", "B"));
             message.setContent(htmlBody, "text/html; charset=UTF-8");

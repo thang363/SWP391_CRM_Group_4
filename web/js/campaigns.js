@@ -277,41 +277,42 @@ function saveCampaign() {
  * Delete campaign
  */
 function deleteCampaign(id, name) {
-    if (!confirm(`Bạn có chắc chắn muốn xóa chiến dịch "${name}"?`)) {
-        return;
-    }
+    showConfirmDialog(
+        `Bạn có chắc chắn muốn xóa chiến dịch "<strong>${name}</strong>"?`,
+        function () {
+            const params = new URLSearchParams();
+            params.append('action', 'delete');
+            params.append('id', id);
 
-    const params = new URLSearchParams();
-    params.append('action', 'delete');
-    params.append('id', id);
+            console.log('Deleting campaign:', id);
 
-    console.log('Deleting campaign:', id);
-
-    fetch(`${contextPath}/campaigns`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            fetch(`${contextPath}/campaigns`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: params
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.success) {
+                        const row = document.getElementById('campaign-row-' + id);
+                        if (row) row.remove();
+                        showAlert('success', result.message);
+                    } else {
+                        showAlert('danger', result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting campaign:', error);
+                    showAlert('danger', 'Lỗi khi xóa chiến dịch: ' + error.message);
+                });
         },
-        body: params
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(result => {
-            if (result.success) {
-                // Remove row from table
-                const row = document.getElementById('campaign-row-' + id);
-                if (row) row.remove();
-                showAlert('success', result.message);
-            } else {
-                showAlert('danger', result.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error deleting campaign:', error);
-            showAlert('danger', 'Lỗi khi xóa chiến dịch: ' + error.message);
-        });
+        { title: 'Xóa chiến dịch', confirmText: 'Xóa', confirmClass: 'btn-danger' }
+    );
 }
 
 // ============================================

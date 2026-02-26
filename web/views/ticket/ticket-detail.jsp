@@ -360,22 +360,25 @@
                                 // Update Status
                                 function updateStatus(ticketId) {
                                     const status = document.getElementById('statusSelect').value;
-                                    if (!confirm('Bạn có chắc muốn đổi trạng thái sang ' + status + '?')) return;
-
-                                    $.post('${pageContext.request.contextPath}/tickets', {
-                                        action: 'update-status',
-                                        id: ticketId,
-                                        status: status
-                                    }, function (response) {
-                                        if (response.success) {
-                                            alert(response.message);
-                                            location.reload();
-                                        } else {
-                                            alert(response.message);
-                                        }
-                                    }).fail(function (xhr, status, error) {
-                                        alert('Lỗi kết nối: ' + error);
-                                    });
+                                    showConfirmDialog(
+                                        'Bạn có chắc muốn đổi trạng thái sang <strong>' + status + '</strong>?',
+                                        function () {
+                                            $.post('${pageContext.request.contextPath}/tickets', {
+                                                action: 'update-status',
+                                                id: ticketId,
+                                                status: status
+                                            }, function (response) {
+                                                if (response.success) {
+                                                    location.reload();
+                                                } else {
+                                                    showToast('error', response.message);
+                                                }
+                                            }).fail(function (xhr, status, error) {
+                                                showToast('error', 'Lỗi kết nối: ' + error);
+                                            });
+                                        },
+                                        { title: 'Đổi trạng thái', confirmText: 'Đồng ý', confirmClass: 'btn-primary' }
+                                    );
                                 }
 
                                 // Update Priority
@@ -386,9 +389,13 @@
                                         id: ticketId,
                                         priority: priority
                                     }, function (response) {
-                                        alert(response.message);
+                                        if (response.success) {
+                                            location.reload();
+                                        } else {
+                                            showToast('error', response.message);
+                                        }
                                     }).fail(function (xhr, status, error) {
-                                        alert('Lỗi kết nối: ' + error);
+                                        showToast('error', 'Lỗi kết nối: ' + error);
                                     });
                                 }
 
@@ -398,7 +405,7 @@
                                     const selectElement = document.getElementById('assignSelect');
                                     if (!selectElement) {
                                         console.error('assignSelect element not found');
-                                        alert('Lỗi: Không tìm thấy danh sách nhân viên.');
+                                        showToast('error', 'Lỗi: Không tìm thấy danh sách nhân viên.');
                                         return;
                                     }
                                     const userId = selectElement.value;
@@ -409,48 +416,54 @@
                                         confirmMsg = 'Bạn có chắc muốn hủy phân công (Unassign) ticket này?';
                                     }
 
-                                    if (!confirm(confirmMsg)) return;
+                                    showConfirmDialog(
+                                        confirmMsg,
+                                        function () {
+                                            // Disable button
+                                            if (btnElement) btnElement.disabled = true;
 
-                                    // Disable button
-                                    if (btnElement) btnElement.disabled = true;
-
-                                    $.post('${pageContext.request.contextPath}/tickets', {
-                                        action: 'assign',
-                                        id: ticketId,
-                                        userId: userId
-                                    }, function (response) {
-                                        if (response.success) {
-                                            alert(response.message);
-                                            window.location.href = '${pageContext.request.contextPath}/tickets';
-                                        } else {
-                                            alert(response.message);
-                                            if (btnElement) btnElement.disabled = false;
-                                        }
-                                    }).fail(function (xhr, status, error) {
-                                        let msg = 'Lỗi kết nối server: ' + error;
-                                        if (xhr.status === 200) {
-                                            msg = 'Lỗi xử lý phản hồi (Invalid JSON). Xem console để biết thêm chi tiết.';
-                                        }
-                                        alert(msg);
-                                        if (btnElement) btnElement.disabled = false;
-                                    });
+                                            $.post('${pageContext.request.contextPath}/tickets', {
+                                                action: 'assign',
+                                                id: ticketId,
+                                                userId: userId
+                                            }, function (response) {
+                                                if (response.success) {
+                                                    window.location.href = '${pageContext.request.contextPath}/tickets';
+                                                } else {
+                                                    showToast('error', response.message);
+                                                    if (btnElement) btnElement.disabled = false;
+                                                }
+                                            }).fail(function (xhr, status, error) {
+                                                let msg = 'Lỗi kết nối server: ' + error;
+                                                if (xhr.status === 200) {
+                                                    msg = 'Lỗi xử lý phản hồi (Invalid JSON). Xem console để biết thêm chi tiết.';
+                                                }
+                                                showToast('error', msg);
+                                                if (btnElement) btnElement.disabled = false;
+                                            });
+                                        },
+                                        { title: 'Phân công ticket', confirmText: 'Xác nhận', confirmClass: 'btn-primary' }
+                                    );
                                 }
 
                                 // Claim Ticket
                                 function claimTicket(ticketId) {
-                                    if (!confirm('Bạn có muốn nhận xử lý ticket này?')) return;
-
-                                    $.post('${pageContext.request.contextPath}/tickets', {
-                                        action: 'claim',
-                                        id: ticketId
-                                    }, function (response) {
-                                        if (response.success) {
-                                            alert(response.message);
-                                            location.reload();
-                                        } else {
-                                            alert(response.message);
-                                        }
-                                    });
+                                    showConfirmDialog(
+                                        'Bạn có muốn nhận xử lý ticket này?',
+                                        function () {
+                                            $.post('${pageContext.request.contextPath}/tickets', {
+                                                action: 'claim',
+                                                id: ticketId
+                                            }, function (response) {
+                                                if (response.success) {
+                                                    location.reload();
+                                                } else {
+                                                    showToast('error', response.message);
+                                                }
+                                            });
+                                        },
+                                        { title: 'Nhận xử lý ticket', confirmText: 'Nhận xử lý', confirmClass: 'btn-warning' }
+                                    );
                                 }
 
                                 // Submit Activity
@@ -468,7 +481,7 @@
                                             // Reload to show new comment
                                             location.reload();
                                         } else {
-                                            alert(response.message);
+                                            showToast('error', response.message);
                                         }
                                     });
                                 }
@@ -527,11 +540,13 @@
                                 function submitResolve() {
                                     const note = document.getElementById('solutionNote').value;
                                     if (!note.trim()) {
-                                        alert('Vui lòng nhập giải pháp xử lý.');
+                                        showToast('error', 'Vui lòng nhập giải pháp xử lý.');
                                         return;
                                     }
 
-                                    if (!confirm('Xác nhận đã xử lý xong ticket này?')) return;
+                                    // Close the resolve modal first
+                                    var resolveModal = bootstrap.Modal.getInstance(document.getElementById('resolveModal'));
+                                    if (resolveModal) resolveModal.hide();
 
                                     $.post('${pageContext.request.contextPath}/tickets', {
                                         action: 'resolve',
@@ -539,28 +554,57 @@
                                         solutionNote: note
                                     }, function (response) {
                                     if (response.success) {
-                                        alert(response.message);
                                         location.reload();
                                     } else {
-                                        alert(response.message);
+                                        showToast('error', response.message);
                                     }
                                 });
                                 }
 
                                 // Re-open Ticket
                                 function reopenTicket(ticketId) {
-                                    if (!confirm('Bạn có chắc muốn mở lại ticket này?')) return;
-                                    $.post('${pageContext.request.contextPath}/tickets', {
-                                        action: 'reopen',
-                                        ticketId: ticketId
-                                    }, function (response) {
-                                        if (response.success) {
-                                            alert(response.message);
-                                            location.reload();
-                                        } else {
-                                            alert(response.message);
+                                    showConfirmDialog(
+                                        'Bạn có chắc muốn mở lại ticket này?',
+                                        function () {
+                                            $.post('${pageContext.request.contextPath}/tickets', {
+                                                action: 'reopen',
+                                                ticketId: ticketId
+                                            }, function (response) {
+                                                if (response.success) {
+                                                    location.reload();
+                                                } else {
+                                                    showToast('error', response.message);
+                                                }
+                                            });
+                                        },
+                                        { title: 'Mở lại ticket', confirmText: 'Mở lại', confirmClass: 'btn-danger' }
+                                    );
+                                }
+
+                                // Toast notification helper
+                                function showToast(type, message) {
+                                    var container = document.getElementById('toast-container');
+                                    if (!container) {
+                                        container = document.createElement('div');
+                                        container.id = 'toast-container';
+                                        container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;';
+                                        document.body.appendChild(container);
+                                    }
+                                    var toast = document.createElement('div');
+                                    toast.className = 'alert alert-' + (type === 'success' ? 'success' : 'danger') + ' alert-dismissible fade show';
+                                    toast.style.cssText = 'min-width:300px;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+                                    toast.innerHTML =
+                                        '<i class="fa ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle') + ' me-2"></i>' +
+                                        message +
+                                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                                    container.appendChild(toast);
+                                    setTimeout(function () {
+                                        if (toast.parentNode) {
+                                            toast.style.transition = 'opacity 0.3s';
+                                            toast.style.opacity = '0';
+                                            setTimeout(function () { toast.remove(); }, 300);
                                         }
-                                    });
+                                    }, 3000);
                                 }
                             </script>
 

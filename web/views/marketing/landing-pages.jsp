@@ -471,43 +471,46 @@
                         else if (newStatus === 'Approved') actionName = "Duyệt Landing Page";
                         else if (newStatus === 'Rejected') actionName = "Từ chối Landing Page";
 
-                        if (confirm('Bạn có chắc chắn muốn ' + actionName + '?')) {
-                            // Using URLSearchParams for post data
-                            const params = new URLSearchParams();
-                            params.append('id', id);
-                            params.append('status', newStatus);
+                        showConfirmDialog(
+                            'Bạn có chắc chắn muốn <strong>' + actionName + '</strong>?',
+                            function () {
+                                const params = new URLSearchParams();
+                                params.append('id', id);
+                                params.append('status', newStatus);
 
-                            if (newStatus === 'Rejected') {
-                                const reason = prompt("Vui lòng nhập lý do từ chối / góp ý:");
-                                if (reason === null) return; // Cancelled
-                                if (!reason.trim()) {
-                                    alert("Bạn phải nhập lý do từ chối.");
-                                    return;
-                                }
-                                params.append('comment', reason);
-                            }
-
-                            fetch(contextPath + '/landing-pages?action=change-status', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                },
-                                body: params
-                            })
-                                .then(res => res.json())
-                                .then(result => {
-                                    if (result.success) {
-                                        alert(result.message);
-                                        window.location.reload();
-                                    } else {
-                                        alert(result.message || 'Có lỗi xảy ra');
+                                if (newStatus === 'Rejected') {
+                                    const reason = prompt("Vui lòng nhập lý do từ chối / góp ý:");
+                                    if (reason === null) return;
+                                    if (!reason.trim()) {
+                                        alert("Bạn phải nhập lý do từ chối.");
+                                        return;
                                     }
+                                    params.append('comment', reason);
+                                }
+
+                                fetch(contextPath + '/landing-pages?action=change-status', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded',
+                                    },
+                                    body: params
                                 })
-                                .catch(err => {
-                                    console.error('Error:', err);
-                                    alert('Lỗi kết nối');
-                                });
-                        }
+                                    .then(res => res.json())
+                                    .then(result => {
+                                        if (result.success) {
+                                            alert(result.message);
+                                            window.location.reload();
+                                        } else {
+                                            alert(result.message || 'Có lỗi xảy ra');
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error('Error:', err);
+                                        alert('Lỗi kết nối');
+                                    });
+                            },
+                            { title: actionName, confirmText: 'Đồng ý', confirmClass: newStatus === 'Rejected' ? 'btn-danger' : 'btn-success' }
+                        );
                     }
 
                     function submitEditForm() {
@@ -518,10 +521,21 @@
 
                         // Extra confirmation for Approved status
                         if (status === 'Approved') {
-                            if (!confirm('LƯU Ý: Landing Page đang Approved. Việc lưu sẽ chuyển trạng thái về DRAFT (gỡ public). Tiếp tục?')) {
-                                return;
-                            }
+                            showConfirmDialog(
+                                '<strong>LƯU Ý:</strong> Landing Page đang Approved. Việc lưu sẽ chuyển trạng thái về <strong>DRAFT</strong> (gỡ public). Tiếp tục?',
+                                function () { doSubmitEditForm(); },
+                                { title: 'Cảnh báo', confirmText: 'Tiếp tục lưu', confirmClass: 'btn-warning' }
+                            );
+                            return;
                         }
+
+                        doSubmitEditForm();
+                    }
+
+                    function doSubmitEditForm() {
+                        const id = document.getElementById('editLpId').value;
+                        const name = document.getElementById('editLpName').value;
+                        const brief = document.getElementById('editLpBrief').value;
 
                         const params = new URLSearchParams();
                         params.append('action', 'update');
@@ -600,32 +614,34 @@
                     }
 
                     function confirmDelete(id, name) {
-                        if (!confirm('Bạn có chắc muốn xóa Landing Page "' + name + '"?')) {
-                            return;
-                        }
+                        showConfirmDialog(
+                            'Bạn có chắc muốn xóa Landing Page "<strong>' + name + '</strong>"?',
+                            function () {
+                                const params = new URLSearchParams();
+                                params.append('action', 'delete');
+                                params.append('id', id);
 
-                        const params = new URLSearchParams();
-                        params.append('action', 'delete');
-                        params.append('id', id);
-
-                        fetch(contextPath + '/landing-pages', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-                            body: params
-                        })
-                            .then(res => res.json())
-                            .then(result => {
-                                if (result.success) {
-                                    alert('Xóa thành công!');
-                                    window.location.reload();
-                                } else {
-                                    alert(result.message || 'Lỗi khi xóa');
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Error:', err);
-                                alert('Có lỗi xảy ra: ' + err.message);
-                            });
+                                fetch(contextPath + '/landing-pages', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                                    body: params
+                                })
+                                    .then(res => res.json())
+                                    .then(result => {
+                                        if (result.success) {
+                                            alert('Xóa thành công!');
+                                            window.location.reload();
+                                        } else {
+                                            alert(result.message || 'Lỗi khi xóa');
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.error('Error:', err);
+                                        alert('Có lỗi xảy ra: ' + err.message);
+                                    });
+                            },
+                            { title: 'Xóa Landing Page', confirmText: 'Xóa', confirmClass: 'btn-danger' }
+                        );
                     }
 
                     // Hide spinner

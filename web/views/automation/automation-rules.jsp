@@ -520,20 +520,25 @@
 
                                 // ======= DELETE =======
                                 function deleteRule(id) {
-                                    if (!confirm('Bạn có chắc muốn xóa rule này?')) return;
-                                    $.post('${pageContext.request.contextPath}/automation-rules', {
-                                        action: 'delete',
-                                        id: id
-                                    }, function (response) {
-                                        if (response.success) {
-                                            alert(response.message);
-                                            location.reload();
-                                        } else {
-                                            alert(response.message);
-                                        }
-                                    }, 'json').fail(function () {
-                                        alert('Lỗi kết nối server!');
-                                    });
+                                    showConfirmDialog(
+                                        'Bạn có chắc muốn xóa rule này?',
+                                        function () {
+                                            $.post('${pageContext.request.contextPath}/automation-rules', {
+                                                action: 'delete',
+                                                id: id
+                                            }, function (response) {
+                                                if (response.success) {
+                                                    alert(response.message);
+                                                    location.reload();
+                                                } else {
+                                                    alert(response.message);
+                                                }
+                                            }, 'json').fail(function () {
+                                                alert('Lỗi kết nối server!');
+                                            });
+                                        },
+                                        { title: 'Xóa Rule', confirmText: 'Xóa', confirmClass: 'btn-danger' }
+                                    );
                                 }
                             </script>
                 </body>

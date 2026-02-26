@@ -1110,7 +1110,7 @@ created_at DATETIME2 DEFAULT GETDATE(),
 FOREIGN KEY (rule_id) REFERENCES AutomationRules(id)
 );
 
-CREATE TABLE [dbo].[TicketVerificationTokens](<
+CREATE TABLE [dbo].[TicketVerificationTokens](
 [id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 [ticket_id] INT NOT NULL,
 [token] VARCHAR(64) NOT NULL UNIQUE,
