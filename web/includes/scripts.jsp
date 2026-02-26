@@ -26,3 +26,6 @@
 
     <%-- Reusable Confirm Dialog --%>
         <%@ include file="/includes/confirm-modal.jsp" %>
+
+            <%-- Reusable Toast System --%>
+                <%@ include file="/includes/toast.jsp" %>

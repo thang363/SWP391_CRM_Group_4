@@ -166,7 +166,7 @@
                                                                         </div>
                                                                     </div>
                                                                     <button type="button" class="btn btn-sm btn-primary"
-                                                                        onclick="assignTicket(${ticket.id}, this)">
+                                                                        onclick="assignTicket('${ticket.id}', this)">
                                                                         <i class="fa fa-check"></i>
                                                                     </button>
                                                                 </div>
@@ -266,7 +266,7 @@
                                             <c:if test="${canClaim}">
                                                 <div class="mb-4">
                                                     <button class="btn btn-warning w-100 fw-bold"
-                                                        onclick="claimTicket(${ticket.id})">
+                                                        onclick="claimTicket('${ticket.id}')">
                                                         <i class="fa fa-hand-paper me-2"></i>Nhận xử lý (Claim)
                                                     </button>
                                                 </div>
@@ -371,10 +371,10 @@
                                                 if (response.success) {
                                                     location.reload();
                                                 } else {
-                                                    showToast('error', response.message);
+                                                    showToast(response.message, 'danger');
                                                 }
                                             }).fail(function (xhr, status, error) {
-                                                showToast('error', 'Lỗi kết nối: ' + error);
+                                                showToast('Lỗi kết nối: ' + error, 'danger');
                                             });
                                         },
                                         { title: 'Đổi trạng thái', confirmText: 'Đồng ý', confirmClass: 'btn-primary' }
@@ -392,10 +392,10 @@
                                         if (response.success) {
                                             location.reload();
                                         } else {
-                                            showToast('error', response.message);
+                                            showToast(response.message, 'danger');
                                         }
                                     }).fail(function (xhr, status, error) {
-                                        showToast('error', 'Lỗi kết nối: ' + error);
+                                        showToast('Lỗi kết nối: ' + error, 'danger');
                                     });
                                 }
 
@@ -405,7 +405,7 @@
                                     const selectElement = document.getElementById('assignSelect');
                                     if (!selectElement) {
                                         console.error('assignSelect element not found');
-                                        showToast('error', 'Lỗi: Không tìm thấy danh sách nhân viên.');
+                                        showToast('Lỗi: Không tìm thấy danh sách nhân viên.', 'danger');
                                         return;
                                     }
                                     const userId = selectElement.value;
@@ -430,7 +430,7 @@
                                                 if (response.success) {
                                                     window.location.href = '${pageContext.request.contextPath}/tickets';
                                                 } else {
-                                                    showToast('error', response.message);
+                                                    showToast(response.message, 'danger');
                                                     if (btnElement) btnElement.disabled = false;
                                                 }
                                             }).fail(function (xhr, status, error) {
@@ -438,7 +438,7 @@
                                                 if (xhr.status === 200) {
                                                     msg = 'Lỗi xử lý phản hồi (Invalid JSON). Xem console để biết thêm chi tiết.';
                                                 }
-                                                showToast('error', msg);
+                                                showToast(msg, 'danger');
                                                 if (btnElement) btnElement.disabled = false;
                                             });
                                         },
@@ -458,7 +458,7 @@
                                                 if (response.success) {
                                                     location.reload();
                                                 } else {
-                                                    showToast('error', response.message);
+                                                    showToast(response.message, 'danger');
                                                 }
                                             });
                                         },
@@ -481,7 +481,7 @@
                                             // Reload to show new comment
                                             location.reload();
                                         } else {
-                                            showToast('error', response.message);
+                                            showToast(response.message, 'danger');
                                         }
                                     });
                                 }
@@ -540,7 +540,7 @@
                                 function submitResolve() {
                                     const note = document.getElementById('solutionNote').value;
                                     if (!note.trim()) {
-                                        showToast('error', 'Vui lòng nhập giải pháp xử lý.');
+                                        showToast('Vui lòng nhập giải pháp xử lý.', 'danger');
                                         return;
                                     }
 
@@ -550,15 +550,16 @@
 
                                     $.post('${pageContext.request.contextPath}/tickets', {
                                         action: 'resolve',
-                                        ticketId: ${ ticket.id },
+                                        ticketId: '${ticket.id}',
                                         solutionNote: note
                                     }, function (response) {
-                                    if (response.success) {
-                                        location.reload();
-                                    } else {
-                                        showToast('error', response.message);
-                                    }
-                                });
+                                        if (response.success) {
+                                            showToast(response.message, 'success');
+                                            setTimeout(() => location.reload(), 2000);
+                                        } else {
+                                            showToast(response.message, 'danger');
+                                        }
+                                    });
                                 }
 
                                 // Re-open Ticket
@@ -573,38 +574,12 @@
                                                 if (response.success) {
                                                     location.reload();
                                                 } else {
-                                                    showToast('error', response.message);
+                                                    showToast(response.message, 'danger');
                                                 }
                                             });
                                         },
                                         { title: 'Mở lại ticket', confirmText: 'Mở lại', confirmClass: 'btn-danger' }
                                     );
-                                }
-
-                                // Toast notification helper
-                                function showToast(type, message) {
-                                    var container = document.getElementById('toast-container');
-                                    if (!container) {
-                                        container = document.createElement('div');
-                                        container.id = 'toast-container';
-                                        container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;';
-                                        document.body.appendChild(container);
-                                    }
-                                    var toast = document.createElement('div');
-                                    toast.className = 'alert alert-' + (type === 'success' ? 'success' : 'danger') + ' alert-dismissible fade show';
-                                    toast.style.cssText = 'min-width:300px;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
-                                    toast.innerHTML =
-                                        '<i class="fa ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle') + ' me-2"></i>' +
-                                        message +
-                                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
-                                    container.appendChild(toast);
-                                    setTimeout(function () {
-                                        if (toast.parentNode) {
-                                            toast.style.transition = 'opacity 0.3s';
-                                            toast.style.opacity = '0';
-                                            setTimeout(function () { toast.remove(); }, 300);
-                                        }
-                                    }, 3000);
                                 }
                             </script>
 
