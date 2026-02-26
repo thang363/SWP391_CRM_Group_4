@@ -178,7 +178,7 @@ public class AutomationJobRunner implements Runnable {
                 continue;
 
             switch (field) {
-                case "lastCareDate":
+                case "lastCareDays":
                     sql.append(" AND (last_care_date IS NULL OR DATEDIFF(DAY, last_care_date, GETDATE()) ");
                     sql.append(sanitizeOperator(operator));
                     sql.append(" ?)");
@@ -248,6 +248,10 @@ public class AutomationJobRunner implements Runnable {
      * Tạo một Task cho NV Support (insert vào bảng Tasks).
      */
     private boolean createTaskForCustomer(AutomationRule rule, int customerId) {
+        if (hasPendingTaskForRule(customerId, rule.getRuleName())) {
+            return false; // Đã có task chờ xử lý từ kịch bản này -> Tránh spam
+        }
+
         try {
             Task task = new Task();
             task.setTitle(rule.getRuleName());
@@ -286,5 +290,39 @@ public class AutomationJobRunner implements Runnable {
             default:
                 return targetType;
         }
+    }
+
+    private boolean hasPendingTaskForRule(int customerId, String ruleName) {
+        String sql = "SELECT COUNT(1) FROM Tasks WHERE related_to_entity = 'Customer' " +
+                "AND related_record_id = ? AND title = ? AND status IN ('Pending', 'In Progress', 'Overdue')";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, customerId);
+            stmt.setString(2, ruleName);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            LOG.log(Level.WARNING, "Lỗi kiểm tra task trùng lặp", e);
+        } finally {
+            try {
+                if (rs != null)
+                    rs.close();
+            } catch (SQLException e) {
+            }
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (SQLException e) {
+            }
+            if (conn != null)
+                dbUtil.closeConnection(conn);
+        }
+        return false;
     }
 }
