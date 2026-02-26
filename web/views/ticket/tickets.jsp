@@ -135,7 +135,7 @@
                                                             <div class="col-md-4">
                                                                 <label class="form-label">Tìm kiếm</label>
                                                                 <input type="text" class="form-control" name="keyword"
-                                                                    placeholder="Tiêu đề, ID ticket..."
+                                                                    placeholder="Tên công ty, ID ticket..."
                                                                     value="${param.keyword}">
                                                             </div>
                                                             <div class="col-md-2">
