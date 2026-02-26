@@ -261,6 +261,10 @@ public class AutomationJobRunner implements Runnable {
             task.setRelatedToEntity("Customer");
             task.setRelatedRecordId(customerId);
 
+            // Đặt Due Date bằng ngày hiện tại cộng thêm 1 ngày
+            long oneDayInMillis = 24L * 60 * 60 * 1000;
+            task.setDueDate(new java.sql.Timestamp(System.currentTimeMillis() + oneDayInMillis));
+
             // Map targetType → taskType
             String taskType = mapTargetTypeToTaskType(rule.getTargetType());
             task.setTaskType(taskType);

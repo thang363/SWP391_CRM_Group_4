@@ -66,8 +66,8 @@ public class TicketDAOImpl implements TicketDAO {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             String searchPattern = "%" + keyword.trim() + "%";
-            // Search in Title OR ID
-            sql.append("AND (t.title LIKE ? OR CAST(t.id AS VARCHAR(20)) LIKE ?) ");
+            // Search in ID OR Company Name
+            sql.append("AND (CAST(t.id AS VARCHAR(20)) LIKE ? OR c.company_name LIKE ?) ");
             params.add(searchPattern);
             params.add(searchPattern);
         }
