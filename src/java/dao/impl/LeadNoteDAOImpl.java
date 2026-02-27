@@ -96,4 +96,6 @@ public class LeadNoteDAOImpl implements LeadNoteDAO {
         } catch (SQLException e) {}
         dbUtil.closeConnection(conn);
     }
+    
+    //new update here
 }
