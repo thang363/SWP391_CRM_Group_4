@@ -362,7 +362,7 @@ public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
     public boolean updateCustomer(Customer customer) {
-        String sql = "UPDATE Customers SET company_name=?, tax_code=?, website=?, industry=?, number_of_employees=?, phone=?, email=?, billing_address=?, shipping_address=?, city=?, country=?, status=?, founded_date=?, updated_at=GETDATE() WHERE id=?";
+        String sql = "UPDATE Customers SET company_name=?, tax_code=?, website=?, industry=?, number_of_employees=?, phone=?, email=?, billing_address=?, shipping_address=?, city=?, country=?, status=?, tier=?, founded_date=?, updated_at=GETDATE() WHERE id=?";
         Connection conn = null;
         PreparedStatement stmt = null;
         try {
@@ -384,13 +384,15 @@ public class CustomerDAOImpl implements CustomerDAO {
             stmt.setString(10, customer.getCity());
             stmt.setString(11, customer.getCountry());
             stmt.setString(12, customer.getStatus());
+            stmt.setString(13, customer.getTier());
             if (customer.getFoundedDate() != null) {
-                stmt.setDate(13, customer.getFoundedDate());
+                stmt.setDate(14, customer.getFoundedDate());
             } else {
-                stmt.setNull(13, java.sql.Types.DATE);
+                stmt.setNull(14, java.sql.Types.DATE);
             }
-            stmt.setInt(14, customer.getId());
-            return stmt.executeUpdate() > 0;
+            stmt.setInt(15, customer.getId());
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
