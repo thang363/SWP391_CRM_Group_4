@@ -33,7 +33,7 @@
                                             <!-- Main Content Start -->
                                             <div class="container-fluid pt-4 px-4">
                                                 <div class="row g-4">
-                                                    <div class="col-sm-12 col-xl-8 mx-auto">
+                                                    <div class="col-sm-12 col-xl-10 mx-auto">
                                                         <div class="bg-light rounded h-100 p-4">
                                                             <div
                                                                 class="d-flex justify-content-between align-items-center mb-4">
@@ -63,7 +63,8 @@
                                                                     <!-- Cột Trái -->
                                                                     <div class="col-md-6">
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Tên
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Tên
                                                                                 Công Ty <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
@@ -75,7 +76,9 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Mã Số
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Mã
+                                                                                Số
                                                                                 Thuế</label>
                                                                             <div class="col-sm-8">
                                                                                 <input type="text" class="form-control"
@@ -85,7 +88,8 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Email
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Email
                                                                                 <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
@@ -96,7 +100,8 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Số
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Số
                                                                                 Điện Thoại <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
@@ -108,7 +113,7 @@
 
                                                                         <div class="row mb-3">
                                                                             <label
-                                                                                class="col-sm-4 col-form-label">Website</label>
+                                                                                class="col-sm-4 col-form-label text-nowrap">Website</label>
                                                                             <div class="col-sm-8">
                                                                                 <input type="text" class="form-control"
                                                                                     name="website"
@@ -117,7 +122,8 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Ngành
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Ngành
                                                                                 Nghề</label>
                                                                             <div class="col-sm-8">
                                                                                 <input type="text" class="form-control"
@@ -130,7 +136,8 @@
                                                                     <!-- Cột Phải -->
                                                                     <div class="col-md-6">
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Nhân
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Nhân
                                                                                 Sự</label>
                                                                             <div class="col-sm-8">
                                                                                 <input type="number"
@@ -141,7 +148,8 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Thành
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Thành
                                                                                 Phố <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
@@ -152,7 +160,8 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Quốc
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Quốc
                                                                                 Gia <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
@@ -164,7 +173,8 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Địa
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Địa
                                                                                 Chỉ Hóa Đơn <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
@@ -175,7 +185,8 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Tier
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Tier
                                                                                 <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
@@ -197,7 +208,8 @@
                                                                         </div>
 
                                                                         <div class="row mb-3">
-                                                                            <label class="col-sm-4 col-form-label">Trạng
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label text-nowrap">Trạng
                                                                                 Thái <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">

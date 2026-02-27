@@ -144,7 +144,7 @@ public class CustomerServlet extends HttpServlet {
         int totalPages = (int) Math.ceil((double) totalCustomers / pageSize);
 
         request.setAttribute("customers", customers);
-        request.setAttribute("currentPage", page);
+        request.setAttribute("pageNumber", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("search", searchQuery != null ? searchQuery : "");
         request.setAttribute("tier", tierFilter != null ? tierFilter : "");
