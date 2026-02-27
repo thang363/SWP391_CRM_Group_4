@@ -72,18 +72,7 @@ public class CustomerDAOImpl implements CustomerDAO {
             rs = stmt.executeQuery();
 
             if (rs.next()) {
-                Customer c = new Customer();
-                c.setId(rs.getInt("id"));
-                c.setCompanyName(rs.getString("company_name"));
-                c.setEmail(rs.getString("email"));
-                c.setPhone(rs.getString("phone"));
-                c.setIndustry(rs.getString("industry"));
-                c.setTier(rs.getString("tier"));
-                c.setCity(rs.getString("city"));
-                c.setCountry(rs.getString("country"));
-                c.setWebsite(rs.getString("website"));
-                c.setLastCareDate(rs.getTimestamp("last_care_date"));
-                return c;
+                return mapCustomer(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -96,15 +85,16 @@ public class CustomerDAOImpl implements CustomerDAO {
     @Override
     public void createFromOpportunity(long opportunityId) throws Exception {
         String getDataSql = "SELECT l.full_name, l.email, l.phone, l.assigned_to, l.id as lead_id " +
-                           "FROM Opportunities o " +
-                           "JOIN Leads l ON o.lead_id = l.id " +
-                           "WHERE o.id = ?";
-        
+                "FROM Opportunities o " +
+                "JOIN Leads l ON o.lead_id = l.id " +
+                "WHERE o.id = ?";
+
         String checkExistingSql = "SELECT id FROM Customers WHERE lead_id = ? OR email = ?";
-        
-        String insertSql = "INSERT INTO Customers (company_name, email, phone, assigned_to, lead_id, status, last_care_date, created_at, updated_at) " +
-                          "VALUES (?, ?, ?, ?, ?, 'Active', GETDATE(), GETDATE(), GETDATE())";
-        
+
+        String insertSql = "INSERT INTO Customers (company_name, email, phone, assigned_to, lead_id, status, last_care_date, created_at, updated_at) "
+                +
+                "VALUES (?, ?, ?, ?, ?, 'Active', GETDATE(), GETDATE(), GETDATE())";
+
         String updateOppSql = "UPDATE Opportunities SET customer_id = ? WHERE id = ?";
 
         Connection conn = null;
@@ -152,9 +142,12 @@ public class CustomerDAOImpl implements CustomerDAO {
                     ps.setString(1, (fullName != null && !fullName.isEmpty()) ? fullName : "Unknown Customer");
                     ps.setString(2, email);
                     ps.setString(3, phone);
-                    if (assignedTo != null) ps.setLong(4, assignedTo); else ps.setNull(4, java.sql.Types.BIGINT);
+                    if (assignedTo != null)
+                        ps.setLong(4, assignedTo);
+                    else
+                        ps.setNull(4, java.sql.Types.BIGINT);
                     ps.setLong(5, leadId);
-                    
+
                     ps.executeUpdate();
                     try (ResultSet rs = ps.getGeneratedKeys()) {
                         if (rs.next()) {
@@ -175,7 +168,8 @@ public class CustomerDAOImpl implements CustomerDAO {
 
             conn.commit();
         } catch (Exception e) {
-            if (conn != null) conn.rollback();
+            if (conn != null)
+                conn.rollback();
             throw e;
         } finally {
             if (conn != null) {
@@ -184,6 +178,7 @@ public class CustomerDAOImpl implements CustomerDAO {
             }
         }
     }
+
     public boolean updateLastCareDate(int id, java.sql.Timestamp date) {
         String sql = "UPDATE Customers SET last_care_date = ? WHERE id = ?";
         Connection conn = null;
@@ -202,6 +197,330 @@ public class CustomerDAOImpl implements CustomerDAO {
             closeResources(null, stmt, conn);
 
         }
+    }
+
+    @Override
+    public List<Customer> getAllCustomers() {
+        String sql = "SELECT * FROM Customers ORDER BY id DESC";
+        List<Customer> customers = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                customers.add(mapCustomer(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return customers;
+    }
+
+    @Override
+    public List<Customer> getCustomers(int offset, int limit, String searchQuery, String tierFilter,
+            String statusFilter) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM Customers WHERE 1=1 ");
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            sql.append("AND (company_name LIKE ? OR email LIKE ? OR phone LIKE ?) ");
+        }
+        if (tierFilter != null && !tierFilter.trim().isEmpty() && !tierFilter.equals("All")) {
+            sql.append("AND tier = ? ");
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("All")) {
+            sql.append("AND status = ? ");
+        }
+        sql.append("ORDER BY id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        List<Customer> customers = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
+
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+                String pattern = "%" + searchQuery.trim() + "%";
+                stmt.setString(paramIndex++, pattern);
+                stmt.setString(paramIndex++, pattern);
+                stmt.setString(paramIndex++, pattern);
+            }
+            if (tierFilter != null && !tierFilter.trim().isEmpty() && !tierFilter.equals("All")) {
+                stmt.setString(paramIndex++, tierFilter);
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("All")) {
+                stmt.setString(paramIndex++, statusFilter);
+            }
+            stmt.setInt(paramIndex++, offset);
+            stmt.setInt(paramIndex++, limit);
+
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                customers.add(mapCustomer(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return customers;
+    }
+
+    @Override
+    public int getTotalCustomersCount(String searchQuery, String tierFilter, String statusFilter) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Customers WHERE 1=1 ");
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            sql.append("AND (company_name LIKE ? OR email LIKE ? OR phone LIKE ?) ");
+        }
+        if (tierFilter != null && !tierFilter.trim().isEmpty() && !tierFilter.equals("All")) {
+            sql.append("AND tier = ? ");
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("All")) {
+            sql.append("AND status = ? ");
+        }
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        int count = 0;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
+
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+                String pattern = "%" + searchQuery.trim() + "%";
+                stmt.setString(paramIndex++, pattern);
+                stmt.setString(paramIndex++, pattern);
+                stmt.setString(paramIndex++, pattern);
+            }
+            if (tierFilter != null && !tierFilter.trim().isEmpty() && !tierFilter.equals("All")) {
+                stmt.setString(paramIndex++, tierFilter);
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("All")) {
+                stmt.setString(paramIndex++, statusFilter);
+            }
+
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return count;
+    }
+
+    @Override
+    public boolean createCustomer(Customer customer) {
+        String sql = "INSERT INTO Customers (company_name, tax_code, website, industry, number_of_employees, phone, email, billing_address, shipping_address, city, country, tier, status, founded_date, created_at, updated_at) "
+                +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, customer.getCompanyName());
+            stmt.setString(2, customer.getTaxCode());
+            stmt.setString(3, customer.getWebsite());
+            stmt.setString(4, customer.getIndustry());
+            if (customer.getNumberOfEmployees() != null) {
+                stmt.setInt(5, customer.getNumberOfEmployees());
+            } else {
+                stmt.setNull(5, java.sql.Types.INTEGER);
+            }
+            stmt.setString(6, customer.getPhone());
+            stmt.setString(7, customer.getEmail());
+            stmt.setString(8, customer.getBillingAddress());
+            stmt.setString(9, customer.getShippingAddress());
+            stmt.setString(10, customer.getCity());
+            stmt.setString(11, customer.getCountry());
+            stmt.setString(12, customer.getTier() != null ? customer.getTier() : "Standard");
+            stmt.setString(13, customer.getStatus() != null ? customer.getStatus() : "Active");
+            if (customer.getFoundedDate() != null) {
+                stmt.setDate(14, customer.getFoundedDate());
+            } else {
+                stmt.setNull(14, java.sql.Types.DATE);
+            }
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateCustomer(Customer customer) {
+        String sql = "UPDATE Customers SET company_name=?, tax_code=?, website=?, industry=?, number_of_employees=?, phone=?, email=?, billing_address=?, shipping_address=?, city=?, country=?, status=?, founded_date=?, updated_at=GETDATE() WHERE id=?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, customer.getCompanyName());
+            stmt.setString(2, customer.getTaxCode());
+            stmt.setString(3, customer.getWebsite());
+            stmt.setString(4, customer.getIndustry());
+            if (customer.getNumberOfEmployees() != null) {
+                stmt.setInt(5, customer.getNumberOfEmployees());
+            } else {
+                stmt.setNull(5, java.sql.Types.INTEGER);
+            }
+            stmt.setString(6, customer.getPhone());
+            stmt.setString(7, customer.getEmail());
+            stmt.setString(8, customer.getBillingAddress());
+            stmt.setString(9, customer.getShippingAddress());
+            stmt.setString(10, customer.getCity());
+            stmt.setString(11, customer.getCountry());
+            stmt.setString(12, customer.getStatus());
+            if (customer.getFoundedDate() != null) {
+                stmt.setDate(13, customer.getFoundedDate());
+            } else {
+                stmt.setNull(13, java.sql.Types.DATE);
+            }
+            stmt.setInt(14, customer.getId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteCustomer(int id) {
+        String sql = "DELETE FROM Customers WHERE id=?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean setCustomerTier(int id, String tier) {
+        String sql = "UPDATE Customers SET tier=? WHERE id=?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, tier);
+            stmt.setInt(2, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mergeCustomers(int primaryId, int duplicateId) {
+        Connection conn = null;
+        PreparedStatement stmt1 = null;
+        PreparedStatement stmt2 = null;
+        PreparedStatement stmt3 = null;
+        PreparedStatement stmt4 = null;
+        try {
+            conn = dbUtil.getConnection();
+            conn.setAutoCommit(false);
+
+            // Update Opportunities
+            stmt1 = conn.prepareStatement("UPDATE Opportunities SET customer_id=? WHERE customer_id=?");
+            stmt1.setInt(1, primaryId);
+            stmt1.setInt(2, duplicateId);
+            stmt1.executeUpdate();
+
+            // Update Contacts
+            stmt2 = conn.prepareStatement("UPDATE Contacts SET customer_id=? WHERE customer_id=?");
+            stmt2.setInt(1, primaryId);
+            stmt2.setInt(2, duplicateId);
+            stmt2.executeUpdate();
+
+            // Update Tickets
+            stmt3 = conn.prepareStatement("UPDATE Tickets SET customer_id=? WHERE customer_id=?");
+            stmt3.setInt(1, primaryId);
+            stmt3.setInt(2, duplicateId);
+            stmt3.executeUpdate();
+
+            // Delete Duplicate Customer
+            stmt4 = conn.prepareStatement("DELETE FROM Customers WHERE id=?");
+            stmt4.setInt(1, duplicateId);
+            stmt4.executeUpdate();
+
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            closeResources(null, stmt4, null);
+            closeResources(null, stmt3, null);
+            closeResources(null, stmt2, null);
+            closeResources(null, stmt1, conn);
+        }
+        return false;
+    }
+
+    private Customer mapCustomer(ResultSet rs) throws SQLException {
+        Customer c = new Customer();
+        c.setId(rs.getInt("id"));
+        c.setLeadId(rs.getObject("lead_id") != null ? rs.getInt("lead_id") : null);
+        c.setAssignedTo(rs.getObject("assigned_to") != null ? rs.getInt("assigned_to") : null);
+        c.setCompanyName(rs.getString("company_name"));
+        c.setTaxCode(rs.getString("tax_code"));
+        c.setWebsite(rs.getString("website"));
+        c.setIndustry(rs.getString("industry"));
+        c.setNumberOfEmployees(rs.getObject("number_of_employees") != null ? rs.getInt("number_of_employees") : null);
+        c.setPhone(rs.getString("phone"));
+        c.setEmail(rs.getString("email"));
+        c.setBillingAddress(rs.getString("billing_address"));
+        c.setShippingAddress(rs.getString("shipping_address"));
+        c.setCity(rs.getString("city"));
+        c.setCountry(rs.getString("country"));
+        c.setTier(rs.getString("tier"));
+        c.setStatus(rs.getString("status"));
+        c.setFoundedDate(rs.getDate("founded_date"));
+        c.setLastCareDate(rs.getTimestamp("last_care_date"));
+        c.setTotalRevenue(rs.getObject("total_revenue") != null ? rs.getDouble("total_revenue") : null);
+        c.setCreatedAt(rs.getTimestamp("created_at"));
+        c.setUpdatedAt(rs.getTimestamp("updated_at"));
+        return c;
     }
 
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
