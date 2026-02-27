@@ -18,7 +18,7 @@ import java.io.PrintWriter;
 import java.sql.Date;
 import java.util.List;
 
-@WebServlet(name = "CustomerServlet", urlPatterns = { "/customers" })
+@WebServlet(name = "CustomerServlet", urlPatterns = { "/customers", "/customers-vip" })
 public class CustomerServlet extends HttpServlet {
 
     private final CustomerDAO customerDAO;
@@ -132,6 +132,10 @@ public class CustomerServlet extends HttpServlet {
         String searchQuery = request.getParameter("search");
         String tierFilter = request.getParameter("tier");
         String statusFilter = request.getParameter("status");
+
+        if ("/customers-vip".equals(request.getServletPath()) && tierFilter == null) {
+            tierFilter = "VIP";
+        }
 
         int offset = (page - 1) * pageSize;
 
@@ -267,7 +271,13 @@ public class CustomerServlet extends HttpServlet {
 
         String empStr = request.getParameter("numberOfEmployees");
         if (empStr != null && !empStr.trim().isEmpty()) {
-            c.setNumberOfEmployees(Integer.parseInt(empStr));
+            try {
+                c.setNumberOfEmployees(Integer.parseInt(empStr.trim()));
+            } catch (NumberFormatException e) {
+                c.setNumberOfEmployees(null);
+            }
+        } else {
+            c.setNumberOfEmployees(null);
         }
 
         c.setPhone(request.getParameter("phone"));
@@ -287,7 +297,13 @@ public class CustomerServlet extends HttpServlet {
 
         String foundedDateStr = request.getParameter("foundedDate");
         if (foundedDateStr != null && !foundedDateStr.trim().isEmpty()) {
-            c.setFoundedDate(Date.valueOf(foundedDateStr));
+            try {
+                c.setFoundedDate(Date.valueOf(foundedDateStr.trim()));
+            } catch (IllegalArgumentException e) {
+                c.setFoundedDate(null);
+            }
+        } else {
+            c.setFoundedDate(null);
         }
     }
 }

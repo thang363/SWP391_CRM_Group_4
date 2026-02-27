@@ -51,137 +51,177 @@
                                                                 <c:if test="${customer != null}">
                                                                     <input type="hidden" name="id"
                                                                         value="${customer.id}">
+
+                                                                    <!-- Keep existing values for fields not in form -->
+                                                                    <input type="hidden" name="shippingAddress"
+                                                                        value="${customer.shippingAddress}">
+                                                                    <input type="hidden" name="foundedDate"
+                                                                        value="${customer.foundedDate}">
                                                                 </c:if>
 
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Tên Công Ty /
-                                                                        Cá Nhân <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="text" class="form-control"
-                                                                            name="companyName"
-                                                                            value="${customer.companyName}" required>
+                                                                <div class="row">
+                                                                    <!-- Cột Trái -->
+                                                                    <div class="col-md-6">
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Tên
+                                                                                Công Ty <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="text" class="form-control"
+                                                                                    name="companyName"
+                                                                                    value="${customer.companyName}"
+                                                                                    required>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Mã Số
+                                                                                Thuế</label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="text" class="form-control"
+                                                                                    name="taxCode"
+                                                                                    value="${customer.taxCode}">
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Email
+                                                                                <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="email" class="form-control"
+                                                                                    name="email"
+                                                                                    value="${customer.email}" required>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Số
+                                                                                Điện Thoại <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="text" class="form-control"
+                                                                                    name="phone"
+                                                                                    value="${customer.phone}" required>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label
+                                                                                class="col-sm-4 col-form-label">Website</label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="text" class="form-control"
+                                                                                    name="website"
+                                                                                    value="${customer.website}">
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Ngành
+                                                                                Nghề</label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="text" class="form-control"
+                                                                                    name="industry"
+                                                                                    value="${customer.industry}">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Cột Phải -->
+                                                                    <div class="col-md-6">
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Nhân
+                                                                                Sự</label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="number"
+                                                                                    class="form-control"
+                                                                                    name="numberOfEmployees"
+                                                                                    value="${customer.numberOfEmployees}">
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Thành
+                                                                                Phố <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="text" class="form-control"
+                                                                                    name="city" value="${customer.city}"
+                                                                                    required>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Quốc
+                                                                                Gia <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <div class="col-sm-8">
+                                                                                <input type="text" class="form-control"
+                                                                                    name="country"
+                                                                                    value="${customer.country != null ? customer.country : 'Vietnam'}"
+                                                                                    required>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Địa
+                                                                                Chỉ Hóa Đơn <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <div class="col-sm-8">
+                                                                                <textarea class="form-control"
+                                                                                    name="billingAddress" rows="1"
+                                                                                    required>${customer.billingAddress}</textarea>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Tier
+                                                                                <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <div class="col-sm-8">
+                                                                                <select name="tier" class="form-select"
+                                                                                    required>
+                                                                                    <option value="Standard"
+                                                                                        ${customer.tier=='Standard'
+                                                                                        ? 'selected' : '' }>Standard
+                                                                                    </option>
+                                                                                    <option value="VIP"
+                                                                                        ${customer.tier=='VIP'
+                                                                                        ? 'selected' : '' }>VIP</option>
+                                                                                    <option value="VVIP"
+                                                                                        ${customer.tier=='VVIP'
+                                                                                        ? 'selected' : '' }>VVIP
+                                                                                    </option>
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-sm-4 col-form-label">Trạng
+                                                                                Thái <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <div class="col-sm-8">
+                                                                                <select name="status"
+                                                                                    class="form-select" required>
+                                                                                    <option value="Active"
+                                                                                        ${customer.status=='Active'
+                                                                                        ? 'selected' : '' }>Active
+                                                                                    </option>
+                                                                                    <option value="Inactive"
+                                                                                        ${customer.status=='Inactive'
+                                                                                        ? 'selected' : '' }>Inactive
+                                                                                    </option>
+                                                                                    <option value="Churned"
+                                                                                        ${customer.status=='Churned'
+                                                                                        ? 'selected' : '' }>Churned
+                                                                                    </option>
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
 
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Mã Số
-                                                                        Thuế</label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="text" class="form-control"
-                                                                            name="taxCode" value="${customer.taxCode}">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Email</label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="email" class="form-control"
-                                                                            name="email" value="${customer.email}">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Số Điện
-                                                                        Thoại</label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="text" class="form-control"
-                                                                            name="phone" value="${customer.phone}">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label
-                                                                        class="col-sm-3 col-form-label">Website</label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="text" class="form-control"
-                                                                            name="website" value="${customer.website}">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Ngành
-                                                                        Nghề</label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="text" class="form-control"
-                                                                            name="industry"
-                                                                            value="${customer.industry}">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Nhân Sự (Số
-                                                                        lượng)</label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="number" class="form-control"
-                                                                            name="numberOfEmployees"
-                                                                            value="${customer.numberOfEmployees}">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Thành
-                                                                        Phố</label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="text" class="form-control"
-                                                                            name="city" value="${customer.city}">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Quốc
-                                                                        Gia</label>
-                                                                    <div class="col-sm-9">
-                                                                        <input type="text" class="form-control"
-                                                                            name="country"
-                                                                            value="${customer.country != null ? customer.country : 'Vietnam'}">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Địa Chỉ Hóa
-                                                                        Đơn</label>
-                                                                    <div class="col-sm-9">
-                                                                        <textarea class="form-control"
-                                                                            name="billingAddress"
-                                                                            rows="2">${customer.billingAddress}</textarea>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Tier</label>
-                                                                    <div class="col-sm-9">
-                                                                        <select name="tier" class="form-select">
-                                                                            <option value="Standard"
-                                                                                ${customer.tier=='Standard' ? 'selected'
-                                                                                : '' }>Standard</option>
-                                                                            <option value="VIP" ${customer.tier=='VIP'
-                                                                                ? 'selected' : '' }>VIP</option>
-                                                                            <option value="VVIP" ${customer.tier=='VVIP'
-                                                                                ? 'selected' : '' }>VVIP</option>
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="row mb-3">
-                                                                    <label class="col-sm-3 col-form-label">Trạng
-                                                                        Thái</label>
-                                                                    <div class="col-sm-9">
-                                                                        <select name="status" class="form-select">
-                                                                            <option value="Active"
-                                                                                ${customer.status=='Active' ? 'selected'
-                                                                                : '' }>Active</option>
-                                                                            <option value="Inactive"
-                                                                                ${customer.status=='Inactive'
-                                                                                ? 'selected' : '' }>Inactive</option>
-                                                                            <option value="Churned"
-                                                                                ${customer.status=='Churned'
-                                                                                ? 'selected' : '' }>Churned</option>
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="text-center mt-4">
+                                                                <div class="text-center mt-4 border-top pt-4">
                                                                     <button type="submit"
                                                                         class="btn btn-primary px-5"><i
                                                                             class="fa fa-save me-2"></i>Lưu Lại</button>

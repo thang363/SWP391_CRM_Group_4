@@ -79,28 +79,6 @@
                                                                                 class="badge ${customer.tier == 'VIP' ? 'bg-warning' : (customer.tier == 'VVIP' ? 'bg-danger' : 'bg-primary')}">
                                                                                 ${customer.tier}
                                                                             </span>
-                                                                            <!-- Form to quick change tier -->
-                                                                            <form
-                                                                                action="${pageContext.request.contextPath}/customers?action=setTier"
-                                                                                method="POST" class="d-inline ms-2">
-                                                                                <input type="hidden" name="id"
-                                                                                    value="${customer.id}">
-                                                                                <select name="tier"
-                                                                                    class="form-select form-select-sm d-inline w-auto"
-                                                                                    onchange="this.form.submit()">
-                                                                                    <option value="Standard"
-                                                                                        ${customer.tier=='Standard'
-                                                                                        ? 'selected' : '' }>Standard
-                                                                                    </option>
-                                                                                    <option value="VIP"
-                                                                                        ${customer.tier=='VIP'
-                                                                                        ? 'selected' : '' }>VIP</option>
-                                                                                    <option value="VVIP"
-                                                                                        ${customer.tier=='VVIP'
-                                                                                        ? 'selected' : '' }>VVIP
-                                                                                    </option>
-                                                                                </select>
-                                                                            </form>
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
