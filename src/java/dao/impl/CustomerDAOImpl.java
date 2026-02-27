@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +86,98 @@ public class CustomerDAOImpl implements CustomerDAO {
             closeResources(rs, stmt, conn);
         }
         return null;
+    }
+
+    @Override
+    public void createFromOpportunity(long opportunityId) throws Exception {
+        String getDataSql = "SELECT l.full_name, l.email, l.phone, l.assigned_to, l.id as lead_id " +
+                           "FROM Opportunities o " +
+                           "JOIN Leads l ON o.lead_id = l.id " +
+                           "WHERE o.id = ?";
+        
+        String checkExistingSql = "SELECT id FROM Customers WHERE lead_id = ? OR email = ?";
+        
+        String insertSql = "INSERT INTO Customers (company_name, email, phone, assigned_to, lead_id, status, last_care_date, created_at, updated_at) " +
+                          "VALUES (?, ?, ?, ?, ?, 'Active', GETDATE(), GETDATE(), GETDATE())";
+        
+        String updateOppSql = "UPDATE Opportunities SET customer_id = ? WHERE id = ?";
+
+        Connection conn = null;
+        try {
+            conn = dbUtil.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. Get lead data first
+            String fullName = "";
+            String email = "";
+            String phone = "";
+            Long assignedTo = null;
+            Long leadId = null;
+
+            try (PreparedStatement ps = conn.prepareStatement(getDataSql)) {
+                ps.setLong(1, opportunityId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        fullName = rs.getString("full_name");
+                        email = rs.getString("email");
+                        phone = rs.getString("phone");
+                        assignedTo = rs.getObject("assigned_to", Long.class);
+                        leadId = rs.getLong("lead_id");
+                    } else {
+                        throw new Exception("Opportunity not found or Lead not linked.");
+                    }
+                }
+            }
+
+            // 2. Check if a customer with this lead_id or email already exists
+            long customerId = -1;
+            try (PreparedStatement ps = conn.prepareStatement(checkExistingSql)) {
+                ps.setLong(1, leadId);
+                ps.setString(2, (email != null && !email.isEmpty()) ? email : "NONE_EXISTENT_EMAIL_CHECK");
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        customerId = rs.getLong("id");
+                    }
+                }
+            }
+
+            // 3. If no existing customer, insert new one
+            if (customerId == -1) {
+                try (PreparedStatement ps = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setString(1, (fullName != null && !fullName.isEmpty()) ? fullName : "Unknown Customer");
+                    ps.setString(2, email);
+                    ps.setString(3, phone);
+                    if (assignedTo != null) ps.setLong(4, assignedTo); else ps.setNull(4, java.sql.Types.BIGINT);
+                    ps.setLong(5, leadId);
+                    
+                    ps.executeUpdate();
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            customerId = rs.getLong(1);
+                        }
+                    }
+                }
+            }
+
+            // 4. Update Opportunity with customer_id if we have one (new or existing)
+            if (customerId != -1) {
+                try (PreparedStatement ps = conn.prepareStatement(updateOppSql)) {
+                    ps.setLong(1, customerId);
+                    ps.setLong(2, opportunityId);
+                    ps.executeUpdate();
+                }
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            if (conn != null) conn.rollback();
+            throw e;
+        } finally {
+            if (conn != null) {
+                conn.setAutoCommit(true);
+                dbUtil.closeConnection(conn);
+            }
+        }
     }
 
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {

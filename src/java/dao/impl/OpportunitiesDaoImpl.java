@@ -92,6 +92,50 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
 
         return list;
     }
+
+    @Override
+    public List<Opportunity> getOpportunitiesWithQuoteCount(long salesId) {
+        List<Opportunity> list = new ArrayList<>();
+        String sql = """
+            SELECT o.*, COUNT(q.id) AS quote_count
+            FROM Opportunities o
+            LEFT JOIN Quotes q ON q.opportunity_id = o.id
+            WHERE o.sales_id = ?
+            GROUP BY o.id, o.name, o.lead_id, o.customer_id, o.type,
+                     o.expected_value, o.stage, o.probability, o.sales_id, o.created_at
+            ORDER BY o.created_at DESC
+        """;
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, salesId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Opportunity opp = mapResultSetToOpportunity(rs);
+                    opp.setQuoteCount(rs.getInt("quote_count"));
+                    list.add(opp);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public Opportunity getById(long id) {
+        String sql = "SELECT * FROM Opportunities WHERE id = ?";
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapResultSetToOpportunity(rs);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     
     @Override
     public void updateStage(long id, String stage, int probability) {
@@ -168,6 +212,52 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
         }
 
         return opp;
+    }
+
+    @Override
+    public List<Opportunity> searchOpportunities(long salesId, String search, String stage) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT o.*, COUNT(q.id) AS quote_count
+            FROM Opportunities o
+            LEFT JOIN Quotes q ON q.opportunity_id = o.id
+            WHERE o.sales_id = ?
+        """);
+        List<Object> params = new ArrayList<>();
+        params.add(salesId);
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND o.name LIKE ?");
+            params.add("%" + search.trim() + "%");
+        }
+
+        if (stage != null && !stage.trim().isEmpty()) {
+            sql.append(" AND o.stage = ?");
+            params.add(stage.trim());
+        }
+
+        sql.append("""
+            GROUP BY o.id, o.name, o.lead_id, o.customer_id, o.type,
+                     o.expected_value, o.stage, o.probability, o.sales_id, o.created_at
+            ORDER BY o.created_at DESC
+        """);
+
+        List<Opportunity> list = new ArrayList<>();
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Opportunity opp = mapResultSetToOpportunity(rs);
+                    opp.setQuoteCount(rs.getInt("quote_count"));
+                    list.add(opp);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
