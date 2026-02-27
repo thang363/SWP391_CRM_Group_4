@@ -1,0 +1,86 @@
+package model.entity;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+public class Quote {
+
+    private Long id;
+    private Long opportunityId;
+    private String quoteNumber;
+    private String subject;
+    private BigDecimal subtotal;
+    private BigDecimal discountAmount;
+    private BigDecimal taxAmount;
+    private BigDecimal grandTotal;
+    private String status; // Draft | Sent | Accepted | Rejected | Expired
+    private LocalDate validUntil;
+    private Long createdBy;
+    private LocalDateTime createdAt;
+
+    // Transient — dùng để hiển thị tên opportunity trong danh sách
+    private String opportunityName;
+
+    public Quote() {
+    }
+
+    // ===== Helpers =====
+
+    public boolean isDraft() {
+        return "Draft".equals(status);
+    }
+
+    public boolean isSent() {
+        return "Sent".equals(status);
+    }
+
+    public boolean isAccepted() {
+        return "Accepted".equals(status);
+    }
+
+    public boolean isLocked() {
+        return "Accepted".equals(status) || "Rejected".equals(status) || "Expired".equals(status);
+    }
+
+    // ===== Getters & Setters =====
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getOpportunityId() { return opportunityId; }
+    public void setOpportunityId(Long opportunityId) { this.opportunityId = opportunityId; }
+
+    public String getQuoteNumber() { return quoteNumber; }
+    public void setQuoteNumber(String quoteNumber) { this.quoteNumber = quoteNumber; }
+
+    public String getSubject() { return subject; }
+    public void setSubject(String subject) { this.subject = subject; }
+
+    public BigDecimal getSubtotal() { return subtotal; }
+    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
+
+    public BigDecimal getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+
+    public BigDecimal getTaxAmount() { return taxAmount; }
+    public void setTaxAmount(BigDecimal taxAmount) { this.taxAmount = taxAmount; }
+
+    public BigDecimal getGrandTotal() { return grandTotal; }
+    public void setGrandTotal(BigDecimal grandTotal) { this.grandTotal = grandTotal; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDate getValidUntil() { return validUntil; }
+    public void setValidUntil(LocalDate validUntil) { this.validUntil = validUntil; }
+
+    public Long getCreatedBy() { return createdBy; }
+    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getOpportunityName() { return opportunityName; }
+    public void setOpportunityName(String opportunityName) { this.opportunityName = opportunityName; }
+}

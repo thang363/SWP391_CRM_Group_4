@@ -85,120 +85,133 @@
                                                             <div class="col-12">
                                                                 <div class="bg-light rounded p-4">
                                                                     <div class="table-responsive">
-                                                                        <table class="table table-hover">
-                                                                            <thead>
-                                                                                <tr>
-                                                                                    <th>Số Báo giá</th>
-                                                                                    <th>Chủ đề</th>
-                                                                                    <th>Tổng tiền (VND)</th>
-                                                                                    <th>Trạng thái</th>
-                                                                                    <th>Hiệu lực đến</th>
-                                                                                    <th>Ngày tạo</th>
-                                                                                    <th>Thao tác</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                <c:if test="${empty quoteList}">
+                                                                        <div class="table-responsive">
+                                                                            <table
+                                                                                class="table table-hover align-middle">
+                                                                                <thead>
                                                                                     <tr>
-                                                                                        <td colspan="7"
-                                                                                            class="text-center text-muted py-5">
-                                                                                            <i
-                                                                                                class="fa fa-file-invoice fa-3x mb-3 d-block"></i>
-                                                                                            Không tìm thấy báo giá nào.
-                                                                                            <br>
-                                                                                            <small>(Dữ liệu mẫu sẽ hiển
-                                                                                                thị ở đây sau khi kết
-                                                                                                nối backend)</small>
-                                                                                        </td>
+                                                                                        <th>Số Báo giá</th>
+                                                                                        <th>Cơ hội</th>
+                                                                                        <th>Chủ đề</th>
+                                                                                        <th>Tổng tiền (VND)</th>
+                                                                                        <th>Trạng thái</th>
+                                                                                        <th>Hiệu lực đến</th>
+                                                                                        <th>Ngày tạo</th>
+                                                                                        <th>Thao tác</th>
                                                                                     </tr>
-                                                                                </c:if>
-                                                                                <c:forEach var="quote"
-                                                                                    items="${quoteList}">
-                                                                                    <tr>
-                                                                                        <td><strong>${quote.quoteNumber}</strong>
-                                                                                        </td>
-                                                                                        <td>${quote.subject}</td>
-                                                                                        <td
-                                                                                            class="text-primary fw-bold">
-                                                                                            <fmt:formatNumber
-                                                                                                value="${quote.grandTotal}"
-                                                                                                type="currency"
-                                                                                                currencySymbol="₫" />
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <c:choose>
-                                                                                                <c:when
-                                                                                                    test="${quote.status == 'Accepted'}">
-                                                                                                    <span
-                                                                                                        class="badge bg-success">Đã
-                                                                                                        chấp nhận</span>
-                                                                                                </c:when>
-                                                                                                <c:when
-                                                                                                    test="${quote.status == 'Rejected'}">
-                                                                                                    <span
-                                                                                                        class="badge bg-danger">Từ
-                                                                                                        chối</span>
-                                                                                                </c:when>
-                                                                                                <c:when
-                                                                                                    test="${quote.status == 'Sent'}">
-                                                                                                    <span
-                                                                                                        class="badge bg-info text-dark">Đã
-                                                                                                        gửi</span>
-                                                                                                </c:when>
-                                                                                                <c:otherwise>
-                                                                                                    <span
-                                                                                                        class="badge bg-secondary">${quote.status}</span>
-                                                                                                </c:otherwise>
-                                                                                            </c:choose>
-                                                                                        </td>
-                                                                                        <td>${quote.validUntil}</td>
-                                                                                        <td>${quote.createdAt}</td>
-                                                                                        <td>
-                                                                                            <div class="d-flex gap-2">
-                                                                                                <button type="button"
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    <c:if test="${empty quoteList}">
+                                                                                        <tr>
+                                                                                            <td colspan="8"
+                                                                                                class="text-center text-muted py-5">
+                                                                                                <i
+                                                                                                    class="fa fa-file-invoice fa-3x mb-3 d-block"></i>
+                                                                                                Không tìm thấy báo giá
+                                                                                                nào.
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </c:if>
+                                                                                    <c:forEach var="quote"
+                                                                                        items="${quoteList}">
+                                                                                        <tr>
+                                                                                            <td><strong>${quote.quoteNumber}</strong>
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <a href="${pageContext.request.contextPath}/sales/opportunity-detail?id=${quote.opportunityId}&tab=quotes"
+                                                                                                    class="text-decoration-none">
+                                                                                                    <i
+                                                                                                        class="fa fa-handshake me-1 text-muted"></i>
+                                                                                                    ${empty
+                                                                                                    quote.opportunityName
+                                                                                                    ?
+                                                                                                    '#'.concat(quote.opportunityId)
+                                                                                                    :
+                                                                                                    quote.opportunityName}
+                                                                                                </a>
+                                                                                            </td>
+                                                                                            <td>${quote.subject}</td>
+                                                                                            <td
+                                                                                                class="text-primary fw-bold">
+                                                                                                <fmt:formatNumber
+                                                                                                    value="${quote.grandTotal}"
+                                                                                                    type="currency"
+                                                                                                    currencySymbol="₫" />
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <c:choose>
+                                                                                                    <c:when
+                                                                                                        test="${quote.status == 'Draft'}">
+                                                                                                        <span
+                                                                                                            class="badge bg-secondary">Bản
+                                                                                                            nháp</span>
+                                                                                                    </c:when>
+                                                                                                    <c:when
+                                                                                                        test="${quote.status == 'Sent'}">
+                                                                                                        <span
+                                                                                                            class="badge bg-info text-dark">Đã
+                                                                                                            gửi</span>
+                                                                                                    </c:when>
+                                                                                                    <c:when
+                                                                                                        test="${quote.status == 'Accepted'}">
+                                                                                                        <span
+                                                                                                            class="badge bg-success">Chấp
+                                                                                                            nhận</span>
+                                                                                                    </c:when>
+                                                                                                    <c:when
+                                                                                                        test="${quote.status == 'Rejected'}">
+                                                                                                        <span
+                                                                                                            class="badge bg-danger">Từ
+                                                                                                            chối</span>
+                                                                                                    </c:when>
+                                                                                                    <c:when
+                                                                                                        test="${quote.status == 'Expired'}">
+                                                                                                        <span
+                                                                                                            class="badge bg-warning text-dark">Hết
+                                                                                                            hạn</span>
+                                                                                                    </c:when>
+                                                                                                    <c:otherwise>
+                                                                                                        <span
+                                                                                                            class="badge bg-light text-dark">${quote.status}</span>
+                                                                                                    </c:otherwise>
+                                                                                                </c:choose>
+                                                                                            </td>
+                                                                                            <td>${quote.validUntil}</td>
+                                                                                            <td>${quote.createdAt}</td>
+                                                                                            <td>
+                                                                                                <a href="${pageContext.request.contextPath}/sales/opportunity-detail?id=${quote.opportunityId}&tab=quotes"
                                                                                                     class="btn btn-sm btn-outline-info"
                                                                                                     title="Xem chi tiết">
                                                                                                     <i
                                                                                                         class="fa fa-eye"></i>
-                                                                                                </button>
-                                                                                                <button type="button"
-                                                                                                    class="btn btn-sm btn-outline-primary"
-                                                                                                    title="In/Xuất PDF">
-                                                                                                    <i
-                                                                                                        class="fa fa-file-pdf"></i>
-                                                                                                </button>
-                                                                                            </div>
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                </c:forEach>
-                                                                            </tbody>
-                                                                        </table>
+                                                                                                </a>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </c:forEach>
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+
+                                                                        <%@ include file="/includes/footer.jsp" %>
                                                                     </div>
+                                                                    <!-- Content End -->
+
+                                                                    <!-- Back to Top -->
+                                                                    <a href="#"
+                                                                        class="btn btn-lg btn-primary btn-lg-square back-to-top"><i
+                                                                            class="bi bi-arrow-up"></i></a>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
 
-                                                    <%@ include file="/includes/footer.jsp" %>
-                                        </div>
-                                        <!-- Content End -->
+                                                                <%@ include file="/includes/scripts.jsp" %>
 
-                                        <!-- Back to Top -->
-                                        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i
-                                                class="bi bi-arrow-up"></i></a>
-                            </div>
-
-                            <%-- Include Scripts --%>
-                                <%@ include file="/includes/scripts.jsp" %>
-
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            var spinner = document.getElementById('spinner');
-                                            if (spinner) {
-                                                spinner.classList.remove('show');
-                                            }
-                                        });
-                                    </script>
+                                                                    <script>
+                                                                        document.addEventListener('DOMContentLoaded', function () {
+                                                                            var spinner = document.getElementById('spinner');
+                                                                            if (spinner) {
+                                                                                spinner.classList.remove('show');
+                                                                            }
+                                                                        });
+                                                                    </script>
                         </body>
 
                         </html>

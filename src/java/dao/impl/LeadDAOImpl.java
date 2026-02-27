@@ -43,7 +43,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public void updateLeadStatus(int leadId, String status) {
+    public void updateLeadStatus(long leadId, String status) {
         String sql = "UPDATE Leads SET status = ? WHERE id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
@@ -51,26 +51,30 @@ public class LeadDAOImpl implements LeadDAO {
             conn = dbUtil.getConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, status);
-            ps.setInt(2, leadId);
+            ps.setLong(2, leadId);
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            closeResources(null, ps, conn);
         }
     }
 
     @Override
-    public void markAsConverted(int leadId) {
+    public void markAsConverted(long leadId) {
         String sql = "UPDATE Leads SET is_converted = 1 WHERE id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
         try {
             conn = dbUtil.getConnection();
             ps = conn.prepareStatement(sql);
-            ps.setInt(1, leadId);
+            ps.setLong(1, leadId);
             ps.executeUpdate();
 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            closeResources(null, ps, conn);
         }
     }
 
@@ -272,7 +276,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public void updateLeadInfo(int id, String name, String phone) {
+    public void updateLeadInfo(long id, String name, String phone) {
         String sql = "UPDATE Leads SET full_name = ?, phone = ? WHERE id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
@@ -281,7 +285,7 @@ public class LeadDAOImpl implements LeadDAO {
             ps = conn.prepareStatement(sql);
             ps.setString(1, name);
             ps.setString(2, phone);
-            ps.setInt(3, id);
+            ps.setLong(3, id);
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -290,8 +294,47 @@ public class LeadDAOImpl implements LeadDAO {
         }
     }
 
+    @Override
+    public List<Lead> searchLeads(long saleId, String query, String status) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM Leads WHERE assigned_to = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(saleId);
+
+        if (query != null && !query.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ?)");
+            String pattern = "%" + query.trim() + "%";
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(status.trim());
+        }
+
+        sql.append(" ORDER BY created_at DESC");
+
+        List<Lead> list = new ArrayList<>();
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement stmt = (conn != null) ? conn.prepareStatement(sql.toString()) : null) {
+            
+            if (stmt == null) return list;
+            
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToLead(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searching leads: " + e.getMessage());
+        }
+        return list;
+    }
+
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
-        dbUtil.closeConnection(conn);
         try {
             if (rs != null) {
                 rs.close();
@@ -304,5 +347,6 @@ public class LeadDAOImpl implements LeadDAO {
             }
         } catch (SQLException e) {
         }
+        dbUtil.closeConnection(conn);
     }
 }

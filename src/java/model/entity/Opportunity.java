@@ -30,6 +30,9 @@ public class Opportunity {
 
     private LocalDateTime createdAt;
 
+    // Transient — đếm số quote, không lưu DB
+    private int quoteCount;
+
     // ===== Constructor =====
     public Opportunity() {
     }
@@ -115,4 +118,7 @@ public class Opportunity {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public int getQuoteCount() { return quoteCount; }
+    public void setQuoteCount(int quoteCount) { this.quoteCount = quoteCount; }
 }

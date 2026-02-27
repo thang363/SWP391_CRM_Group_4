@@ -8,5 +8,9 @@ public interface CustomerDAO {
 
     Customer getCustomerById(int id);
 
+
+    void createFromOpportunity(long opportunityId) throws Exception;
+
     boolean updateLastCareDate(int id, java.sql.Timestamp date);
+
 }

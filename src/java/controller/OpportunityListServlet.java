@@ -37,11 +37,18 @@ public class OpportunityListServlet extends HttpServlet {
         try {
             HttpSession session = request.getSession();
             User user = (User) session.getAttribute("currentUser");
-            if(user!=null){
-            OppList = oop.getOpportunitiesBySalesId(user.getId());
-        }
-            
+            if (user != null) {
+                String searchQuery = request.getParameter("search");
+                String stageFilter = request.getParameter("stage");
+
+                // Keep parameters for UI state
+                request.setAttribute("searchQuery", searchQuery);
+                request.setAttribute("stageFilter", stageFilter);
+
+                OppList = oop.searchOpportunities(user.getId(), searchQuery, stageFilter);
+            }
         } catch (Exception e) {
+            e.printStackTrace();
         }
         request.setAttribute("opportunityList", OppList);
 
@@ -63,10 +70,8 @@ public class OpportunityListServlet extends HttpServlet {
     }
     private int calculateProbability(String stage) {
         return switch (stage) {
-            case "Prospecting" -> 10;
-            case "Qualification" -> 25;
-            case "Proposal" -> 50;
-            case "Negotiation" -> 75;
+            case "Prospecting" -> 20;
+            case "Negotiation" -> 70;
             case "Won" -> 100;
             case "Lost" -> 0;
             default -> 0;

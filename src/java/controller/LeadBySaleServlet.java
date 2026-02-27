@@ -50,22 +50,37 @@ public class LeadBySaleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setAttribute("pageTitle", "Sales Pipeline");
-        List<Lead> lead_list = new ArrayList<>();
-        LeadDAO ld = new LeadDAOImpl();
         try {
+            request.setAttribute("pageTitle", "Sales Pipeline");
+            List<Lead> lead_list = new ArrayList<>();
+            LeadDAO ld = new LeadDAOImpl();
+            
             HttpSession session = request.getSession();
-            User user = (User) session.getAttribute("currentUser"); // Get User object from session
+            User user = (User) session.getAttribute("currentUser");
             if (user != null) {
-                lead_list = ld.findBySaleId(user.getId());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        request.setAttribute("leadList", lead_list);
+                String searchQuery = request.getParameter("search");
+                String statusFilter = request.getParameter("status");
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/sales/leadbysale.jsp");
-        dispatcher.forward(request, response);
+                // Keep parameters in request for UI state retention
+                request.setAttribute("searchQuery", searchQuery != null ? searchQuery : "");
+                request.setAttribute("statusFilter", statusFilter != null ? statusFilter : "");
+
+                lead_list = ld.searchLeads(user.getId(), searchQuery, statusFilter);
+            } else {
+                System.out.println("No user found in session for LeadBySaleServlet");
+            }
+            
+            request.setAttribute("leadList", lead_list != null ? lead_list : new ArrayList<>());
+
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/views/sales/leadbysale.jsp");
+            dispatcher.forward(request, response);
+            
+        } catch (Throwable t) {
+            String msg = t.getMessage() != null ? t.getMessage() : t.toString();
+            System.err.println("CRITICAL ERROR in LeadBySaleServlet: " + msg);
+            t.printStackTrace();
+            throw new ServletException("LeadBySaleServlet error: " + msg, t);
+        }
     }
 
     /**
@@ -80,11 +95,13 @@ public class LeadBySaleServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            int leadID = Integer.parseInt(request.getParameter("leadId"));
+            long leadID = Long.parseLong(request.getParameter("leadId"));
             String status = request.getParameter("status");
             LeadDAO ld = new LeadDAOImpl();
             ld.updateLeadStatus(leadID, status);
         } catch (Exception e) {
+            System.err.println("Error in LeadBySaleServlet doPost: " + e.getMessage());
+            e.printStackTrace();
         }
         response.sendRedirect("leads"); // relative redirect still works within /sales/
     }
