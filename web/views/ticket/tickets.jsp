@@ -135,7 +135,7 @@
                                                             <div class="col-md-4">
                                                                 <label class="form-label">Tìm kiếm</label>
                                                                 <input type="text" class="form-control" name="keyword"
-                                                                    placeholder="Tiêu đề, ID ticket..."
+                                                                    placeholder="Tên công ty, ID ticket..."
                                                                     value="${param.keyword}">
                                                             </div>
                                                             <div class="col-md-2">
@@ -163,8 +163,9 @@
                                                                         ? 'selected' : '' }>Medium</option>
                                                                     <option value="High" ${param.priority=='High'
                                                                         ? 'selected' : '' }>High</option>
-                                                                    <option value="Critical"${param.priority=='Critical' 
-                                                                        ? 'selected' : '' }>Critical</option>
+                                                                    <option value="Critical"
+                                                                        ${param.priority=='Critical' ? 'selected' : ''
+                                                                        }>Critical</option>
                                                                 </select>
                                                             </div>
                                                             <div class="col-md-4 d-flex align-items-end">
@@ -316,7 +317,7 @@
                                     }
 
                                     if (!document.getElementById('customerId').value) {
-                                        alert('Vui lòng chọn khách hàng!');
+                                        showToast('Vui lòng chọn khách hàng!', 'warning');
                                         return;
                                     }
 
@@ -330,15 +331,15 @@
                                         .then(response => response.json())
                                         .then(data => {
                                             if (data.success) {
-                                                alert(data.message);
-                                                location.reload();
+                                                showToast(data.message, 'success');
+                                                setTimeout(() => location.reload(), 1500);
                                             } else {
-                                                alert(data.message);
+                                                showToast(data.message, 'danger');
                                             }
                                         })
                                         .catch(error => {
                                             console.error('Error:', error);
-                                            alert('Có lỗi xảy ra!');
+                                            showToast('Có lỗi xảy ra!', 'danger');
                                         });
                                 }
 

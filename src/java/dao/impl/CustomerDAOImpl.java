@@ -77,7 +77,12 @@ public class CustomerDAOImpl implements CustomerDAO {
                 c.setCompanyName(rs.getString("company_name"));
                 c.setEmail(rs.getString("email"));
                 c.setPhone(rs.getString("phone"));
-                // Map other fields as needed for display
+                c.setIndustry(rs.getString("industry"));
+                c.setTier(rs.getString("tier"));
+                c.setCity(rs.getString("city"));
+                c.setCountry(rs.getString("country"));
+                c.setWebsite(rs.getString("website"));
+                c.setLastCareDate(rs.getTimestamp("last_care_date"));
                 return c;
             }
         } catch (SQLException e) {
@@ -177,6 +182,25 @@ public class CustomerDAOImpl implements CustomerDAO {
                 conn.setAutoCommit(true);
                 dbUtil.closeConnection(conn);
             }
+        }
+    }
+    public boolean updateLastCareDate(int id, java.sql.Timestamp date) {
+        String sql = "UPDATE Customers SET last_care_date = ? WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setTimestamp(1, date);
+            stmt.setInt(2, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeResources(null, stmt, conn);
+
         }
     }
 

@@ -219,7 +219,7 @@
                             $('#createTicketForm').on('submit', function (e) {
                                 if (!$hiddenInput.val()) {
                                     e.preventDefault();
-                                    alert('Vui lòng chọn khách hàng từ danh sách gợi ý!');
+                                    showToast('Vui lòng chọn khách hàng từ danh sách gợi ý!', 'warning');
                                     $searchInput.focus();
                                 }
                             });

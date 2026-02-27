@@ -37,14 +37,7 @@ public class MyTasksServlet extends HttpServlet {
         int userId = ((Number) session.getAttribute(Constants.SESSION_USER_ID)).intValue();
         Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
-        List<Task> tasks;
-        if (Role.MANAGER.equals(role)) {
-            // Manager xem tất cả tasks
-            tasks = taskService.getAllTasks();
-        } else {
-            // Support chỉ xem tasks của mình
-            tasks = taskService.getTasksByUser(userId);
-        }
+        List<Task> tasks = taskService.getTasksByUser(userId);
 
         // Đếm thống kê
         long openCount = tasks.stream().filter(t -> "Pending".equals(t.getStatus())).count();
@@ -96,6 +89,6 @@ public class MyTasksServlet extends HttpServlet {
         if (session == null)
             return false;
         Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
-        return Role.SUPPORT.equals(role) || Role.MANAGER.equals(role);
+        return Role.SUPPORT.equals(role);
     }
 }

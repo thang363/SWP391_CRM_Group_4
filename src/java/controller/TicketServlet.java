@@ -579,7 +579,7 @@ public class TicketServlet extends HttpServlet {
         if (success) {
             logSystemActivity(request, id, "Resolved ticket. Solution: " + note);
         }
-        sendJsonResponse(response, success, success ? "Đã cập nhật trạng thái Resolved" : "Lỗi xử lý");
+        sendJsonResponse(response, success, success ? "Giải quyết ticket và gửi email thành công!" : "Lỗi xử lý");
     }
 
     private void handleReopen(HttpServletRequest request, HttpServletResponse response) throws IOException {

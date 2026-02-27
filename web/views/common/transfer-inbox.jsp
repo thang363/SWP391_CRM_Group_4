@@ -340,34 +340,36 @@
                                     }
 
                                     function cancelTransfer(id, campaignName) {
-                                        if (!confirm('Bạn có chắc chắn muốn hủy yêu cầu chuyển giao chiến dịch "' + campaignName + '"?')) {
-                                            return;
-                                        }
+                                        showConfirmDialog(
+                                            'Bạn có chắc chắn muốn hủy yêu cầu chuyển giao chiến dịch "<strong>' + campaignName + '</strong>"?',
+                                            function () {
+                                                const params = new URLSearchParams();
+                                                params.append('action', 'cancel');
+                                                params.append('transferId', id);
 
-                                        const params = new URLSearchParams();
-                                        params.append('action', 'cancel');
-                                        params.append('transferId', id);
-
-                                        fetch('${pageContext.request.contextPath}/transfers', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                                                fetch('${pageContext.request.contextPath}/transfers', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                                                    },
+                                                    body: params
+                                                })
+                                                    .then(response => response.json())
+                                                    .then(result => {
+                                                        if (result.success) {
+                                                            alert('Đã hủy yêu cầu chuyển giao.');
+                                                            window.location.reload();
+                                                        } else {
+                                                            alert('Lỗi: ' + result.message);
+                                                        }
+                                                    })
+                                                    .catch(error => {
+                                                        console.error('Error:', error);
+                                                        alert('Có lỗi xảy ra');
+                                                    });
                                             },
-                                            body: params
-                                        })
-                                            .then(response => response.json())
-                                            .then(result => {
-                                                if (result.success) {
-                                                    alert('Đã hủy yêu cầu chuyển giao.');
-                                                    window.location.reload();
-                                                } else {
-                                                    alert('Lỗi: ' + result.message);
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error('Error:', error);
-                                                alert('Có lỗi xảy ra');
-                                            });
+                                            { title: 'Hủy chuyển giao', confirmText: 'Hủy yêu cầu', confirmClass: 'btn-warning' }
+                                        );
                                     }
 
                                     // Hide spinner when page loads
