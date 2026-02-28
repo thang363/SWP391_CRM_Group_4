@@ -54,8 +54,8 @@
                                                             <table class="table table-borderless">
                                                                 <tbody>
                                                                     <tr>
-                                                                        <th scope="row" style="width: 40%;">Tên Công Ty
-                                                                            / Cá Nhân</th>
+                                                                        <th scope="row" style="width: 40%;">Tên Khách
+                                                                            Hàng</th>
                                                                         <td>${customer.companyName}</td>
                                                                     </tr>
                                                                     <tr>
@@ -73,18 +73,13 @@
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <th scope="row">Tier VIP</th>
+                                                                        <th scope="row">Tier</th>
                                                                         <td>
                                                                             <span
                                                                                 class="badge ${customer.tier == 'VIP' ? 'bg-warning' : (customer.tier == 'VVIP' ? 'bg-danger' : 'bg-primary')}">
                                                                                 ${customer.tier}
                                                                             </span>
                                                                         </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <th scope="row">Ngày Thành Lập</th>
-                                                                        <td>${customer.foundedDate != null ?
-                                                                            customer.foundedDate : '-'}</td>
                                                                     </tr>
                                                                     <tr>
                                                                         <th scope="row">Ngành Nghề</th>
@@ -95,6 +90,11 @@
                                                                         <th scope="row">Quy Mô Nhân Sự</th>
                                                                         <td>${customer.numberOfEmployees != null ?
                                                                             customer.numberOfEmployees : '-'}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th scope="row">Ngày Thành Lập</th>
+                                                                        <td>${customer.foundedDate != null ?
+                                                                            customer.foundedDate : '-'}</td>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>

@@ -199,10 +199,6 @@
                                                                                     <option value="VIP"
                                                                                         ${customer.tier=='VIP'
                                                                                         ? 'selected' : '' }>VIP</option>
-                                                                                    <option value="VVIP"
-                                                                                        ${customer.tier=='VVIP'
-                                                                                        ? 'selected' : '' }>VVIP
-                                                                                    </option>
                                                                                 </select>
                                                                             </div>
                                                                         </div>
@@ -222,10 +218,6 @@
                                                                                     <option value="Inactive"
                                                                                         ${customer.status=='Inactive'
                                                                                         ? 'selected' : '' }>Inactive
-                                                                                    </option>
-                                                                                    <option value="Churned"
-                                                                                        ${customer.status=='Churned'
-                                                                                        ? 'selected' : '' }>Churned
                                                                                     </option>
                                                                                 </select>
                                                                             </div>
