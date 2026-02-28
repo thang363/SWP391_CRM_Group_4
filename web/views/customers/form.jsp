@@ -33,7 +33,7 @@
                                             <!-- Main Content Start -->
                                             <div class="container-fluid pt-4 px-4">
                                                 <div class="row g-4">
-                                                    <div class="col-sm-12 col-xl-10 mx-auto">
+                                                    <div class="col-sm-12 col-xl-12 mx-auto">
                                                         <div class="bg-light rounded h-100 p-4">
                                                             <div
                                                                 class="d-flex justify-content-between align-items-center mb-4">
@@ -65,7 +65,7 @@
                                                                         <div class="row mb-3">
                                                                             <label
                                                                                 class="col-sm-4 col-form-label text-nowrap">Tên
-                                                                                Công Ty <span
+                                                                                Khách Hàng <span
                                                                                     class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
                                                                                 <input type="text" class="form-control"
@@ -199,10 +199,6 @@
                                                                                     <option value="VIP"
                                                                                         ${customer.tier=='VIP'
                                                                                         ? 'selected' : '' }>VIP</option>
-                                                                                    <option value="VVIP"
-                                                                                        ${customer.tier=='VVIP'
-                                                                                        ? 'selected' : '' }>VVIP
-                                                                                    </option>
                                                                                 </select>
                                                                             </div>
                                                                         </div>
@@ -222,10 +218,6 @@
                                                                                     <option value="Inactive"
                                                                                         ${customer.status=='Inactive'
                                                                                         ? 'selected' : '' }>Inactive
-                                                                                    </option>
-                                                                                    <option value="Churned"
-                                                                                        ${customer.status=='Churned'
-                                                                                        ? 'selected' : '' }>Churned
                                                                                     </option>
                                                                                 </select>
                                                                             </div>

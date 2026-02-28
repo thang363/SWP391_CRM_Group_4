@@ -66,8 +66,6 @@
                                                                     : '' }>Standard</option>
                                                                 <option value="VIP" ${tier=='VIP' ? 'selected' : '' }>
                                                                     VIP</option>
-                                                                <option value="VVIP" ${tier=='VVIP' ? 'selected' : '' }>
-                                                                    VVIP</option>
                                                             </select>
                                                         </div>
                                                         <div class="col-md-3">
@@ -78,8 +76,6 @@
                                                                     : '' }>Active</option>
                                                                 <option value="Inactive" ${status=='Inactive'
                                                                     ? 'selected' : '' }>Inactive</option>
-                                                                <option value="Churned" ${status=='Churned' ? 'selected'
-                                                                    : '' }>Churned</option>
                                                             </select>
                                                         </div>
                                                         <div class="col-md-2">
@@ -96,7 +92,7 @@
                                                             <thead class="table-dark">
                                                                 <tr>
                                                                     <th scope="col">STT</th>
-                                                                    <th scope="col">Tên / Công ty</th>
+                                                                    <th scope="col">Tên Khách Hàng</th>
                                                                     <th scope="col">SĐT</th>
                                                                     <th scope="col">Email</th>
                                                                     <th scope="col">Tier</th>
