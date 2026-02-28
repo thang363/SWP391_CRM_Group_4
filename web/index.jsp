@@ -9,7 +9,7 @@
     </head>
 
     <body>
-        <p>Redirecting to dashboard...</p>
+        <p>Redirecting to dashboard............</p>
     </body>
 
     </html>
