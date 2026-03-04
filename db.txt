@@ -1121,4 +1121,23 @@ CONSTRAINT FK_TVT_Ticket FOREIGN KEY ([ticket_id]) REFERENCES [dbo].Tickets
 )
 
 ALTER TABLE Tasks ADD task_type VARCHAR(20) NULL
+GO
+
+CREATE TABLE [dbo].[CustomerReviews](
+	[id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	[customer_id] [int] NOT NULL,
+	[user_id] [int] NULL,
+	[feedback_token] [varchar](255) UNIQUE NOT NULL,
+	[expires_at] [datetime] NOT NULL,
+	[is_used] [bit] DEFAULT 0,
+	[sent_at] [datetime] DEFAULT GETDATE(),
+	[service_rating] [int] NULL,
+	[staff_rating] [int] NULL,
+	[comment] [nvarchar](max) NULL,
+	[submitted_at] [datetime] NULL 
+);
+GO
+ALTER TABLE [dbo].[CustomerReviews] ADD CONSTRAINT [FK_Reviews_Customer] FOREIGN KEY([customer_id]) REFERENCES [dbo].[Customers] ([id]);
+ALTER TABLE [dbo].[CustomerReviews] ADD CONSTRAINT [FK_Reviews_User] FOREIGN KEY([user_id]) REFERENCES [dbo].[Users] ([id]);
+GO
 
