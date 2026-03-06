@@ -187,11 +187,21 @@ public class SubmissionsServlet extends HttpServlet {
 
             // --- Check Duplicate ---
             if (!force) {
-                boolean isDuplicate = leadDAO.checkDuplicate(submission.getEmail(), submission.getPhone());
+                Long submitCampaignId = null;
+                if (submission.getCampaignId() != null && submission.getCampaignId() > 0) {
+                    submitCampaignId = submission.getCampaignId().longValue();
+                } else if (submission.getLandingPageId() != null) {
+                    LandingPage lp = landingPageDAO.findById(submission.getLandingPageId());
+                    if (lp != null && lp.getCampaignId() != null) {
+                        submitCampaignId = lp.getCampaignId().longValue();
+                    }
+                }
+                
+                boolean isDuplicate = leadDAO.checkDuplicate(submission.getEmail(), submission.getPhone(), submitCampaignId);
                 if (isDuplicate) {
                     Map<String, Object> data = new HashMap<>();
                     data.put("code", "DUPLICATE");
-                    sendJsonResponse(response, false, "Email hoặc số điện thoại đã tồn tại trong hệ thống Leads.", data);
+                    sendJsonResponse(response, false, "Email hoặc số điện thoại đã tồn tại trong chiến dịch này.", data);
                     return;
                 }
             }

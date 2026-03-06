@@ -31,4 +31,6 @@ public interface UserDAO {
     int countAll() throws SQLException;
     
     int countActive() throws SQLException;
+    
+    List<User> findByRole(model.entity.Role role) throws SQLException;
 }

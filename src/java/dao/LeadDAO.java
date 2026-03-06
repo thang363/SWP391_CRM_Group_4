@@ -23,9 +23,10 @@ public interface LeadDAO {
      * Check if a lead with the given email or phone already exists.
      * @param email Email to check
      * @param phone Phone to check
+     * @param campaignId Campaign ID to check within
      * @return true if duplicate exists, false otherwise
      */
-    boolean checkDuplicate(String email, String phone);
+    boolean checkDuplicate(String email, String phone, Long campaignId);
 
     /**
      * Insert a new lead.
@@ -62,6 +63,7 @@ public interface LeadDAO {
      */
     List<Lead> findAllWithEmail();
 
+
     /**
      * Search and filter leads.
      * @param saleId The ID of the sales staff
@@ -71,4 +73,53 @@ public interface LeadDAO {
      */
     List<Lead> searchLeads(long saleId, String query, String status);
 
+    /**
+     * Records a lead interaction and updates the lead's score.
+     * @param leadId ID of the lead
+     * @param campaignId Optional campaign ID associated with the interaction
+     * @param activityType Type of activity (e.g., 'Email Click')
+     * @param details Additional details/notes
+     * @param scoreChange Points to add/subtract
+     * @return true if successful
+     */
+    boolean recordInteraction(long leadId, Integer campaignId, String activityType, String details, int scoreChange);
+
+    /**
+     * Update lead's total score.
+     * @param leadId ID of the lead
+     * @param newScore The new total score
+     */
+    void updateScore(long leadId, int newScore);
+    
+    /**
+     * Get KPIs for monitor leads screen.
+     * @param campaignId Campaign ID (null for all campaigns)
+     * @return MonitorKPIsViewModel containing total, hot, unassigned leads and avg score
+     */
+    model.viewmodel.MonitorKPIsViewModel getMonitorKPIs(Long campaignId);
+    
+    /**
+     * Get list of unassigned leads sorted by score descending (Hot leads first).
+     * @param campaignId Campaign ID (null for all campaigns)
+     * @param limit Maximum number of records to return
+     * @return List of Hot Unassigned Leads
+     */
+    List<Lead> getHotUnassignedLeads(Long campaignId, int limit);
+    
+    /**
+     * Get recent interactions for feed.
+     * @param campaignId Campaign ID (null for all campaigns)
+     * @param limit Maximum number of records to return
+     * @return List of LeadInteractionViewModel
+     */
+    List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Long campaignId, int limit);
+    
+    /**
+     * Assign a lead to a sales staff.
+     * @param leadId The ID of the lead
+     * @param salesId The ID of the sales staff
+     * @param managerId The ID of the manager assigning the lead
+     * @return true if assignment is successful
+     */
+    boolean assignLeadToSales(long leadId, long salesId, long managerId);
 }

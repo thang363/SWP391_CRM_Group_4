@@ -47,6 +47,11 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
             throw new SecurityException("You are not the owner of this campaign");
         }
 
+        // Prevent transferring Finished campaigns
+        if ("Finished".equals(campaign.getStatus())) {
+            throw new IllegalStateException("Cannot transfer a finished campaign");
+        }
+
         // 2. Check for existing pending transfer
         if (transferDAO.hasPendingTransfer(campaignId)) {
             throw new IllegalStateException("A transfer is already pending for this campaign");

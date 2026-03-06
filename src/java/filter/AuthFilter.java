@@ -14,7 +14,7 @@ import java.io.IOException;
 public class AuthFilter implements Filter {
 
     private static final String[] EXCLUDED_URLS = {
-            "/login", "/register", "/logout", "/css/", "/js/", "/img/", "/lib/", "/favicon.ico"
+            "/login", "/register", "/logout", "/css/", "/js/", "/img/", "/lib/", "/favicon.ico", "/marketing/track-click"
     };
 
     @Override

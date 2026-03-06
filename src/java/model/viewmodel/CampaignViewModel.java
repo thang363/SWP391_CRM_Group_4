@@ -125,7 +125,7 @@ public class CampaignViewModel {
         if (status == null) return "secondary";
         switch (status) {
             case "Active": return "success";
-            case "Pending": return "warning";
+            case "Paused": return "warning";
             case "Draft": return "secondary";
             case "Finished": return "info";
             case "Rejected": return "danger";
@@ -137,7 +137,7 @@ public class CampaignViewModel {
         if (status == null) return "N/A";
         switch (status) {
             case "Active": return "Đang chạy";
-            case "Pending": return "Chờ duyệt";
+            case "Paused": return "Tạm dừng";
             case "Draft": return "Nháp";
             case "Finished": return "Đã kết thúc";
             case "Rejected": return "Bị từ chối";

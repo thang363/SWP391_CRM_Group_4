@@ -322,6 +322,30 @@ public class UserDAOImpl implements UserDAO {
         }
     }
     
+    @Override
+    public List<User> findByRole(Role role) throws SQLException {
+        String sql = "SELECT id, username, password_hash, email, full_name, phone, role, status, created_at FROM users WHERE role = ? AND status = 'Active' ORDER BY full_name ASC";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<User> users = new ArrayList<>();
+        
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, role.getValue());
+            rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+            return users;
+            
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+    }
+    
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId(rs.getLong("id"));

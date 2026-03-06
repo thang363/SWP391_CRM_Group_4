@@ -122,6 +122,9 @@ public class BulkEmailServlet extends HttpServlet {
 
         int successCount = 0;
         int failCount = 0;
+        
+        // Generate a unique broadcast ID for this batch
+        String broadcastId = String.valueOf(System.currentTimeMillis());
 
         for (String idStr : leadIds) {
             try {
@@ -129,10 +132,17 @@ public class BulkEmailServlet extends HttpServlet {
                 Lead lead = leadDAO.findById(leadId);
 
                 if (lead != null && lead.getEmail() != null && !lead.getEmail().isEmpty()) {
-                    // Personalize content: replace {{name}} with lead's name
+                    // Personalize content: replace variables
                     String personalizedContent = htmlContent
                             .replace("{{name}}", lead.getFullName() != null ? lead.getFullName() : "")
-                            .replace("{{email}}", lead.getEmail());
+                            .replace("{{email}}", lead.getEmail())
+                            .replace("{{id}}", String.valueOf(lead.getId()));
+                            
+                    // Append broadcast ID (bid) to any tracking link that lacks it
+                    personalizedContent = personalizedContent.replaceAll(
+                        "(?i)(/marketing/track-click\\?leadId=\\d+(?:&campaignId=\\d+)?)(\"|')", 
+                        "$1&bid=" + broadcastId + "$2"
+                    );
 
                     boolean sent = emailService.sendMarketingEmail(lead.getEmail(), subject, personalizedContent);
                     if (sent) {

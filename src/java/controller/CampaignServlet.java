@@ -303,6 +303,12 @@ public class CampaignServlet extends HttpServlet {
                 }
             }
 
+            // Prevent editing Finished campaigns
+            if ("Finished".equals(existingCampaign.getStatus())) {
+                sendJsonResponse(response, false, "Không thể chỉnh sửa chiến dịch đã kết thúc", null);
+                return;
+            }
+
             // Check if campaign has pending transfer - prevent editing during handover
             if (transferDAO.hasPendingTransfer(campaign.getId())) {
                 sendJsonResponse(response, false, "Chiến dịch đang trong quá trình chuyển giao, không thể chỉnh sửa", null);
@@ -377,6 +383,31 @@ public class CampaignServlet extends HttpServlet {
             // Check if campaign has pending transfer - prevent deletion during handover
             if (transferDAO.hasPendingTransfer(id)) {
                 sendJsonResponse(response, false, "Chiến dịch đang trong quá trình chuyển giao, không thể xóa", null);
+                return;
+            }
+
+            // Get existing campaign for status and ownership check
+            Campaign existingCampaign = campaignService.getCampaignById(id);
+            if (existingCampaign == null) {
+                sendJsonResponse(response, false, "Chiến dịch không tồn tại", null);
+                return;
+            }
+
+            // Authorization check: Only Admin or the owner can delete
+            HttpSession session = request.getSession(false);
+            Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
+
+            if (Role.MANAGER.equals(currentUserRole)) {
+                if (existingCampaign.getManagerId() == null || !existingCampaign.getManagerId().equals(currentUserId)) {
+                    sendJsonResponse(response, false, "Bạn không có quyền xóa chiến dịch này", null);
+                    return;
+                }
+            }
+
+            // Check if campaign status is Draft - prevent deletion if not Draft
+            if (!"Draft".equals(existingCampaign.getStatus())) {
+                sendJsonResponse(response, false, "Chỉ có thể xóa chiến dịch ở trạng thái Draft", null);
                 return;
             }
 
