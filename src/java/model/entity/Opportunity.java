@@ -14,11 +14,11 @@ import java.time.LocalDateTime;
 
 public class Opportunity {
 
-    private Long id;
+    private Integer id;
     private String name;
 
-    private Long leadId;
-    private Long customerId;
+    private Integer leadId;
+    private Integer customerId;
 
     private String type;
     private BigDecimal expectedValue;
@@ -26,7 +26,7 @@ public class Opportunity {
     private String stage;
     private Integer probability;
 
-    private Long salesId;
+    private Integer salesId;
 
     private LocalDateTime createdAt;
 
@@ -39,11 +39,11 @@ public class Opportunity {
 
     // ===== Getter & Setter =====
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -55,19 +55,19 @@ public class Opportunity {
         this.name = name;
     }
 
-    public Long getLeadId() {
+    public Integer getLeadId() {
         return leadId;
     }
 
-    public void setLeadId(Long leadId) {
+    public void setLeadId(Integer leadId) {
         this.leadId = leadId;
     }
 
-    public Long getCustomerId() {
+    public Integer getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(Long customerId) {
+    public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
     }
 
@@ -103,11 +103,11 @@ public class Opportunity {
         this.probability = probability;
     }
 
-    public Long getSalesId() {
+    public Integer getSalesId() {
         return salesId;
     }
 
-    public void setSalesId(Long salesId) {
+    public void setSalesId(Integer salesId) {
         this.salesId = salesId;
     }
 

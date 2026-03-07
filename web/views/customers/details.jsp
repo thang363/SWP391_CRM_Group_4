@@ -34,7 +34,16 @@
                                             <div class="container-fluid pt-4 px-4">
                                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                                     <h4 class="mb-0">Chi tiết Khách hàng: ${customer.companyName}</h4>
-                                                    <div>
+                                                    <div class="d-flex gap-2">
+                                                        <form action="${pageContext.request.contextPath}/customers"
+                                                            method="post" class="m-0">
+                                                            <input type="hidden" name="action"
+                                                                value="sendFeedbackRequest">
+                                                            <input type="hidden" name="id" value="${customer.id}">
+                                                            <button type="submit" class="btn btn-primary"><i
+                                                                    class="fa fa-envelope me-2"></i>Gửi Email Đánh
+                                                                Giá</button>
+                                                        </form>
                                                         <a href="${pageContext.request.contextPath}/customers?action=history&id=${customer.id}"
                                                             class="btn btn-info text-white"><i
                                                                 class="fa fa-history me-2"></i>Lịch sử Tương tác</a>
@@ -46,6 +55,15 @@
                                                                 class="fa fa-arrow-left me-2"></i>Trở lại</a>
                                                     </div>
                                                 </div>
+
+                                                <c:if test="${param.success == 'feedback_sent'}">
+                                                    <div class="alert alert-success alert-dismissible fade show"
+                                                        role="alert">
+                                                        Gửi email yêu cầu đánh giá thành công!
+                                                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                                            aria-label="Close"></button>
+                                                    </div>
+                                                </c:if>
 
                                                 <div class="row g-4">
                                                     <div class="col-sm-12 col-xl-6">
@@ -151,6 +169,74 @@
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row g-4 mt-1">
+                                                    <div class="col-sm-12">
+                                                        <div class="bg-light rounded h-100 p-4">
+                                                            <h6 class="mb-4">Phản Hồi Từ Khách Hàng (Feedback)</h6>
+                                                            <c:choose>
+                                                                <c:when test="${not empty reviews}">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-hover align-middle">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th>Ngày Gửi Link</th>
+                                                                                    <th>Ngày Phản Hồi</th>
+                                                                                    <th>Trạng Thái</th>
+                                                                                    <th>Điểm Dịch Vụ</th>
+                                                                                    <th>Điểm Nhân Viên</th>
+                                                                                    <th>Góp Ý</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                <c:forEach var="r" items="${reviews}">
+                                                                                    <tr>
+                                                                                        <td>
+                                                                                            <fmt:formatDate
+                                                                                                value="${r.sentAt}"
+                                                                                                pattern="dd/MM/yyyy HH:mm" />
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <c:if
+                                                                                                test="${r.submittedAt != null}">
+                                                                                                <fmt:formatDate
+                                                                                                    value="${r.submittedAt}"
+                                                                                                    pattern="dd/MM/yyyy HH:mm" />
+                                                                                            </c:if>
+                                                                                            <c:if
+                                                                                                test="${r.submittedAt == null}">
+                                                                                                -
+                                                                                            </c:if>
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <span
+                                                                                                class="badge ${r.used ? 'bg-success' : 'bg-warning'}">${r.used
+                                                                                                ? 'Đã phản hồi' : 'Chờ
+                                                                                                phản hồi'}</span>
+                                                                                        </td>
+                                                                                        <td>${r.serviceRating != null ?
+                                                                                            r.serviceRating.toString().concat('
+                                                                                            Sao') : '-'}</td>
+                                                                                        <td>${r.staffRating != null ?
+                                                                                            r.staffRating.toString().concat('
+                                                                                            Sao') : '-'}</td>
+                                                                                        <td class="text-wrap text-break"
+                                                                                            style="max-width: 300px;">
+                                                                                            ${r.comment != null ?
+                                                                                            r.comment : '-'}</td>
+                                                                                    </tr>
+                                                                                </c:forEach>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <p>Chưa có dữ liệu đánh giá nào.</p>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
                                                     </div>
                                                 </div>

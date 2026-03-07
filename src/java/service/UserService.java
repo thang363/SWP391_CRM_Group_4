@@ -11,11 +11,11 @@ public interface UserService {
     
     User register(RegisterViewModel registerViewModel);
     
-    User getUserById(Long userId);
+    User getUserById(Integer userId);
     
     User getUserByUsername(String username);
     
-    UserViewModel getUserViewModelById(Long userId);
+    UserViewModel getUserViewModelById(Integer userId);
     
     List<UserViewModel> getAllUsers();
     
@@ -25,13 +25,13 @@ public interface UserService {
     
     boolean updateUser(User user);
     
-    boolean updateProfile(Long userId, String fullName, String email, String phone);
+    boolean updateProfile(Integer userId, String fullName, String email, String phone);
     
-    boolean changePassword(Long userId, String oldPassword, String newPassword);
+    boolean changePassword(Integer userId, String oldPassword, String newPassword);
     
-    boolean deleteUser(Long userId);
+    boolean deleteUser(Integer userId);
     
-    boolean setUserActiveStatus(Long userId, boolean isActive);
+    boolean setUserActiveStatus(Integer userId, boolean isActive);
     
     UserViewModel convertToViewModel(User user);
     

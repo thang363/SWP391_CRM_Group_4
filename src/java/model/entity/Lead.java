@@ -9,10 +9,10 @@ import java.time.LocalDateTime;
  */
 public class Lead {
     
-    private Long id;
+    private Integer id;
 
-    private Long campaignId;
-    private Long sourceId;
+    private Integer campaignId;
+    private Integer sourceId;
 
     private String fullName;
     private String email;
@@ -22,7 +22,7 @@ public class Lead {
     private String status;        // New, Nurturing, Qualified, Assigned, Junk
     private Boolean isConverted;
 
-    private Long assignedTo;      // sale_id
+    private Integer assignedTo;      // sale_id
     private LocalDateTime createdAt;
 
     // Optional: object mapping
@@ -32,7 +32,7 @@ public class Lead {
     public Lead() {
     }
 
-    public Lead(Long id, Long campaignId, Long sourceId, String fullName, String email, String phone, Integer currentScore, String status, Boolean isConverted, Long assignedTo, LocalDateTime createdAt, User assignedSale) {
+    public Lead(Integer id, Integer campaignId, Integer sourceId, String fullName, String email, String phone, Integer currentScore, String status, Boolean isConverted, Integer assignedTo, LocalDateTime createdAt, User assignedSale) {
         this.id = id;
         this.campaignId = campaignId;
         this.sourceId = sourceId;
@@ -47,27 +47,27 @@ public class Lead {
         this.assignedSale = assignedSale;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Long getCampaignId() {
+    public Integer getCampaignId() {
         return campaignId;
     }
 
-    public void setCampaignId(Long campaignId) {
+    public void setCampaignId(Integer campaignId) {
         this.campaignId = campaignId;
     }
 
-    public Long getSourceId() {
+    public Integer getSourceId() {
         return sourceId;
     }
 
-    public void setSourceId(Long sourceId) {
+    public void setSourceId(Integer sourceId) {
         this.sourceId = sourceId;
     }
 
@@ -119,11 +119,11 @@ public class Lead {
         this.isConverted = isConverted;
     }
 
-    public Long getAssignedTo() {
+    public Integer getAssignedTo() {
         return assignedTo;
     }
 
-    public void setAssignedTo(Long assignedTo) {
+    public void setAssignedTo(Integer assignedTo) {
         this.assignedTo = assignedTo;
     }
 

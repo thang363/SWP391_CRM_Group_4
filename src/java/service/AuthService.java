@@ -7,9 +7,9 @@ public interface AuthService {
     
     User login(LoginViewModel loginViewModel);
     
-    User validateSession(Long userId);
+    User validateSession(Integer userId);
     
-    void logout(Long userId);
+    void logout(Integer userId);
     
-    boolean isAccountActive(Long userId);
+    boolean isAccountActive(Integer userId);
 }

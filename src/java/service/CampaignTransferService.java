@@ -9,22 +9,22 @@ import java.util.List;
 public interface CampaignTransferService {
     
     // Core Handover Actions
-    CampaignTransfer requestTransfer(Long campaignId, Long fromManagerId, Long toManagerId, String reason);
+    CampaignTransfer requestTransfer(Integer campaignId, Integer fromManagerId, Integer toManagerId, String reason);
     
-    boolean acceptTransfer(Long transferId, Long acceptingManagerId, String notes);
+    boolean acceptTransfer(Integer transferId, Integer acceptingManagerId, String notes);
     
-    boolean rejectTransfer(Long transferId, Long rejectingManagerId, String notes);
+    boolean rejectTransfer(Integer transferId, Integer rejectingManagerId, String notes);
     
-    boolean cancelTransfer(Long transferId, Long cancellingManagerId);
+    boolean cancelTransfer(Integer transferId, Integer cancellingManagerId);
     
     // Queries
-    List<CampaignTransfer> getPendingTransfersForRecipient(Long managerId);
+    List<CampaignTransfer> getPendingTransfersForRecipient(Integer managerId);
     
-    List<CampaignTransfer> getPendingTransfersForSender(Long managerId);
+    List<CampaignTransfer> getPendingTransfersForSender(Integer managerId);
     
-    List<CampaignTransfer> getRecentTransfersForSender(Long managerId);
+    List<CampaignTransfer> getRecentTransfersForSender(Integer managerId);
     
-    List<CampaignTransfer> getTransferHistory(Long campaignId);
+    List<CampaignTransfer> getTransferHistory(Integer campaignId);
     
-    CampaignTransfer getTransferById(Long id);
+    CampaignTransfer getTransferById(Integer id);
 }

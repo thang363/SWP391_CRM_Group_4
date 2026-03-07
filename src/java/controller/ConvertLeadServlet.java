@@ -65,7 +65,7 @@ public class ConvertLeadServlet extends HttpServlet {
         LeadDAO ld = new LeadDAOImpl();
         Lead lead = ld.findById(leadID);
         String leadName = lead.getFullName();
-        long saleID = lead.getAssignedTo();
+        Integer saleID = lead.getAssignedTo();
         OpportunityDAO op = new OpportunitiesDaoImpl();
         try {
             if (lead != null 

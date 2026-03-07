@@ -28,7 +28,7 @@ public class LeadDetailsServlet extends HttpServlet {
 
        
         try {
-            long leadId = Long.parseLong(idParam);
+            int leadId = Integer.parseInt(idParam);
             
             // Use standard DAO pattern
             dao.LeadDAO leadDao = new dao.impl.LeadDAOImpl();

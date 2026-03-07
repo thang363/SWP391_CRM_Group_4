@@ -14,7 +14,7 @@ public interface CampaignService {
      * @param id Campaign ID
      * @return Campaign object or null if not found
      */
-    Campaign getCampaignById(Long id);
+    Campaign getCampaignById(Integer id);
     
     /**
      * Get all campaigns
@@ -33,7 +33,7 @@ public interface CampaignService {
      * @param limit Maximum number of records to return
      * @return List of filtered campaigns
      */
-    List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit);
+    List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId, int offset, int limit);
     
     /**
      * Count campaigns with filters
@@ -44,7 +44,7 @@ public interface CampaignService {
      * @param managerId Filter by manager ID (null = no filter)
      * @return Count of matching campaigns
      */
-    int countCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId);
+    int countCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId);
     
     /**
      * Create new campaign
@@ -65,7 +65,7 @@ public interface CampaignService {
      * @param id Campaign ID to delete
      * @return true if delete successful, false otherwise
      */
-    boolean deleteCampaign(Long id);
+    boolean deleteCampaign(Integer id);
     
     /**
      * Validate campaign data

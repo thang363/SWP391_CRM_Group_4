@@ -20,4 +20,6 @@ public interface TicketDAO {
     boolean updateStatusAndNote(int ticketId, String status, String note);
 
     boolean assignTicket(int ticketId, Integer userId);
+
+    boolean updateRejectionReason(int ticketId, String reason);
 }

@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 @WebFilter(filterName = "RoleFilter", urlPatterns = {"/admin/*", "/users/*", "/campaigns/*", "/marketing/*"})
 public class RoleFilter implements Filter {
     
+    private static final String[] EXCLUDED_URLS = {"/marketing/track-click"};
+    
     private Map<String, Set<Role>> roleRequirements;
     private List<Map.Entry<String, Set<Role>>> sortedRequirements;
     @Override
@@ -28,7 +30,7 @@ public class RoleFilter implements Filter {
         roleRequirements.put("/admin", Set.of(Role.MANAGER));
         roleRequirements.put("/users", Set.of(Role.MANAGER));
         roleRequirements.put("/campaigns", Set.of(Role.MANAGER));
-        roleRequirements.put("/marketing", Set.of(Role.MARKETING));
+        roleRequirements.put("/marketing", Set.of(Role.MARKETING, Role.MANAGER));
         sortedRequirements = roleRequirements.entrySet().stream()
         .sorted((e1, e2) -> Integer.compare(e2.getKey().length(), e1.getKey().length()))
         .collect(Collectors.toList());
@@ -45,6 +47,11 @@ public class RoleFilter implements Filter {
         String contextPath = httpRequest.getContextPath();
         String path = requestURI.substring(contextPath.length());
         
+        if (isExcluded(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         HttpSession session = httpRequest.getSession(false);
         
         if (session == null) {
@@ -98,6 +105,15 @@ public class RoleFilter implements Filter {
     }
     return null;
 }
+
+    private boolean isExcluded(String path) {
+        for (String excluded : EXCLUDED_URLS) {
+            if (path.startsWith(excluded)) {
+                return true;
+            }
+        }
+        return false;
+    }
             
     @Override
     public void destroy() {

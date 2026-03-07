@@ -31,6 +31,7 @@ public interface LeadSubmissionDAO {
 
     /**
      * Find submissions with filters (for Management Screen)
+     * @param marketingId User ID if user is Marketing (null for Manager/Admin)
      * @param keyword Search keyword (Name, Email, Phone)
      * @param campaignId Filter by Campaign
      * @param source Filter by Source (Landing Page or Import)
@@ -41,12 +42,12 @@ public interface LeadSubmissionDAO {
      * @param limit Pagination limit
      * @return List of submissions
      */
-    List<LeadSubmission> findAll(String keyword, Integer campaignId, String source, String status, java.sql.Date fromDate, java.sql.Date toDate, int offset, int limit);
+    List<LeadSubmission> findAll(Integer marketingId, String keyword, Integer campaignId, String source, String status, java.sql.Date fromDate, java.sql.Date toDate, int offset, int limit);
     
     /**
      * Count submissions for pagination
      */
-    int count(String keyword, Integer campaignId, String source, String status, java.sql.Date fromDate, java.sql.Date toDate);
+    int count(Integer marketingId, String keyword, Integer campaignId, String source, String status, java.sql.Date fromDate, java.sql.Date toDate);
 
     /**
      * Delete submission by ID (Hard delete)
@@ -63,15 +64,17 @@ public interface LeadSubmissionDAO {
 
     /**
      * Count pending (unprocessed) submissions
+     * @param marketingId User ID if user is Marketing (null for Manager/Admin)
      * @return Number of submissions with is_processed = 0
      */
-    int countPending();
+    int countPending(Integer marketingId);
 
     /**
      * Count submissions submitted today
+     * @param marketingId User ID if user is Marketing (null for Manager/Admin)
      * @return Number of submissions from today
      */
-    int countToday();
+    int countToday(Integer marketingId);
     
     /**
      * Check if submission exists by email or phone.

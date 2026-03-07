@@ -12,12 +12,12 @@ import java.util.Locale;
  * Decouples the View layer from the Database Entity layer.
  */
 public class CampaignViewModel {
-    private Long id;
+    private Integer id;
     private String name;
     private BigDecimal budget;
     private Timestamp startDate;
     private Timestamp endDate;
-    private Long managerId;
+    private Integer managerId;
     private String status;
     private String description;
     private Timestamp createdAt;
@@ -28,7 +28,7 @@ public class CampaignViewModel {
 
     // Landing Page specific fields
     private String landingPageStatus;
-    private Long assigneeId;
+    private Integer assigneeId;
     private String assigneeName;
 
     // Formatters
@@ -41,7 +41,7 @@ public class CampaignViewModel {
      * Convert from Entity to ViewModel
      */
     public static CampaignViewModel fromEntity(Campaign entity, String managerName, boolean hasPendingTransfer, 
-                                             String lpStatus, Long assigneeId, String assigneeName) {
+                                             String lpStatus, Integer assigneeId, String assigneeName) {
         CampaignViewModel vm = new CampaignViewModel();
         vm.setId(entity.getId());
         vm.setName(entity.getName());
@@ -66,8 +66,8 @@ public class CampaignViewModel {
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -81,8 +81,8 @@ public class CampaignViewModel {
     public Timestamp getEndDate() { return endDate; }
     public void setEndDate(Timestamp endDate) { this.endDate = endDate; }
 
-    public Long getManagerId() { return managerId; }
-    public void setManagerId(Long managerId) { this.managerId = managerId; }
+    public Integer getManagerId() { return managerId; }
+    public void setManagerId(Integer managerId) { this.managerId = managerId; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
@@ -102,8 +102,8 @@ public class CampaignViewModel {
     public String getLandingPageStatus() { return landingPageStatus; }
     public void setLandingPageStatus(String landingPageStatus) { this.landingPageStatus = landingPageStatus; }
 
-    public Long getAssigneeId() { return assigneeId; }
-    public void setAssigneeId(Long assigneeId) { this.assigneeId = assigneeId; }
+    public Integer getAssigneeId() { return assigneeId; }
+    public void setAssigneeId(Integer assigneeId) { this.assigneeId = assigneeId; }
 
     public String getAssigneeName() { return assigneeName; }
     public void setAssigneeName(String assigneeName) { this.assigneeName = assigneeName; }
@@ -125,7 +125,7 @@ public class CampaignViewModel {
         if (status == null) return "secondary";
         switch (status) {
             case "Active": return "success";
-            case "Pending": return "warning";
+            case "Paused": return "warning";
             case "Draft": return "secondary";
             case "Finished": return "info";
             case "Rejected": return "danger";
@@ -137,7 +137,7 @@ public class CampaignViewModel {
         if (status == null) return "N/A";
         switch (status) {
             case "Active": return "Đang chạy";
-            case "Pending": return "Chờ duyệt";
+            case "Paused": return "Tạm dừng";
             case "Draft": return "Nháp";
             case "Finished": return "Đã kết thúc";
             case "Rejected": return "Bị từ chối";

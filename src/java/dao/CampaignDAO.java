@@ -14,7 +14,7 @@ public interface CampaignDAO {
      * @param id Campaign ID
      * @return Campaign object or null if not found
      */
-    Campaign findById(Long id);
+    Campaign findById(Integer id);
     
     /**
      * Find all campaigns
@@ -33,7 +33,7 @@ public interface CampaignDAO {
      * @param limit Maximum number of records to return
      * @return List of filtered campaigns
      */
-    List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit);
+    List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId, int offset, int limit);
     
     /**
      * Count campaigns matching filters
@@ -44,7 +44,7 @@ public interface CampaignDAO {
      * @param managerId Filter by manager ID (can be null)
      * @return Count of matching campaigns
      */
-    int countByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId);
+    int countByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId);
     
     /**
      * Create new campaign
@@ -65,7 +65,7 @@ public interface CampaignDAO {
      * @param id Campaign ID to delete
      * @return true if delete successful, false otherwise
      */
-    boolean delete(Long id);
+    boolean delete(Integer id);
     
     /**
      * Count total campaigns

@@ -327,9 +327,35 @@
 
                                                                 <div class="template-hint mb-3">
                                                                     <i class="fa fa-lightbulb me-1"></i>
-                                                                    <strong>Mẹo:</strong> Dùng <code>{{name}}</code> để
-                                                                    chèn tên Lead và <code>{{email}}</code> để chèn
-                                                                    email vào nội dung.
+                                                                    <strong>Mẹo:</strong> Dùng <code>{{name}}</code>,
+                                                                    <code>{{email}}</code>, và <code>{{id}}</code> để
+                                                                    chèn thông tin Lead vào nội dung.
+                                                                </div>
+
+                                                                <!-- Quick Templates -->
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-bold">🧙 Mẫu gợi ý
+                                                                        (Click để áp dụng):</label>
+                                                                    <div class="d-flex flex-wrap gap-2">
+                                                                        <button type="button"
+                                                                            class="btn btn-sm btn-outline-primary"
+                                                                            onclick="loadTemplate('interest')">
+                                                                            <i class="fa fa-star me-1"></i>Quan tâm sản
+                                                                            phẩm
+                                                                        </button>
+                                                                        <button type="button"
+                                                                            class="btn btn-sm btn-outline-secondary"
+                                                                            onclick="loadTemplate('intro')">
+                                                                            <i class="fa fa-info-circle me-1"></i>Giới
+                                                                            thiệu dịch vụ
+                                                                        </button>
+                                                                        <button type="button"
+                                                                            class="btn btn-sm btn-dark"
+                                                                            onclick="insertTrackingLink()">
+                                                                            <i class="fa fa-link me-1"></i>Chèn Link
+                                                                            "Tôi Quan Tâm"
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
 
                                                                 <div class="mb-3">
@@ -553,6 +579,49 @@
                                             },
                                             { title: 'Gửi email hàng loạt', confirmText: 'Gửi', confirmClass: 'btn-primary' }
                                         );
+                                    }
+
+                                    // ==================== Template Support ====================
+                                    function getCampaignId() {
+                                        const campaignFilter = document.getElementById('campaignFilter');
+                                        return campaignFilter ? campaignFilter.value : '';
+                                    }
+
+                                    function loadTemplate(type) {
+                                        const subjectEl = document.getElementById('emailSubject');
+                                        const contentEl = document.getElementById('emailContent');
+                                        const cId = getCampaignId();
+                                        const campaignParam = cId ? '&campaignId=' + cId : '';
+
+                                        if (type === 'interest') {
+                                            subjectEl.value = 'Bạn có quan tâm đến giải pháp của chúng tôi không?';
+                                            contentEl.value = '<h2>Chào {{name}},</h2>\n' +
+                                                '<p>Chúng tôi nhận thấy bạn đã tìm hiểu về sản phẩm trước đây. Không biết bạn còn quan tâm không?</p>\n' +
+                                                '<p>Nếu có, hãy nhấn vào link dưới đây để chúng tôi sắp xếp tư vấn viên hỗ trợ ngay:</p>\n' +
+                                                '<p><a href=\"' + window.location.origin + window.location.pathname.split('/').slice(0, -2).join('/') + '/marketing/track-click?leadId={{id}}' + campaignParam + '\" style=\"background:#4f46e5;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;display:inline-block;\">Tôi rất quan tâm!</a></p>\n' +
+                                                '<p>Trân trọng,<br>Đội ngũ CRM</p>';
+                                        } else if (type === 'intro') {
+                                            subjectEl.value = 'Giới thiệu dịch vụ nâng cao dành cho doanh nghiệp';
+                                            contentEl.value = '<h2>Xin chào {{name}},</h2>\n' +
+                                                '<p>Đây là các dịch vụ mới nhất mà chúng tôi vừa cập nhật.</p>\n' +
+                                                '<p>Bạn có thể nhấn vào liên kết sau để nhận tài liệu chi tiết:</p>\n' +
+                                                '<p><a href=\"' + window.location.origin + window.location.pathname.split('/').slice(0, -2).join('/') + '/marketing/track-click?leadId={{id}}' + campaignParam + '\">Xem tài liệu chi tiết tại đây &raquo;</a></p>\n' +
+                                                '<p>Email này được gửi đến: {{email}}</p>';
+                                        }
+                                        showToast('success', 'Đã áp dụng mẫu email');
+                                    }
+
+                                    function insertTrackingLink() {
+                                        const contentEl = document.getElementById('emailContent');
+                                        const cId = getCampaignId();
+                                        const campaignParam = cId ? '&campaignId=' + cId : '';
+                                        const trackingUrl = window.location.origin + window.location.pathname.split('/').slice(0, -2).join('/') + '/marketing/track-click?leadId={{id}}' + campaignParam;
+                                        const linkHtml = '<a href=\"' + trackingUrl + '\">Bấm vào đây nếu bạn quan tâm</a>';
+
+                                        const startPos = contentEl.selectionStart;
+                                        const endPos = contentEl.selectionEnd;
+                                        contentEl.value = contentEl.value.substring(0, startPos) + linkHtml + contentEl.value.substring(endPos);
+                                        showToast('success', 'Đã chèn link tracking vào cursor (kèm Campaign ID)');
                                     }
 
                                     // ==================== Toast Notification ====================

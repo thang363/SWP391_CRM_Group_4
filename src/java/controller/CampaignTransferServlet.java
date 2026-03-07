@@ -56,7 +56,7 @@ public class CampaignTransferServlet extends HttpServlet {
             return;
         }
 
-        Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+        Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
 
         // Fetch pending incoming transfers
         List<CampaignTransfer> pendingIncoming = transferService.getPendingTransfersForRecipient(userId);
@@ -128,7 +128,7 @@ public class CampaignTransferServlet extends HttpServlet {
              return;
         }
 
-        Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+        Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
 
         try {
             switch (action) {
@@ -153,10 +153,10 @@ public class CampaignTransferServlet extends HttpServlet {
         }
     }
 
-    private void handleRequestTransfer(HttpServletRequest request, HttpServletResponse response, Long userId, JsonObject json) throws IOException {
+    private void handleRequestTransfer(HttpServletRequest request, HttpServletResponse response, Integer userId, JsonObject json) throws IOException {
         // Support both form-urlencoded and JSON
-        Long campaignId;
-        Long toManagerId;
+        Integer campaignId;
+        Integer toManagerId;
         String reason;
         
         // Try parameters first (form-urlencoded from frontend)
@@ -165,13 +165,13 @@ public class CampaignTransferServlet extends HttpServlet {
         String reasonParam = request.getParameter("reason");
         
         if (campaignIdParam != null && toManagerIdParam != null && reasonParam != null) {
-            campaignId = Long.parseLong(campaignIdParam);
-            toManagerId = Long.parseLong(toManagerIdParam);
+            campaignId = Integer.valueOf(campaignIdParam);
+            toManagerId = Integer.valueOf(toManagerIdParam);
             reason = reasonParam;
         } else if (json != null) {
             // Fallback to JSON
-            campaignId = json.get("campaignId").getAsLong();
-            toManagerId = json.get("toManagerId").getAsLong();
+            campaignId = json.get("campaignId").getAsInt();
+            toManagerId = json.get("toManagerId").getAsInt();
             reason = json.get("reason").getAsString();
         } else {
             sendJsonResponse(response, false, "Missing required data", null);
@@ -182,8 +182,8 @@ public class CampaignTransferServlet extends HttpServlet {
         sendJsonResponse(response, true, "Transfer requested successfully", transfer);
     }
 
-    private void handleAcceptTransfer(HttpServletRequest request, HttpServletResponse response, Long userId, JsonObject json) throws IOException {
-        Long transferId = json != null && json.has("transferId") ? json.get("transferId").getAsLong() : Long.parseLong(request.getParameter("transferId"));
+    private void handleAcceptTransfer(HttpServletRequest request, HttpServletResponse response, Integer userId, JsonObject json) throws IOException {
+        Integer transferId = json != null && json.has("transferId") ? json.get("transferId").getAsInt() : Integer.valueOf(request.getParameter("transferId"));
         String notes = json != null && json.has("notes") ? json.get("notes").getAsString() : request.getParameter("notes");
         
         boolean result = transferService.acceptTransfer(transferId, userId, notes);
@@ -194,8 +194,8 @@ public class CampaignTransferServlet extends HttpServlet {
         }
     }
 
-    private void handleRejectTransfer(HttpServletRequest request, HttpServletResponse response, Long userId, JsonObject json) throws IOException {
-        Long transferId = json != null && json.has("transferId") ? json.get("transferId").getAsLong() : Long.parseLong(request.getParameter("transferId"));
+    private void handleRejectTransfer(HttpServletRequest request, HttpServletResponse response, Integer userId, JsonObject json) throws IOException {
+        Integer transferId = json != null && json.has("transferId") ? json.get("transferId").getAsInt() : Integer.valueOf(request.getParameter("transferId"));
         String notes = json != null && json.has("notes") ? json.get("notes").getAsString() : request.getParameter("notes");
         
         boolean result = transferService.rejectTransfer(transferId, userId, notes);
@@ -206,8 +206,8 @@ public class CampaignTransferServlet extends HttpServlet {
         }
     }
     
-    private void handleCancelTransfer(HttpServletRequest request, HttpServletResponse response, Long userId, JsonObject json) throws IOException {
-        Long transferId = json != null && json.has("transferId") ? json.get("transferId").getAsLong() : Long.parseLong(request.getParameter("transferId"));
+    private void handleCancelTransfer(HttpServletRequest request, HttpServletResponse response, Integer userId, JsonObject json) throws IOException {
+        Integer transferId = json != null && json.has("transferId") ? json.get("transferId").getAsInt() : Integer.valueOf(request.getParameter("transferId"));
         
         boolean result = transferService.cancelTransfer(transferId, userId);
         if (result) {

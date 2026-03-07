@@ -35,7 +35,7 @@ public class QuoteServlet extends HttpServlet {
         }
 
         try {
-            long oppId = Long.parseLong(oppIdParam);
+            int oppId = Integer.parseInt(oppIdParam);
             QuoteDAO quoteDAO = new QuoteDAOImpl();
             OpportunityDAO oppDAO = new OpportunitiesDaoImpl();
 
@@ -46,7 +46,7 @@ public class QuoteServlet extends HttpServlet {
                     if (opp != null && !isLocked(opp.getStage())) {
                         HttpSession session = request.getSession();
                         User user = (User) session.getAttribute("currentUser");
-                        long userId = user != null ? user.getId() : 0;
+                        int userId = user != null ? user.getId() : 0;
 
                         String subject = request.getParameter("subject");
                         String grandTotalStr = request.getParameter("grandTotal");
@@ -67,7 +67,7 @@ public class QuoteServlet extends HttpServlet {
                 }
                 case "send" -> {
                     if (quoteIdParam != null) {
-                        long quoteId = Long.parseLong(quoteIdParam);
+                        int quoteId = Integer.parseInt(quoteIdParam);
                         // Kiểm tra rule: chỉ 1 Quote Sent tại 1 thời điểm
                         if (!quoteDAO.hasActiveSent(oppId)) {
                             quoteDAO.send(quoteId);
@@ -80,7 +80,7 @@ public class QuoteServlet extends HttpServlet {
                 }
                 case "accept" -> {
                     if (quoteIdParam != null) {
-                        long quoteId = Long.parseLong(quoteIdParam);
+                        int quoteId = Integer.parseInt(quoteIdParam);
                         Quote quote = quoteDAO.getById(quoteId);
                         if (quote != null && "Sent".equals(quote.getStatus())) {
                             quoteDAO.accept(quoteId, oppId);
@@ -98,13 +98,13 @@ public class QuoteServlet extends HttpServlet {
                 }
                 case "reject" -> {
                     if (quoteIdParam != null) {
-                        long quoteId = Long.parseLong(quoteIdParam);
+                        int quoteId = Integer.parseInt(quoteIdParam);
                         quoteDAO.reject(quoteId);
                     }
                 }
                 case "delete" -> {
                     if (quoteIdParam != null) {
-                        long quoteId = Long.parseLong(quoteIdParam);
+                        int quoteId = Integer.parseInt(quoteIdParam);
                         quoteDAO.delete(quoteId);
                     }
                 }

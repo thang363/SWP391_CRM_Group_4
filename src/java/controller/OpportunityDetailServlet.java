@@ -29,7 +29,7 @@ public class OpportunityDetailServlet extends HttpServlet {
         }
 
         try {
-            long oppId = Long.parseLong(idParam);
+            int oppId = Integer.parseInt(idParam);
             OpportunityDAO oppDAO = new OpportunitiesDaoImpl();
             QuoteDAO quoteDAO = new QuoteDAOImpl();
 

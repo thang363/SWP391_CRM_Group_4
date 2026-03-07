@@ -13,21 +13,21 @@ import model.entity.Opportunity;
  * @author ADMIN
  */
 public interface OpportunityDAO {
-    void createFromLead(int leadID,String leadName,long saleID);
+    void createFromLead(int leadID,String leadName,int saleID);
 
-    List<Opportunity> getOpportunitiesBySalesId(long salesId);
+    List<Opportunity> getOpportunitiesBySalesId(int salesId);
 
     /** Lấy cả quoteCount theo JOIN */
-    List<Opportunity> getOpportunitiesWithQuoteCount(long salesId);
+    List<Opportunity> getOpportunitiesWithQuoteCount(int salesId);
 
     /** Lấy 1 opportunity theo id */
-    Opportunity getById(long id);
+    Opportunity getById(int id);
 
-    void updateStage(long id, String stage, int probability);
+    void updateStage(int id, String stage, int probability);
 
     void updateOpportunityInfo(int id, String name);
 
     /** Search and filter opportunities */
-    List<Opportunity> searchOpportunities(long salesId, String search, String stage);
+    List<Opportunity> searchOpportunities(int salesId, String search, String stage);
 }
 

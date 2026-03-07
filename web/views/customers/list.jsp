@@ -87,9 +87,8 @@
 
                                                 <div class="bg-light rounded h-100 p-4">
                                                     <div class="table-responsive">
-                                                        <table
-                                                            class="table table-hover table-bordered text-center align-middle">
-                                                            <thead class="table-dark">
+                                                        <table class="table table-hover align-middle">
+                                                            <thead>
                                                                 <tr>
                                                                     <th scope="col">STT</th>
                                                                     <th scope="col">Tên Khách Hàng</th>

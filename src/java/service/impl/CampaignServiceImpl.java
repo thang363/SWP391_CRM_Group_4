@@ -26,7 +26,7 @@ public class CampaignServiceImpl implements CampaignService {
     }
     
     @Override
-    public Campaign getCampaignById(Long id) {
+    public Campaign getCampaignById(Integer id) {
         if (id == null || id <= 0) {
             return null;
         }
@@ -39,7 +39,7 @@ public class CampaignServiceImpl implements CampaignService {
     }
     
     @Override
-    public List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit) {
+    public List<Campaign> searchCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId, int offset, int limit) {
         if (offset < 0) offset = 0;
         if (limit <= 0) limit = 10;
         if (offset < 0) offset = 0;
@@ -67,7 +67,7 @@ public class CampaignServiceImpl implements CampaignService {
     }
 
     @Override
-    public int countCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId) {
+    public int countCampaigns(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId) {
         return campaignDAO.countByFilters(name, status, startDate, endDate, managerId);
     }
     
@@ -109,7 +109,7 @@ public class CampaignServiceImpl implements CampaignService {
     }
     
     @Override
-    public boolean deleteCampaign(Long id) {
+    public boolean deleteCampaign(Integer id) {
         if (id == null || id <= 0) {
             return false;
         }

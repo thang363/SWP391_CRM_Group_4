@@ -41,7 +41,7 @@ public class AddLeadNoteServlet extends HttpServlet {
 
             if (content != null && !content.trim().isEmpty()) {
                 LeadNote note = new LeadNote();
-                note.setLeadId((long) leadId);
+                note.setLeadId( leadId);
                 note.setSalesId(currentUser.getId());
                 note.setNoteContent(content.trim());
                 note.setNoteType(type != null ? type : "General");

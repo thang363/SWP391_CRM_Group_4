@@ -30,7 +30,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
     }
 
     @Override
-    public void createFromLead(int leadID, String leadName, long saleID) {
+    public void createFromLead(int leadID, String leadName, int saleID) {
 
         String sql = """
         INSERT INTO Opportunities 
@@ -56,7 +56,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
             ps.setDouble(4, 0);
 
             // Gán cho sale giống lead
-            ps.setLong(5, saleID);
+            ps.setInt(5, saleID);
 
             ps.executeUpdate();
 
@@ -68,7 +68,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
     }
 
     @Override
-    public List<Opportunity> getOpportunitiesBySalesId(long salesId) {
+    public List<Opportunity> getOpportunitiesBySalesId(int salesId) {
         List<Opportunity> list = new ArrayList<>();
         String sql = "SELECT * FROM Opportunities WHERE sales_id = ? ORDER BY created_at DESC";
         Connection conn = null;
@@ -77,7 +77,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, salesId);
+            stmt.setInt(1, salesId);
             rs = stmt.executeQuery();
             while (rs.next()) {
                 list.add(mapResultSetToOpportunity(rs));
@@ -94,7 +94,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
     }
 
     @Override
-    public List<Opportunity> getOpportunitiesWithQuoteCount(long salesId) {
+    public List<Opportunity> getOpportunitiesWithQuoteCount(int salesId) {
         List<Opportunity> list = new ArrayList<>();
         String sql = """
             SELECT o.*, COUNT(q.id) AS quote_count
@@ -107,7 +107,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
         """;
         try (Connection conn = dbUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, salesId);
+            ps.setInt(1, salesId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Opportunity opp = mapResultSetToOpportunity(rs);
@@ -122,11 +122,11 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
     }
 
     @Override
-    public Opportunity getById(long id) {
+    public Opportunity getById(int id) {
         String sql = "SELECT * FROM Opportunities WHERE id = ?";
         try (Connection conn = dbUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, id);
+            ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapResultSetToOpportunity(rs);
             }
@@ -138,7 +138,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
 
     
     @Override
-    public void updateStage(long id, String stage, int probability) {
+    public void updateStage(int id, String stage, int probability) {
 
     String sql = """
         UPDATE Opportunities
@@ -151,7 +151,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
 
         ps.setString(1, stage);
         ps.setInt(2, probability);
-        ps.setLong(3, id);
+        ps.setInt(3, id);
 
         ps.executeUpdate();
 
@@ -181,13 +181,13 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
 
         Opportunity opp = new Opportunity();
 
-        opp.setId(rs.getLong("id"));
+        opp.setId(rs.getInt("id"));
         opp.setName(rs.getString("name"));
 
-        opp.setLeadId(rs.getLong("lead_id"));
+        opp.setLeadId(rs.getInt("lead_id"));
 
         // customer_id có thể NULL → dùng getObject
-        Long customerId = rs.getObject("customer_id", Long.class);
+        Integer customerId = rs.getObject("customer_id", Integer.class);
         opp.setCustomerId(customerId);
 
         opp.setType(rs.getString("type"));
@@ -201,7 +201,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
         Integer probability = rs.getObject("probability", Integer.class);
         opp.setProbability(probability);
 
-        opp.setSalesId(rs.getLong("sales_id"));
+        opp.setSalesId(rs.getInt("sales_id"));
 
         try {
             Timestamp ts = rs.getTimestamp("created_at");
@@ -215,7 +215,7 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
     }
 
     @Override
-    public List<Opportunity> searchOpportunities(long salesId, String search, String stage) {
+    public List<Opportunity> searchOpportunities(int salesId, String search, String stage) {
         StringBuilder sql = new StringBuilder("""
             SELECT o.*, COUNT(q.id) AS quote_count
             FROM Opportunities o

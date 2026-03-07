@@ -39,7 +39,7 @@ public class LogoutServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         
         if (session != null) {
-            Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
             
             if (userId != null) {
                 authService.logout(userId);
