@@ -34,7 +34,7 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
     }
 
     @Override
-    public CampaignTransfer requestTransfer(Long campaignId, Long fromManagerId, Long toManagerId, String reason) {
+    public CampaignTransfer requestTransfer(Integer campaignId, Integer fromManagerId, Integer toManagerId, String reason) {
         // 1. Validate ownership
         Campaign campaign = campaignDAO.findById(campaignId);
         if (campaign == null) {
@@ -74,7 +74,7 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
 
         // 4. Create transfer record
         CampaignTransfer transfer = new CampaignTransfer(campaignId, fromManagerId, toManagerId, reason);
-        Long id = transferDAO.insert(transfer);
+        Integer id = transferDAO.insert(transfer);
         transfer.setId(id);
 
         // 5. Audit Log
@@ -84,7 +84,7 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
     }
 
     @Override
-    public boolean acceptTransfer(Long transferId, Long acceptingManagerId, String notes) {
+    public boolean acceptTransfer(Integer transferId, Integer acceptingManagerId, String notes) {
         CampaignTransfer transfer = transferDAO.findById(transferId);
         if (transfer == null) {
             throw new IllegalArgumentException("Transfer request not found");
@@ -105,7 +105,7 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
         if (campaign == null) {
             throw new IllegalArgumentException("Campaign not found");
         }
-        Long oldManagerId = campaign.getManagerId();
+        Integer oldManagerId = campaign.getManagerId();
         campaign.setManagerId(acceptingManagerId);
         boolean campaignUpdated = campaignDAO.update(campaign);
         
@@ -126,7 +126,7 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
     }
 
     @Override
-    public boolean rejectTransfer(Long transferId, Long rejectingManagerId, String notes) {
+    public boolean rejectTransfer(Integer transferId, Integer rejectingManagerId, String notes) {
         CampaignTransfer transfer = transferDAO.findById(transferId);
         if (transfer == null) {
             throw new IllegalArgumentException("Transfer request not found");
@@ -153,7 +153,7 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
     }
 
     @Override
-    public boolean cancelTransfer(Long transferId, Long cancellingManagerId) {
+    public boolean cancelTransfer(Integer transferId, Integer cancellingManagerId) {
         CampaignTransfer transfer = transferDAO.findById(transferId);
         if (transfer == null) {
             throw new IllegalArgumentException("Transfer request not found");
@@ -179,27 +179,27 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
     }
 
     @Override
-    public List<CampaignTransfer> getPendingTransfersForRecipient(Long managerId) {
+    public List<CampaignTransfer> getPendingTransfersForRecipient(Integer managerId) {
         return transferDAO.findPendingTransfersByRecipient(managerId);
     }
     
     @Override
-    public List<CampaignTransfer> getPendingTransfersForSender(Long managerId) {
+    public List<CampaignTransfer> getPendingTransfersForSender(Integer managerId) {
          return transferDAO.findPendingTransfersBySender(managerId);
     }
     
     @Override
-    public List<CampaignTransfer> getRecentTransfersForSender(Long managerId) {
+    public List<CampaignTransfer> getRecentTransfersForSender(Integer managerId) {
          return transferDAO.findRecentTransfersBySender(managerId);
     }
     
     @Override
-    public List<CampaignTransfer> getTransferHistory(Long campaignId) {
+    public List<CampaignTransfer> getTransferHistory(Integer campaignId) {
         return transferDAO.findHistoryByCampaign(campaignId);
     }
     
     @Override
-    public CampaignTransfer getTransferById(Long id) {
+    public CampaignTransfer getTransferById(Integer id) {
         return transferDAO.findById(id);
     }
 }

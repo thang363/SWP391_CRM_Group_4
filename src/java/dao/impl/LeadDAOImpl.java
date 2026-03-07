@@ -19,7 +19,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
     //AND is_converted = 0
     @Override
-    public List<Lead> findBySaleId(long saleId) {
+    public List<Lead> findBySaleId(int saleId) {
         String sql = "SELECT * FROM Leads WHERE assigned_to = ? ";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -29,7 +29,7 @@ public class LeadDAOImpl implements LeadDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, saleId);
+            stmt.setInt(1, saleId);
             rs = stmt.executeQuery();
             while (rs.next()) {
                 list.add(mapResultSetToLead(rs));
@@ -43,7 +43,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public void updateLeadStatus(long leadId, String status) {
+    public void updateLeadStatus(int leadId, String status) {
         String sql = "UPDATE Leads SET status = ? WHERE id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
@@ -51,7 +51,7 @@ public class LeadDAOImpl implements LeadDAO {
             conn = dbUtil.getConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, status);
-            ps.setLong(2, leadId);
+            ps.setInt(2, leadId);
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,14 +61,14 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public void markAsConverted(long leadId) {
+    public void markAsConverted(int leadId) {
         String sql = "UPDATE Leads SET is_converted = 1 WHERE id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
         try {
             conn = dbUtil.getConnection();
             ps = conn.prepareStatement(sql);
-            ps.setLong(1, leadId);
+            ps.setInt(1, leadId);
             ps.executeUpdate();
 
         } catch (Exception e) {
@@ -79,7 +79,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public boolean checkDuplicate(String email, String phone, Long campaignId) {
+    public boolean checkDuplicate(String email, String phone, Integer campaignId) {
         if ((email == null || email.isEmpty()) && (phone == null || phone.isEmpty())) {
             return false;
         }
@@ -141,13 +141,13 @@ public class LeadDAOImpl implements LeadDAO {
             stmt.setString(3, lead.getPhone());
 
             if (lead.getCampaignId() != null) {
-                stmt.setLong(4, lead.getCampaignId());
+                stmt.setInt(4, lead.getCampaignId());
             } else {
                 stmt.setNull(4, Types.INTEGER);
             }
 
             if (lead.getSourceId() != null) {
-                stmt.setLong(5, lead.getSourceId());
+                stmt.setInt(5, lead.getSourceId());
             } else {
                 stmt.setNull(5, Types.INTEGER);
             }
@@ -178,7 +178,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public Lead findById(long id) {
+    public Lead findById(int id) {
         String sql = "SELECT * FROM Leads WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -186,7 +186,7 @@ public class LeadDAOImpl implements LeadDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             rs = stmt.executeQuery();
             if (rs.next()) {
                 return mapResultSetToLead(rs);
@@ -200,7 +200,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public List<Lead> findByCampaignIdWithEmail(long campaignId) {
+    public List<Lead> findByCampaignIdWithEmail(int campaignId) {
         String sql = "SELECT * FROM Leads WHERE campaign_id = ? AND email IS NOT NULL AND email != '' ORDER BY created_at DESC";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -210,7 +210,7 @@ public class LeadDAOImpl implements LeadDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, campaignId);
+            stmt.setInt(1, campaignId);
             rs = stmt.executeQuery();
             while (rs.next()) {
                 list.add(mapResultSetToLead(rs));
@@ -249,7 +249,7 @@ public class LeadDAOImpl implements LeadDAO {
 
     private Lead mapResultSetToLead(ResultSet rs) throws SQLException {
         Lead lead = new Lead();
-        lead.setId(rs.getLong("id"));
+        lead.setId(rs.getInt("id"));
         lead.setFullName(rs.getString("full_name"));
         lead.setEmail(rs.getString("email"));
         lead.setPhone(rs.getString("phone"));
@@ -259,17 +259,17 @@ public class LeadDAOImpl implements LeadDAO {
 
         // Handling potential null for campaign/source if they exist
         try {
-            long cId = rs.getLong("campaign_id");
+            int cId = rs.getInt("campaign_id");
             if (!rs.wasNull()) {
                 lead.setCampaignId(cId);
             }
 
-            long sId = rs.getLong("source_id");
+            int sId = rs.getInt("source_id");
             if (!rs.wasNull()) {
                 lead.setSourceId(sId);
             }
 
-            long aId = rs.getLong("assigned_to");
+            int aId = rs.getInt("assigned_to");
             if (!rs.wasNull()) {
                 lead.setAssignedTo(aId);
             }
@@ -283,7 +283,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public void updateLeadInfo(long id, String name, String phone) {
+    public void updateLeadInfo(int id, String name, String phone) {
         String sql = "UPDATE Leads SET full_name = ?, phone = ? WHERE id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
@@ -292,7 +292,7 @@ public class LeadDAOImpl implements LeadDAO {
             ps = conn.prepareStatement(sql);
             ps.setString(1, name);
             ps.setString(2, phone);
-            ps.setLong(3, id);
+            ps.setInt(3, id);
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -302,7 +302,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public List<Lead> searchLeads(long saleId, String query, String status) {
+    public List<Lead> searchLeads(int saleId, String query, String status) {
         StringBuilder sql = new StringBuilder("SELECT * FROM Leads WHERE assigned_to = ?");
         List<Object> params = new ArrayList<>();
         params.add(saleId);
@@ -342,7 +342,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public boolean recordInteraction(long leadId, Integer campaignId, String activityType, String details, int scoreChange) {
+    public boolean recordInteraction(int leadId, Integer campaignId, String activityType, String details, int scoreChange) {
         Connection conn = null;
         try {
             conn = dbUtil.getConnection();
@@ -355,7 +355,7 @@ public class LeadDAOImpl implements LeadDAO {
             if (campaignId == null) {
                 String sqlCampaign = "SELECT campaign_id FROM Leads WHERE id = ?";
                 try (PreparedStatement ps = conn.prepareStatement(sqlCampaign)) {
-                    ps.setLong(1, leadId);
+                    ps.setInt(1, leadId);
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
                             int cid = rs.getInt("campaign_id");
@@ -372,7 +372,7 @@ public class LeadDAOImpl implements LeadDAO {
             if (campaignId != null) sqlCheck += " AND campaign_id = ?";
             
             try (PreparedStatement ps = conn.prepareStatement(sqlCheck)) {
-                ps.setLong(1, leadId);
+                ps.setInt(1, leadId);
                 ps.setInt(2, activityTypeId);
                 ps.setString(3, details);
                 if (campaignId != null) ps.setInt(4, campaignId);
@@ -393,7 +393,7 @@ public class LeadDAOImpl implements LeadDAO {
             String sqlInteraction = "INSERT INTO LeadInteractions (lead_id, campaign_id, activity_type_id, reference_url, score_change, created_at) " +
                                   "VALUES (?, ?, ?, ?, ?, GETDATE())";
             try (PreparedStatement ps = conn.prepareStatement(sqlInteraction)) {
-                ps.setLong(1, leadId);
+                ps.setInt(1, leadId);
                 if (campaignId != null) ps.setInt(2, campaignId); else ps.setNull(2, Types.INTEGER);
                 ps.setInt(3, activityTypeId);
                 ps.setString(4, details);
@@ -407,10 +407,10 @@ public class LeadDAOImpl implements LeadDAO {
                 String sqlHistory = "INSERT INTO LeadScoreHistory (lead_id, score_change, total_score, created_at) " +
                                    "VALUES (?, ?, (SELECT current_score + ? FROM Leads WHERE id = ?), GETDATE())";
                 try (PreparedStatement ps = conn.prepareStatement(sqlHistory)) {
-                    ps.setLong(1, leadId);
+                    ps.setInt(1, leadId);
                     ps.setInt(2, scoreChange);
                     ps.setInt(3, scoreChange);
-                    ps.setLong(4, leadId);
+                    ps.setInt(4, leadId);
                     ps.executeUpdate();
                 }
 
@@ -418,7 +418,7 @@ public class LeadDAOImpl implements LeadDAO {
                 String sqlUpdateLead = "UPDATE Leads SET current_score = current_score + ? WHERE id = ?";
                 try (PreparedStatement ps = conn.prepareStatement(sqlUpdateLead)) {
                     ps.setInt(1, scoreChange);
-                    ps.setLong(2, leadId);
+                    ps.setInt(2, leadId);
                     ps.executeUpdate();
                 }
             }
@@ -461,12 +461,12 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public void updateScore(long leadId, int newScore) {
+    public void updateScore(int leadId, int newScore) {
         String sql = "UPDATE Leads SET current_score = ? WHERE id = ?";
         try (Connection conn = dbUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, newScore);
-            ps.setLong(2, leadId);
+            ps.setInt(2, leadId);
             ps.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Error updating lead score: " + e.getMessage());
@@ -490,7 +490,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
     
     @Override
-    public model.viewmodel.MonitorKPIsViewModel getMonitorKPIs(Long campaignId) {
+    public model.viewmodel.MonitorKPIsViewModel getMonitorKPIs(Integer campaignId) {
         model.viewmodel.MonitorKPIsViewModel kpi = new model.viewmodel.MonitorKPIsViewModel(0, 0, 0, 0.0);
         String sql = "SELECT COUNT(*) as total_leads, " +
                      "SUM(CASE WHEN current_score >= 50 THEN 1 ELSE 0 END) as hot_leads, " +
@@ -509,7 +509,7 @@ public class LeadDAOImpl implements LeadDAO {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
             if (campaignId != null) {
-                stmt.setLong(1, campaignId);
+                stmt.setInt(1, campaignId);
             }
             rs = stmt.executeQuery();
             if (rs.next()) {
@@ -527,7 +527,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public List<Lead> getHotUnassignedLeads(Long campaignId, int limit) {
+    public List<Lead> getHotUnassignedLeads(Integer campaignId, int limit) {
         List<Lead> list = new ArrayList<>();
         String sql = "SELECT * FROM Leads WHERE assigned_to IS NULL AND status = 'New'";
         if (campaignId != null) {
@@ -548,7 +548,7 @@ public class LeadDAOImpl implements LeadDAO {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
             if (campaignId != null) {
-                stmt.setLong(1, campaignId);
+                stmt.setInt(1, campaignId);
             }
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -563,7 +563,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Long campaignId, int limit) {
+    public List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Integer campaignId, int limit) {
         List<model.viewmodel.LeadInteractionViewModel> list = new ArrayList<>();
         String sql = "SELECT i.id, i.lead_id, l.full_name, l.email, a.name as activity_name, i.reference_url, i.score_change, i.created_at " +
                      "FROM LeadInteractions i " +
@@ -587,13 +587,13 @@ public class LeadDAOImpl implements LeadDAO {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
             if (campaignId != null) {
-                stmt.setLong(1, campaignId);
+                stmt.setInt(1, campaignId);
             }
             rs = stmt.executeQuery();
             while (rs.next()) {
                 model.viewmodel.LeadInteractionViewModel vm = new model.viewmodel.LeadInteractionViewModel();
-                vm.setInteractionId(rs.getLong("id"));
-                vm.setLeadId(rs.getLong("lead_id"));
+                vm.setInteractionId(rs.getInt("id"));
+                vm.setLeadId(rs.getInt("lead_id"));
                 vm.setLeadName(rs.getString("full_name"));
                 vm.setLeadEmail(rs.getString("email"));
                 vm.setActivityName(rs.getString("activity_name"));
@@ -612,7 +612,7 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public boolean assignLeadToSales(long leadId, long salesId, long managerId) {
+    public boolean assignLeadToSales(int leadId, int salesId, int managerId) {
         Connection conn = null;
         try {
             conn = dbUtil.getConnection();
@@ -622,8 +622,8 @@ public class LeadDAOImpl implements LeadDAO {
             String sqlUpdate = "UPDATE Leads SET assigned_to = ?, status = 'Assigned' WHERE id = ? AND assigned_to IS NULL";
             int affected = 0;
             try (PreparedStatement psUpdate = conn.prepareStatement(sqlUpdate)) {
-                psUpdate.setLong(1, salesId);
-                psUpdate.setLong(2, leadId);
+                psUpdate.setInt(1, salesId);
+                psUpdate.setInt(2, leadId);
                 affected = psUpdate.executeUpdate();
             }
 
@@ -636,17 +636,17 @@ public class LeadDAOImpl implements LeadDAO {
             // 2. Insert into LeadAssignments table
             String sqlInsert = "INSERT INTO LeadAssignments (lead_id, manager_id, sales_id, assigned_at) VALUES (?, ?, ?, GETDATE())";
             try (PreparedStatement psInsert = conn.prepareStatement(sqlInsert)) {
-                psInsert.setLong(1, leadId);
-                psInsert.setLong(2, managerId);
-                psInsert.setLong(3, salesId);
+                psInsert.setInt(1, leadId);
+                psInsert.setInt(2, managerId);
+                psInsert.setInt(3, salesId);
                 psInsert.executeUpdate();
             }
             
             // 3. Optional Insert status history
             String sqlHistory = "INSERT INTO LeadStatusHistory (lead_id, old_status, new_status, changed_by, changed_at) VALUES (?, 'New', 'Assigned', ?, GETDATE())";
             try (PreparedStatement psHist = conn.prepareStatement(sqlHistory)) {
-                psHist.setLong(1, leadId);
-                psHist.setLong(2, managerId);
+                psHist.setInt(1, leadId);
+                psHist.setInt(2, managerId);
                 psHist.executeUpdate();
             }
 

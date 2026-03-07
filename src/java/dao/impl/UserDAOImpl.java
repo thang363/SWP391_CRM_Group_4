@@ -41,7 +41,7 @@ public class UserDAOImpl implements UserDAO {
     }
     
     @Override
-    public User findById(Long id) throws SQLException {
+    public User findById(Integer id) throws SQLException {
         String sql = "SELECT id, username, password_hash, email, full_name, phone, role, status, created_at FROM users WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -50,7 +50,7 @@ public class UserDAOImpl implements UserDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             rs = stmt.executeQuery();
             
             if (rs.next()) {
@@ -158,7 +158,7 @@ public class UserDAOImpl implements UserDAO {
             
             rs = stmt.getGeneratedKeys();
             if (rs.next()) {
-                user.setId(rs.getLong(1));
+                user.setId(rs.getInt(1));
             }
             
             return user;
@@ -184,7 +184,7 @@ public class UserDAOImpl implements UserDAO {
             stmt.setString(5, user.getPhone());
             stmt.setString(6, user.getRole().getValue());
             stmt.setString(7, user.getStatus() != null ? user.getStatus() : "Active");
-            stmt.setLong(8, user.getId());
+            stmt.setInt(8, user.getId());
             
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -195,7 +195,7 @@ public class UserDAOImpl implements UserDAO {
     }
     
     @Override
-    public boolean delete(Long id) throws SQLException {
+    public boolean delete(Integer id) throws SQLException {
         String sql = "UPDATE users SET status = 'Inactive' WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -203,7 +203,7 @@ public class UserDAOImpl implements UserDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -214,7 +214,7 @@ public class UserDAOImpl implements UserDAO {
     }
     
     @Override
-    public boolean hardDelete(Long id) throws SQLException {
+    public boolean hardDelete(Integer id) throws SQLException {
         String sql = "DELETE FROM users WHERE id = ?";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -222,7 +222,7 @@ public class UserDAOImpl implements UserDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -348,7 +348,7 @@ public class UserDAOImpl implements UserDAO {
     
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
-        user.setId(rs.getLong("id"));
+        user.setId(rs.getInt("id"));
         user.setUsername(rs.getString("username"));
         user.setPassword(rs.getString("password_hash"));
         user.setEmail(rs.getString("email"));

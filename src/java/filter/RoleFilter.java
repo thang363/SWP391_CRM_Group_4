@@ -30,7 +30,7 @@ public class RoleFilter implements Filter {
         roleRequirements.put("/admin", Set.of(Role.MANAGER));
         roleRequirements.put("/users", Set.of(Role.MANAGER));
         roleRequirements.put("/campaigns", Set.of(Role.MANAGER));
-        roleRequirements.put("/marketing", Set.of(Role.MARKETING));
+        roleRequirements.put("/marketing", Set.of(Role.MARKETING, Role.MANAGER));
         sortedRequirements = roleRequirements.entrySet().stream()
         .sorted((e1, e2) -> Integer.compare(e2.getKey().length(), e1.getKey().length()))
         .collect(Collectors.toList());

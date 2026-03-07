@@ -117,7 +117,7 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
     }
 
     @Override
-    public List<LeadSubmission> findAll(String keyword, Integer campaignId, String source, String status, Date fromDate, Date toDate, int offset, int limit) {
+    public List<LeadSubmission> findAll(Integer marketingId, String keyword, Integer campaignId, String source, String status, Date fromDate, Date toDate, int offset, int limit) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -125,17 +125,25 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
         
         try {
             conn = dbUtil.getConnection();
-            StringBuilder sql = new StringBuilder("SELECT s.*, c.name as campaign_name, lp.name as landing_page_name " +
-                                                "FROM LeadSubmissions s " +
-                                                "LEFT JOIN Campaigns c ON s.campaign_id = c.id " +
-                                                "LEFT JOIN LandingPages lp ON s.landing_page_id = lp.id ");
-            
-            sql.append("WHERE 1=1 ");
-            
+            StringBuilder sql = new StringBuilder(
+                "SELECT ls.*, c.name AS campaign_name, lp.name AS landing_page_name " +
+                "FROM LeadSubmissions ls " +
+                "LEFT JOIN Campaigns c ON ls.campaign_id = c.id " +
+                "LEFT JOIN LandingPages lp ON ls.landing_page_id = lp.id " +
+                "WHERE 1=1 "
+            );
+
             List<Object> params = new ArrayList<>();
             
+            // --- Role-based Filtering ---
+            if (marketingId != null) {
+                sql.append(" AND (lp.created_by = ? OR c.manager_id = ?) ");
+                params.add(marketingId);
+                params.add(marketingId);
+            }
+            
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sql.append("AND (s.full_name LIKE ? OR s.email LIKE ? OR s.phone LIKE ?) ");
+                sql.append("AND (ls.full_name LIKE ? OR ls.email LIKE ? OR ls.phone LIKE ?) ");
                 String likeKey = "%" + keyword + "%";
                 params.add(likeKey);
                 params.add(likeKey);
@@ -143,37 +151,37 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
             }
             
             if (campaignId != null && campaignId > 0) {
-                sql.append("AND lp.campaign_id = ? ");
+                sql.append("AND ls.campaign_id = ? "); // Changed from lp.campaign_id to ls.campaign_id
                 params.add(campaignId);
             }
             
             if (source != null && !source.isEmpty()) {
                 if ("LP".equals(source)) {
-                    sql.append("AND s.landing_page_id IS NOT NULL ");
+                    sql.append("AND ls.landing_page_id IS NOT NULL ");
                 } else if ("IMPORT".equals(source)) {
-                     sql.append("AND s.landing_page_id IS NULL ");
+                     sql.append("AND ls.landing_page_id IS NULL ");
                 }
             }
             
             if (status != null && !status.isEmpty()) {
                 if ("PENDING".equals(status)) {
-                    sql.append("AND s.is_processed = 0 ");
+                    sql.append("AND ls.is_processed = 0 ");
                 } else if ("PROCESSED".equals(status)) {
-                    sql.append("AND s.is_processed = 1 ");
+                    sql.append("AND ls.is_processed = 1 ");
                 }
             }
 
              if (fromDate != null) {
-                sql.append("AND CAST(s.submitted_at AS DATE) >= ? ");
+                sql.append("AND CAST(ls.submitted_at AS DATE) >= ? ");
                 params.add(fromDate);
             }
             
             if (toDate != null) {
-                sql.append("AND CAST(s.submitted_at AS DATE) <= ? ");
+                sql.append("AND CAST(ls.submitted_at AS DATE) <= ? ");
                 params.add(toDate);
             }
             
-            sql.append("ORDER BY s.submitted_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            sql.append("ORDER BY ls.submitted_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
             params.add(offset);
             params.add(limit);
             
@@ -197,22 +205,31 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
     }
 
     @Override
-    public int count(String keyword, Integer campaignId, String source, String status, Date fromDate, Date toDate) {
+    public int count(Integer marketingId, String keyword, Integer campaignId, String source, String status, Date fromDate, Date toDate) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
         
         try {
             conn = dbUtil.getConnection();
-            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM LeadSubmissions s ");
-            if (campaignId != null && campaignId > 0) {
-                 sql.append("JOIN LandingPages lp ON s.landing_page_id = lp.id ");
-            }
-            sql.append("WHERE 1=1 ");
+            StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM LeadSubmissions ls " +
+                "LEFT JOIN Campaigns c ON ls.campaign_id = c.id " +
+                "LEFT JOIN LandingPages lp ON ls.landing_page_id = lp.id " +
+                "WHERE 1=1 "
+            );
             
             List<Object> params = new ArrayList<>();
+            
+            // --- Role-based Filtering ---
+            if (marketingId != null) {
+                sql.append(" AND (lp.created_by = ? OR c.manager_id = ?) ");
+                params.add(marketingId);
+                params.add(marketingId);
+            }
+
              if (keyword != null && !keyword.trim().isEmpty()) {
-                sql.append("AND (s.full_name LIKE ? OR s.email LIKE ? OR s.phone LIKE ?) ");
+                sql.append("AND (ls.full_name LIKE ? OR ls.email LIKE ? OR ls.phone LIKE ?) ");
                 String likeKey = "%" + keyword + "%";
                 params.add(likeKey);
                 params.add(likeKey);
@@ -220,33 +237,33 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
             }
             
             if (campaignId != null && campaignId > 0) {
-                sql.append("AND lp.campaign_id = ? ");
+                sql.append("AND ls.campaign_id = ? "); // Changed from lp.campaign_id to ls.campaign_id
                 params.add(campaignId);
             }
             
             if (source != null && !source.isEmpty()) {
                 if ("LP".equals(source)) {
-                    sql.append("AND s.landing_page_id IS NOT NULL ");
+                    sql.append("AND ls.landing_page_id IS NOT NULL ");
                 } else if ("IMPORT".equals(source)) {
-                     sql.append("AND s.landing_page_id IS NULL ");
+                     sql.append("AND ls.landing_page_id IS NULL ");
                 }
             }
             
             if (status != null && !status.isEmpty()) {
                  if ("PENDING".equals(status)) {
-                    sql.append("AND s.is_processed = 0 ");
+                    sql.append("AND ls.is_processed = 0 ");
                 } else if ("PROCESSED".equals(status)) {
-                    sql.append("AND s.is_processed = 1 ");
+                    sql.append("AND ls.is_processed = 1 ");
                 }
             }
 
              if (fromDate != null) {
-                sql.append("AND CAST(s.submitted_at AS DATE) >= ? ");
+                sql.append("AND CAST(ls.submitted_at AS DATE) >= ? ");
                 params.add(fromDate);
             }
             
             if (toDate != null) {
-                sql.append("AND CAST(s.submitted_at AS DATE) <= ? ");
+                sql.append("AND CAST(ls.submitted_at AS DATE) <= ? ");
                 params.add(toDate);
             }
             
@@ -315,37 +332,63 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
     }
 
     @Override
-    public int countPending() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            conn = dbUtil.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM LeadSubmissions WHERE is_processed = 0");
-            rs = stmt.executeQuery();
+    public int countPending(Integer marketingId) {
+        int count = 0;
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) FROM LeadSubmissions ls " +
+            "LEFT JOIN Campaigns c ON ls.campaign_id = c.id " +
+            "LEFT JOIN LandingPages lp ON ls.landing_page_id = lp.id " +
+            "WHERE ls.is_processed = 0"
+        );
+        
+        List<Object> params = new ArrayList<>();
+        if (marketingId != null) {
+            sql.append(" AND (lp.created_by = ? OR c.manager_id = ?) ");
+            params.add(marketingId);
+            params.add(marketingId);
+        }
+
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) {
             System.err.println("Error counting pending submissions: " + e.getMessage());
-        } finally {
-            closeResources(rs, stmt, conn);
         }
         return 0;
     }
 
     @Override
-    public int countToday() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            conn = dbUtil.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM LeadSubmissions WHERE CAST(submitted_at AS DATE) = CAST(GETDATE() AS DATE)");
-            rs = stmt.executeQuery();
+    public int countToday(Integer marketingId) {
+        int count = 0;
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) FROM LeadSubmissions ls " +
+            "LEFT JOIN Campaigns c ON ls.campaign_id = c.id " +
+            "LEFT JOIN LandingPages lp ON ls.landing_page_id = lp.id " +
+            "WHERE CAST(ls.submitted_at AS DATE) = CAST(GETDATE() AS DATE)"
+        );
+        
+        List<Object> params = new ArrayList<>();
+        if (marketingId != null) {
+            sql.append(" AND (lp.created_by = ? OR c.manager_id = ?) ");
+            params.add(marketingId);
+            params.add(marketingId);
+        }
+
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+             
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) {
             System.err.println("Error counting today submissions: " + e.getMessage());
-        } finally {
-            closeResources(rs, stmt, conn);
         }
         return 0;
     }

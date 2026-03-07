@@ -65,7 +65,7 @@ public class PublicLandingPageServlet extends HttpServlet {
             }
 
             // Get Campaign Info
-            model.entity.Campaign campaign = campaignDAO.findById(Long.valueOf(lp.getCampaignId()));
+            model.entity.Campaign campaign = campaignDAO.findById(lp.getCampaignId());
             String campaignStatus = (campaign != null) ? campaign.getStatus() : "";
 
             // Check Visibility Logic
@@ -216,7 +216,7 @@ public class PublicLandingPageServlet extends HttpServlet {
                 submission.setCampaignId(lp.getCampaignId());
                 
                 // --- Campaign Status Validation ---
-                model.entity.Campaign campaign = campaignDAO.findById(Long.valueOf(lp.getCampaignId()));
+                model.entity.Campaign campaign = campaignDAO.findById(lp.getCampaignId());
                 if (campaign != null) {
                     String status = campaign.getStatus();
                     if ("Paused".equalsIgnoreCase(status) || "Finished".equalsIgnoreCase(status)) {

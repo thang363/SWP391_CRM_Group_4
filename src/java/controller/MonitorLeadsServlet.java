@@ -57,10 +57,10 @@ public class MonitorLeadsServlet extends HttpServlet {
 
         // 2. Fetch parameters for filtering
         String campaignIdStr = request.getParameter("campaignId");
-        Long campaignId = null;
+        Integer campaignId = null;
         if (campaignIdStr != null && !campaignIdStr.isEmpty()) {
             try {
-                campaignId = Long.parseLong(campaignIdStr);
+                campaignId = Integer.valueOf(campaignIdStr);
             } catch (NumberFormatException e) {
                 // Ignore invalid ID formats
             }
@@ -120,7 +120,7 @@ public class MonitorLeadsServlet extends HttpServlet {
     }
 
     private void processAssignment(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws IOException {
-        Long managerId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+        Integer managerId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
         String leadIdStr = request.getParameter("leadId");
         String salesIdStr = request.getParameter("salesId");
         String campaignIdStr = request.getParameter("listCampaignId"); // to keep filter active
@@ -129,8 +129,8 @@ public class MonitorLeadsServlet extends HttpServlet {
             session.setAttribute("errorMsg", "Vui lòng chọn nhân viên Sales.");
         } else {
             try {
-                long leadId = Long.parseLong(leadIdStr);
-                long salesId = Long.parseLong(salesIdStr);
+                int leadId = Integer.parseInt(leadIdStr);
+                int salesId = Integer.parseInt(salesIdStr);
 
                 boolean success = leadDAO.assignLeadToSales(leadId, salesId, managerId);
                 

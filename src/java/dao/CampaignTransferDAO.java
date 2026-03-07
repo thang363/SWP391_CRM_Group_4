@@ -8,17 +8,17 @@ import model.entity.CampaignTransfer;
  */
 public interface CampaignTransferDAO {
     // Core CRUD
-    Long insert(CampaignTransfer transfer);
+    Integer insert(CampaignTransfer transfer);
     void update(CampaignTransfer transfer);
-    CampaignTransfer findById(Long id);
+    CampaignTransfer findById(Integer id);
     
     // Business Queries
-    boolean hasPendingTransfer(Long campaignId);
-    CampaignTransfer findPendingByCampaignId(Long campaignId);
+    boolean hasPendingTransfer(Integer campaignId);
+    CampaignTransfer findPendingByCampaignId(Integer campaignId);
     
     // List Queries
-    List<CampaignTransfer> findPendingTransfersByRecipient(Long managerId);
-    List<CampaignTransfer> findPendingTransfersBySender(Long managerId);
-    List<CampaignTransfer> findRecentTransfersBySender(Long managerId);
-    List<CampaignTransfer> findHistoryByCampaign(Long campaignId);
+    List<CampaignTransfer> findPendingTransfersByRecipient(Integer managerId);
+    List<CampaignTransfer> findPendingTransfersBySender(Integer managerId);
+    List<CampaignTransfer> findRecentTransfersBySender(Integer managerId);
+    List<CampaignTransfer> findHistoryByCampaign(Integer campaignId);
 }

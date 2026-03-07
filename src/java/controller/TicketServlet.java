@@ -85,10 +85,10 @@ public class TicketServlet extends HttpServlet {
 
         // Defensive null checks
         Role role = null;
-        Long userId = null;
+        Integer userId = null;
         if (session != null) {
             role = (Role) session.getAttribute(Constants.SESSION_ROLE);
-            userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
         }
 
         Integer assignedTo = null;
@@ -238,9 +238,9 @@ public class TicketServlet extends HttpServlet {
 
                 HttpSession session = request.getSession(false);
                 if (session != null) {
-                    Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+                    Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
                     if (userId != null)
-                        attachment.setUploadedBy(userId.intValue());
+                        attachment.setUploadedBy(userId);
                 }
 
                 attachmentDAO.saveAttachment(attachment);
@@ -294,7 +294,7 @@ public class TicketServlet extends HttpServlet {
         // === RBAC: Kiểm tra quyền truy cập ===
         HttpSession session = request.getSession(false);
         Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
-        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
+        Integer userId = (session != null) ? (Integer) session.getAttribute(Constants.SESSION_USER_ID) : null;
 
         boolean hasAccess = false;
 
@@ -344,7 +344,7 @@ public class TicketServlet extends HttpServlet {
             canEdit = true;
             canClaim = (ticket.getAssignedTo() == null || ticket.getAssignedTo() == 0);
         } else if (Role.SUPPORT.equals(role)) {
-            if (userId != null && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue()) {
+            if (userId != null && ticket.getAssignedTo() != null && ticket.getAssignedTo().equals(userId)) {
                 canEdit = true; // Chỉ sửa ticket của mình
             }
             if (ticket.getAssignedTo() == null || ticket.getAssignedTo() == 0) {
@@ -370,7 +370,7 @@ public class TicketServlet extends HttpServlet {
         // Backend Permission Check
         HttpSession session = request.getSession(false);
         Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
-        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
+        Integer userId = (session != null) ? (Integer) session.getAttribute(Constants.SESSION_USER_ID) : null;
 
         if (role == null) {
             sendJsonResponse(response, false, "Chưa đăng nhập");
@@ -387,7 +387,7 @@ public class TicketServlet extends HttpServlet {
         if (Role.MANAGER.equals(role)) {
             allowed = true;
         } else if (Role.SUPPORT.equals(role)) {
-            if (userId != null && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue()) {
+            if (userId != null && ticket.getAssignedTo() != null && ticket.getAssignedTo().equals(userId)) {
                 allowed = true;
             }
         }
@@ -460,7 +460,7 @@ public class TicketServlet extends HttpServlet {
 
     private void handleClaim(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
-        Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+        Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
 
         if (userId == null) {
             sendJsonResponse(response, false, "Phiên đăng nhập hết hạn");
@@ -475,7 +475,7 @@ public class TicketServlet extends HttpServlet {
             return;
         }
 
-        boolean success = ticketService.assignTicket(id, userId.intValue());
+        boolean success = ticketService.assignTicket(id, userId);
         if (success) {
             logSystemActivity(request, id, "Claimed ticket (Self-assign)");
         }
@@ -486,11 +486,11 @@ public class TicketServlet extends HttpServlet {
         try {
             HttpSession session = request.getSession(false);
             if (session != null) {
-                Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+                Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
                 if (userId != null) {
                     model.entity.TicketActivity activity = new model.entity.TicketActivity();
                     activity.setTicketId(ticketId);
-                    activity.setUserId(userId.intValue());
+                    activity.setUserId(userId);
                     activity.setMessage(message);
                     activity.setActivityType("System");
                     ticketService.addActivity(activity);
@@ -512,7 +512,7 @@ public class TicketServlet extends HttpServlet {
                 sendJsonResponse(response, false, "Phiên đăng nhập hết hạn");
                 return;
             }
-            Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
             Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
             if (isInternal) {
@@ -524,7 +524,7 @@ public class TicketServlet extends HttpServlet {
 
             model.entity.TicketActivity activity = new model.entity.TicketActivity();
             activity.setTicketId(ticketId);
-            activity.setUserId(userId.intValue());
+            activity.setUserId(userId);
             activity.setMessage(message);
             activity.setActivityType(isInternal ? "InternalNote" : "Comment");
 
@@ -552,7 +552,7 @@ public class TicketServlet extends HttpServlet {
     private void handleResolve(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         Role role = (session != null) ? (Role) session.getAttribute(Constants.SESSION_ROLE) : null;
-        Long userId = (session != null) ? (Long) session.getAttribute(Constants.SESSION_USER_ID) : null;
+        Integer userId = (session != null) ? (Integer) session.getAttribute(Constants.SESSION_USER_ID) : null;
 
         if (role == null) {
             sendJsonResponse(response, false, "Chưa đăng nhập");
@@ -567,7 +567,7 @@ public class TicketServlet extends HttpServlet {
         boolean allowed = false;
         if (Role.MANAGER.equals(role))
             allowed = true;
-        if (Role.SUPPORT.equals(role) && ticket.getAssignedTo() != null && ticket.getAssignedTo() == userId.intValue())
+        if (Role.SUPPORT.equals(role) && ticket.getAssignedTo() != null && ticket.getAssignedTo().equals(userId))
             allowed = true;
 
         if (!allowed) {

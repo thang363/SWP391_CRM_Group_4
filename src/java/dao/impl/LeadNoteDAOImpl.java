@@ -48,8 +48,8 @@ public class LeadNoteDAOImpl implements LeadNoteDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, note.getLeadId());
-            stmt.setLong(2, note.getSalesId());
+            stmt.setInt(1, note.getLeadId());
+            stmt.setInt(2, note.getSalesId());
             stmt.setString(3, note.getNoteContent());
             stmt.setString(4, note.getNoteType());
             stmt.setBoolean(5, note.getIsImportant() != null ? note.getIsImportant() : false);
@@ -67,9 +67,9 @@ public class LeadNoteDAOImpl implements LeadNoteDAO {
 
     private LeadNote mapResultSetToNote(ResultSet rs) throws SQLException {
         LeadNote note = new LeadNote();
-        note.setId(rs.getLong("id"));
-        note.setLeadId(rs.getLong("lead_id"));
-        note.setSalesId(rs.getLong("sales_id"));
+        note.setId(rs.getInt("id"));
+        note.setLeadId(rs.getInt("lead_id"));
+        note.setSalesId(rs.getInt("sales_id"));
         note.setNoteContent(rs.getString("note_content"));
         note.setNoteType(rs.getString("note_type"));
         note.setIsImportant(rs.getBoolean("is_important"));

@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
  * Entity representing an interaction note for a lead.
  */
 public class LeadNote {
-    private Long id;
-    private Long leadId;
-    private Long salesId;
+    private Integer id;
+    private Integer leadId;
+    private Integer salesId;
     private String noteContent;
     private String noteType; // Call, Meeting, Email, General, FollowUp
     private Boolean isImportant;
@@ -17,7 +17,7 @@ public class LeadNote {
 
     public LeadNote() {}
 
-    public LeadNote(Long leadId, Long salesId, String noteContent, String noteType) {
+    public LeadNote(Integer leadId, Integer salesId, String noteContent, String noteType) {
         this.leadId = leadId;
         this.salesId = salesId;
         this.noteContent = noteContent;
@@ -27,14 +27,14 @@ public class LeadNote {
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public Long getLeadId() { return leadId; }
-    public void setLeadId(Long leadId) { this.leadId = leadId; }
+    public Integer getLeadId() { return leadId; }
+    public void setLeadId(Integer leadId) { this.leadId = leadId; }
 
-    public Long getSalesId() { return salesId; }
-    public void setSalesId(Long salesId) { this.salesId = salesId; }
+    public Integer getSalesId() { return salesId; }
+    public void setSalesId(Integer salesId) { this.salesId = salesId; }
 
     public String getNoteContent() { return noteContent; }
     public void setNoteContent(String noteContent) { this.noteContent = noteContent; }

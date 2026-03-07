@@ -128,7 +128,7 @@ public class BulkEmailServlet extends HttpServlet {
 
         for (String idStr : leadIds) {
             try {
-                long leadId = Long.parseLong(idStr);
+                int leadId = Integer.parseInt(idStr);
                 Lead lead = leadDAO.findById(leadId);
 
                 if (lead != null && lead.getEmail() != null && !lead.getEmail().isEmpty()) {
@@ -181,7 +181,7 @@ public class BulkEmailServlet extends HttpServlet {
 
         if (campaignIdStr != null && !campaignIdStr.trim().isEmpty()) {
             try {
-                long campaignId = Long.parseLong(campaignIdStr);
+                int campaignId = Integer.parseInt(campaignIdStr);
                 leads = leadDAO.findByCampaignIdWithEmail(campaignId);
             } catch (NumberFormatException e) {
                 leads = leadDAO.findAllWithEmail();

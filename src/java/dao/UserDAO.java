@@ -8,7 +8,7 @@ public interface UserDAO {
     
     User findByUsername(String username) throws SQLException;
     
-    User findById(Long id) throws SQLException;
+    User findById(Integer id) throws SQLException;
     
     User findByEmail(String email) throws SQLException;
     
@@ -20,9 +20,9 @@ public interface UserDAO {
     
     boolean update(User user) throws SQLException;
     
-    boolean delete(Long id) throws SQLException;
+    boolean delete(Integer id) throws SQLException;
     
-    boolean hardDelete(Long id) throws SQLException;
+    boolean hardDelete(Integer id) throws SQLException;
     
     boolean usernameExists(String username) throws SQLException;
     

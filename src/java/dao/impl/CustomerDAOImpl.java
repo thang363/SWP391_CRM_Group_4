@@ -83,7 +83,7 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public void createFromOpportunity(long opportunityId) throws Exception {
+    public void createFromOpportunity(int opportunityId) throws Exception {
         String getDataSql = "SELECT l.full_name, l.email, l.phone, l.assigned_to, l.id as lead_id " +
                 "FROM Opportunities o " +
                 "JOIN Leads l ON o.lead_id = l.id " +
@@ -106,18 +106,18 @@ public class CustomerDAOImpl implements CustomerDAO {
             String fullName = "";
             String email = "";
             String phone = "";
-            Long assignedTo = null;
-            Long leadId = null;
+            Integer assignedTo = null;
+            Integer leadId = null;
 
             try (PreparedStatement ps = conn.prepareStatement(getDataSql)) {
-                ps.setLong(1, opportunityId);
+                ps.setInt(1, opportunityId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         fullName = rs.getString("full_name");
                         email = rs.getString("email");
                         phone = rs.getString("phone");
-                        assignedTo = rs.getObject("assigned_to", Long.class);
-                        leadId = rs.getLong("lead_id");
+                        assignedTo = rs.getObject("assigned_to", Integer.class);
+                        leadId = rs.getInt("lead_id");
                     } else {
                         throw new Exception("Opportunity not found or Lead not linked.");
                     }
@@ -125,13 +125,13 @@ public class CustomerDAOImpl implements CustomerDAO {
             }
 
             // 2. Check if a customer with this lead_id or email already exists
-            long customerId = -1;
+            int customerId = -1;
             try (PreparedStatement ps = conn.prepareStatement(checkExistingSql)) {
-                ps.setLong(1, leadId);
+                ps.setInt(1, leadId);
                 ps.setString(2, (email != null && !email.isEmpty()) ? email : "NONE_EXISTENT_EMAIL_CHECK");
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        customerId = rs.getLong("id");
+                        customerId = rs.getInt("id");
                     }
                 }
             }
@@ -143,15 +143,15 @@ public class CustomerDAOImpl implements CustomerDAO {
                     ps.setString(2, email);
                     ps.setString(3, phone);
                     if (assignedTo != null)
-                        ps.setLong(4, assignedTo);
+                        ps.setInt(4, assignedTo);
                     else
-                        ps.setNull(4, java.sql.Types.BIGINT);
-                    ps.setLong(5, leadId);
+                        ps.setNull(4, java.sql.Types.INTEGER);
+                    ps.setInt(5, leadId);
 
                     ps.executeUpdate();
                     try (ResultSet rs = ps.getGeneratedKeys()) {
                         if (rs.next()) {
-                            customerId = rs.getLong(1);
+                            customerId = rs.getInt(1);
                         }
                     }
                 }
@@ -160,8 +160,8 @@ public class CustomerDAOImpl implements CustomerDAO {
             // 4. Update Opportunity with customer_id if we have one (new or existing)
             if (customerId != -1) {
                 try (PreparedStatement ps = conn.prepareStatement(updateOppSql)) {
-                    ps.setLong(1, customerId);
-                    ps.setLong(2, opportunityId);
+                    ps.setInt(1, customerId);
+                    ps.setInt(2, opportunityId);
                     ps.executeUpdate();
                 }
             }

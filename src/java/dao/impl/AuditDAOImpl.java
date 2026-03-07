@@ -19,7 +19,7 @@ public class AuditDAOImpl implements AuditDAO {
     }
 
     @Override
-    public void log(Long userId, String action, String entity, Long entityId) {
+    public void log(Integer userId, String action, String entity, Integer entityId) {
         Connection conn = null;
         PreparedStatement stmt = null;
 
@@ -30,14 +30,14 @@ public class AuditDAOImpl implements AuditDAO {
 
             stmt = conn.prepareStatement(sql);
             if (userId != null) {
-                stmt.setLong(1, userId);
+                stmt.setInt(1, userId);
             } else {
                 stmt.setNull(1, java.sql.Types.INTEGER);
             }
             stmt.setString(2, action);
             stmt.setString(3, entity);
             if (entityId != null) {
-                stmt.setLong(4, entityId);
+                stmt.setInt(4, entityId);
             } else {
                 stmt.setNull(4, java.sql.Types.INTEGER);
             }

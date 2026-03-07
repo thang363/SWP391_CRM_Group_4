@@ -89,8 +89,22 @@ public class SubmissionsServlet extends HttpServlet {
         // Source filter is not exposed in UI yet, pass null
         String source = null;
 
+        // --- User Role check ---
+        model.entity.User currentUser = (model.entity.User) request.getSession().getAttribute("user");
+        Integer marketingId = null;
+        boolean isManagerView = false;
+        
+        if (currentUser != null) {
+            model.entity.Role role = currentUser.getRole();
+            if (model.entity.Role.MARKETING.equals(role)) {
+                marketingId = currentUser.getId();
+            } else if (model.entity.Role.MANAGER.equals(role)) {
+                isManagerView = true;
+            }
+        }
+
         // --- Fetch data ---
-        int totalItems = submissionDAO.count(keyword, campaignId, source, status, fromDate, toDate);
+        int totalItems = submissionDAO.count(marketingId, keyword, campaignId, source, status, fromDate, toDate);
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
         if (totalPages < 1) totalPages = 1;
         if (page > totalPages) {
@@ -98,15 +112,18 @@ public class SubmissionsServlet extends HttpServlet {
             offset = (page - 1) * pageSize;
         }
 
-        List<LeadSubmission> submissions = submissionDAO.findAll(keyword, campaignId, source, status, fromDate, toDate, offset, pageSize);
+        List<LeadSubmission> submissions = new java.util.ArrayList<>();
+        if (!isManagerView) {
+            submissions = submissionDAO.findAll(marketingId, keyword, campaignId, source, status, fromDate, toDate, offset, pageSize);
+        }
 
         // Campaigns for dropdown filter
         List<Campaign> campaigns = campaignDAO.findAll();
 
         // Stat cards
         int statTotal = totalItems;
-        int statPending = submissionDAO.countPending();
-        int statToday = submissionDAO.countToday();
+        int statPending = submissionDAO.countPending(marketingId);
+        int statToday = submissionDAO.countToday(marketingId);
 
         // --- Set attributes ---
         request.setAttribute("submissions", submissions);
@@ -117,6 +134,7 @@ public class SubmissionsServlet extends HttpServlet {
         request.setAttribute("statTotal", statTotal);
         request.setAttribute("statPending", statPending);
         request.setAttribute("statToday", statToday);
+        request.setAttribute("isManagerView", isManagerView); // Pass flag to JSP
 
         // For sidebar active highlight
         request.setAttribute("currentPage", "submissions");
@@ -185,18 +203,19 @@ public class SubmissionsServlet extends HttpServlet {
                 return;
             }
 
+            // --- Resolve Campaign ID ---
+            Integer submitCampaignId = null;
+            if (submission.getCampaignId() != null && submission.getCampaignId() > 0) {
+                submitCampaignId = submission.getCampaignId();
+            } else if (submission.getLandingPageId() != null) {
+                LandingPage lp = landingPageDAO.findById(submission.getLandingPageId());
+                if (lp != null && lp.getCampaignId() != null) {
+                    submitCampaignId = lp.getCampaignId();
+                }
+            }
+
             // --- Check Duplicate ---
             if (!force) {
-                Long submitCampaignId = null;
-                if (submission.getCampaignId() != null && submission.getCampaignId() > 0) {
-                    submitCampaignId = submission.getCampaignId().longValue();
-                } else if (submission.getLandingPageId() != null) {
-                    LandingPage lp = landingPageDAO.findById(submission.getLandingPageId());
-                    if (lp != null && lp.getCampaignId() != null) {
-                        submitCampaignId = lp.getCampaignId().longValue();
-                    }
-                }
-                
                 boolean isDuplicate = leadDAO.checkDuplicate(submission.getEmail(), submission.getPhone(), submitCampaignId);
                 if (isDuplicate) {
                     Map<String, Object> data = new HashMap<>();
@@ -212,12 +231,9 @@ public class SubmissionsServlet extends HttpServlet {
             lead.setEmail(submission.getEmail());
             lead.setPhone(submission.getPhone());
             
-            // Map Campaign ID if available
-            if (submission.getLandingPageId() != null) {
-                 LandingPage lp = landingPageDAO.findById(submission.getLandingPageId());
-                 if (lp != null) {
-                     lead.setCampaignId((long) lp.getCampaignId());
-                 }
+            // Map resolved Campaign ID
+            if (submitCampaignId != null) {
+                lead.setCampaignId(submitCampaignId);
             }
             
             // Map Source ID
@@ -236,7 +252,7 @@ public class SubmissionsServlet extends HttpServlet {
                 sourceId = leadSourceDAO.insert(sourceName);
             }
             if (sourceId != null) {
-                lead.setSourceId((long) sourceId);
+                lead.setSourceId(sourceId);
             }
             
             lead.setStatus("New"); // Default status

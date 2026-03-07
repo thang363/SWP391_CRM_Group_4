@@ -3,8 +3,8 @@ package model.viewmodel;
 import java.sql.Timestamp;
 
 public class LeadInteractionViewModel {
-    private long interactionId;
-    private long leadId;
+    private int interactionId;
+    private int leadId;
     private String leadName;
     private String leadEmail;
     private String activityName;
@@ -15,7 +15,7 @@ public class LeadInteractionViewModel {
     public LeadInteractionViewModel() {
     }
 
-    public LeadInteractionViewModel(long interactionId, long leadId, String leadName, String leadEmail, String activityName, String details, int scoreChange, Timestamp createdAt) {
+    public LeadInteractionViewModel(int interactionId, int leadId, String leadName, String leadEmail, String activityName, String details, int scoreChange, Timestamp createdAt) {
         this.interactionId = interactionId;
         this.leadId = leadId;
         this.leadName = leadName;
@@ -26,19 +26,19 @@ public class LeadInteractionViewModel {
         this.createdAt = createdAt;
     }
 
-    public long getInteractionId() {
+    public int getInteractionId() {
         return interactionId;
     }
 
-    public void setInteractionId(long interactionId) {
+    public void setInteractionId(int interactionId) {
         this.interactionId = interactionId;
     }
 
-    public long getLeadId() {
+    public int getLeadId() {
         return leadId;
     }
 
-    public void setLeadId(long leadId) {
+    public void setLeadId(int leadId) {
         this.leadId = leadId;
     }
 

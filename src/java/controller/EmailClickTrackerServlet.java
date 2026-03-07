@@ -31,7 +31,7 @@ public class EmailClickTrackerServlet extends HttpServlet {
 
         if (leadIdStr != null && !leadIdStr.isEmpty()) {
             try {
-                long leadId = Long.parseLong(leadIdStr);
+                int leadId = Integer.parseInt(leadIdStr);
                 Integer campaignId = (campaignIdStr != null && !campaignIdStr.isEmpty()) ? Integer.parseInt(campaignIdStr) : null;
                 
                 String interactionDetails = "Lead clicked 'Interested' link in marketing email.";

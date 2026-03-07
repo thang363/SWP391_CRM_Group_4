@@ -95,7 +95,7 @@ public class LeadBySaleServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            long leadID = Long.parseLong(request.getParameter("leadId"));
+            int leadID = Integer.parseInt(request.getParameter("leadId"));
             String status = request.getParameter("status");
             LeadDAO ld = new LeadDAOImpl();
             ld.updateLeadStatus(leadID, status);

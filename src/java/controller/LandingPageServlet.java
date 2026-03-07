@@ -102,7 +102,7 @@ public class LandingPageServlet extends HttpServlet {
             // Get Campaign Info
             Campaign campaign = null;
             if (lp.getCampaignId() != null) {
-                campaign = campaignService.getCampaignById(lp.getCampaignId().longValue());
+                campaign = campaignService.getCampaignById(lp.getCampaignId());
             }
             
             // Visibility Filter
@@ -113,7 +113,7 @@ public class LandingPageServlet extends HttpServlet {
                 }
             } else {
                 // Marketing: Only see LPs assigned to them
-                if (lp.getCreatedBy() == null || !currentUser.getId().equals(Long.valueOf(lp.getCreatedBy()))) {
+                if (lp.getCreatedBy() == null || !currentUser.getId().equals(lp.getCreatedBy())) {
                     continue;
                 }
             }
@@ -129,7 +129,7 @@ public class LandingPageServlet extends HttpServlet {
             // Get Assignee Name
             String assigneeName = "-";
             if (lp.getCreatedBy() != null) {
-                User assignee = userService.getUserById(lp.getCreatedBy().longValue());
+                User assignee = userService.getUserById(lp.getCreatedBy());
                 if (assignee != null) {
                     assigneeName = assignee.getFullName();
                 }

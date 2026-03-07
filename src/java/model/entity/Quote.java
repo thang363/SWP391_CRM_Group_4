@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 
 public class Quote {
 
-    private Long id;
-    private Long opportunityId;
+    private Integer id;
+    private Integer opportunityId;
     private String quoteNumber;
     private String subject;
     private BigDecimal subtotal;
@@ -16,7 +16,7 @@ public class Quote {
     private BigDecimal grandTotal;
     private String status; // Draft | Sent | Accepted | Rejected | Expired
     private LocalDate validUntil;
-    private Long createdBy;
+    private Integer createdBy;
     private LocalDateTime createdAt;
 
     // Transient — dùng để hiển thị tên opportunity trong danh sách
@@ -45,11 +45,11 @@ public class Quote {
 
     // ===== Getters & Setters =====
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public Long getOpportunityId() { return opportunityId; }
-    public void setOpportunityId(Long opportunityId) { this.opportunityId = opportunityId; }
+    public Integer getOpportunityId() { return opportunityId; }
+    public void setOpportunityId(Integer opportunityId) { this.opportunityId = opportunityId; }
 
     public String getQuoteNumber() { return quoteNumber; }
     public void setQuoteNumber(String quoteNumber) { this.quoteNumber = quoteNumber; }
@@ -75,8 +75,8 @@ public class Quote {
     public LocalDate getValidUntil() { return validUntil; }
     public void setValidUntil(LocalDate validUntil) { this.validUntil = validUntil; }
 
-    public Long getCreatedBy() { return createdBy; }
-    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
+    public Integer getCreatedBy() { return createdBy; }
+    public void setCreatedBy(Integer createdBy) { this.createdBy = createdBy; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

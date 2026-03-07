@@ -13,11 +13,11 @@ public interface LeadDAO {
      * @param saleId The ID of the sales staff
      * @return List of Leads
      */
-    List<Lead> findBySaleId(long saleId);
+    List<Lead> findBySaleId(int saleId);
     
-    void updateLeadStatus(long leadId, String status);
+    void updateLeadStatus(int leadId, String status);
     
-    void markAsConverted(long leadId);
+    void markAsConverted(int leadId);
 
     /**
      * Check if a lead with the given email or phone already exists.
@@ -26,7 +26,7 @@ public interface LeadDAO {
      * @param campaignId Campaign ID to check within
      * @return true if duplicate exists, false otherwise
      */
-    boolean checkDuplicate(String email, String phone, Long campaignId);
+    boolean checkDuplicate(String email, String phone, Integer campaignId);
 
     /**
      * Insert a new lead.
@@ -40,7 +40,7 @@ public interface LeadDAO {
      * @param id The ID of the lead
      * @return The Lead object if found, null otherwise
      */
-    Lead findById(long id);
+    Lead findById(int id);
 
     /**
 
@@ -49,13 +49,13 @@ public interface LeadDAO {
      * @param name New name
      * @param phone New phone
      */
-    void updateLeadInfo(long id, String name, String phone);
+    void updateLeadInfo(int id, String name, String phone);
     /*
      * Find leads by campaign ID that have email addresses.
      * @param campaignId The campaign ID
      * @return List of Leads with email
      */
-    List<Lead> findByCampaignIdWithEmail(long campaignId);
+    List<Lead> findByCampaignIdWithEmail(int campaignId);
 
     /**
      * Find all leads that have email addresses.
@@ -71,7 +71,7 @@ public interface LeadDAO {
      * @param status Filter status
      * @return List of matched Leads
      */
-    List<Lead> searchLeads(long saleId, String query, String status);
+    List<Lead> searchLeads(int saleId, String query, String status);
 
     /**
      * Records a lead interaction and updates the lead's score.
@@ -82,21 +82,21 @@ public interface LeadDAO {
      * @param scoreChange Points to add/subtract
      * @return true if successful
      */
-    boolean recordInteraction(long leadId, Integer campaignId, String activityType, String details, int scoreChange);
+    boolean recordInteraction(int leadId, Integer campaignId, String activityType, String details, int scoreChange);
 
     /**
      * Update lead's total score.
      * @param leadId ID of the lead
      * @param newScore The new total score
      */
-    void updateScore(long leadId, int newScore);
+    void updateScore(int leadId, int newScore);
     
     /**
      * Get KPIs for monitor leads screen.
      * @param campaignId Campaign ID (null for all campaigns)
      * @return MonitorKPIsViewModel containing total, hot, unassigned leads and avg score
      */
-    model.viewmodel.MonitorKPIsViewModel getMonitorKPIs(Long campaignId);
+    model.viewmodel.MonitorKPIsViewModel getMonitorKPIs(Integer campaignId);
     
     /**
      * Get list of unassigned leads sorted by score descending (Hot leads first).
@@ -104,7 +104,7 @@ public interface LeadDAO {
      * @param limit Maximum number of records to return
      * @return List of Hot Unassigned Leads
      */
-    List<Lead> getHotUnassignedLeads(Long campaignId, int limit);
+    List<Lead> getHotUnassignedLeads(Integer campaignId, int limit);
     
     /**
      * Get recent interactions for feed.
@@ -112,7 +112,7 @@ public interface LeadDAO {
      * @param limit Maximum number of records to return
      * @return List of LeadInteractionViewModel
      */
-    List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Long campaignId, int limit);
+    List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Integer campaignId, int limit);
     
     /**
      * Assign a lead to a sales staff.
@@ -121,5 +121,5 @@ public interface LeadDAO {
      * @param managerId The ID of the manager assigning the lead
      * @return true if assignment is successful
      */
-    boolean assignLeadToSales(long leadId, long salesId, long managerId);
+    boolean assignLeadToSales(int leadId, int salesId, int managerId);
 }
