@@ -90,7 +90,7 @@ public class SubmissionsServlet extends HttpServlet {
         String source = null;
 
         // --- User Role check ---
-        model.entity.User currentUser = (model.entity.User) request.getSession().getAttribute("user");
+        model.entity.User currentUser = (model.entity.User) request.getSession().getAttribute(Constants.SESSION_USER);
         Integer marketingId = null;
         boolean isManagerView = false;
         
