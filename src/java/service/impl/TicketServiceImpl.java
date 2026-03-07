@@ -116,7 +116,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public String processCustomerFeedbackByToken(String token, String decision) {
+    public String processCustomerFeedbackByToken(String token, String decision, String rejectionReason) {
         if (token == null || token.trim().isEmpty()) {
             return "invalid";
         }
@@ -145,6 +145,10 @@ public class TicketServiceImpl implements TicketService {
             ticketDAO.updateStatus(ticketId, "Closed");
             return "accepted";
         } else if ("reject".equalsIgnoreCase(decision)) {
+            // Lưu lý do từ chối
+            if (rejectionReason != null && !rejectionReason.trim().isEmpty()) {
+                ticketDAO.updateRejectionReason(ticketId, rejectionReason.trim());
+            }
             ticketDAO.updatePriority(ticketId, "High");
             ticketDAO.updateStatus(ticketId, "In Progress");
             new service.EmailService().sendEscalationEmail("manager@crm.com", ticketId);

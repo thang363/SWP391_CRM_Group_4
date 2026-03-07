@@ -360,6 +360,14 @@ public class TicketServlet extends HttpServlet {
         request.setAttribute("currentPage", "support");
         request.setAttribute("pageTitle", "Chi tiết Ticket #" + id);
 
+        // Load ticket attachments (file đính kèm khi tạo ticket)
+        List<Attachment> ticketAttachments = attachmentDAO.getByEntityAndRecordId("Ticket", id);
+        request.setAttribute("ticketAttachments", ticketAttachments);
+
+        // Load rejection attachments nếu có
+        List<Attachment> rejectionAttachments = attachmentDAO.getByEntityAndRecordId("TicketRejection", id);
+        request.setAttribute("rejectionAttachments", rejectionAttachments);
+
         request.getRequestDispatcher("/views/ticket/ticket-detail.jsp").forward(request, response);
     }
 

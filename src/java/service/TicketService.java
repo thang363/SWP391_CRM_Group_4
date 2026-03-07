@@ -35,9 +35,10 @@ public interface TicketService {
     /**
      * Xử lý phản hồi của khách hàng thông qua token (không yêu cầu đăng nhập)
      * 
-     * @param token    UUID token từ email
-     * @param decision "accept" hoặc "reject"
+     * @param token           UUID token từ email
+     * @param decision        "accept" hoặc "reject"
+     * @param rejectionReason lý do từ chối (chỉ dùng khi decision = "reject")
      * @return kết quả: "accepted", "rejected", "invalid", "expired", "already_used"
      */
-    String processCustomerFeedbackByToken(String token, String decision);
+    String processCustomerFeedbackByToken(String token, String decision, String rejectionReason);
 }
