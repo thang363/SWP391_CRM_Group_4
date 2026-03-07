@@ -6,7 +6,10 @@ import util.DatabaseUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AttachmentDAOImpl implements AttachmentDAO {
 
@@ -52,5 +55,58 @@ public class AttachmentDAOImpl implements AttachmentDAO {
             if (conn != null)
                 dbUtil.closeConnection(conn);
         }
+    }
+
+    @Override
+    public List<Attachment> getByEntityAndRecordId(String entity, int recordId) {
+        String sql = "SELECT id, file_name, file_path, file_size, uploaded_by, related_to_entity, related_record_id, created_at "
+                +
+                "FROM Attachments WHERE related_to_entity = ? AND related_record_id = ? ORDER BY created_at DESC";
+
+        List<Attachment> attachments = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, entity);
+            stmt.setInt(2, recordId);
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Attachment att = new Attachment();
+                att.setId(rs.getInt("id"));
+                att.setFileName(rs.getString("file_name"));
+                att.setFilePath(rs.getString("file_path"));
+                att.setFileSize(rs.getLong("file_size"));
+                int uploadedBy = rs.getInt("uploaded_by");
+                if (!rs.wasNull()) {
+                    att.setUploadedBy(uploadedBy);
+                }
+                att.setRelatedToEntity(rs.getString("related_to_entity"));
+                att.setRelatedRecordId(rs.getInt("related_record_id"));
+                att.setCreatedAt(rs.getTimestamp("created_at"));
+                attachments.add(att);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null)
+                    rs.close();
+            } catch (SQLException e) {
+            }
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (SQLException e) {
+            }
+            if (conn != null)
+                dbUtil.closeConnection(conn);
+        }
+
+        return attachments;
     }
 }
