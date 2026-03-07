@@ -2,6 +2,9 @@ package controller;
 
 import dao.CustomerDAO;
 import dao.impl.CustomerDAOImpl;
+import dao.ReviewDAO;
+import dao.impl.ReviewDAOImpl;
+import util.EmailService;
 import model.entity.Customer;
 import model.entity.Role;
 import util.Constants;
@@ -22,9 +25,11 @@ import java.util.List;
 public class CustomerServlet extends HttpServlet {
 
     private final CustomerDAO customerDAO;
+    private final ReviewDAO reviewDAO;
 
     public CustomerServlet() {
         this.customerDAO = new CustomerDAOImpl();
+        this.reviewDAO = new ReviewDAOImpl();
     }
 
     @Override
@@ -103,6 +108,9 @@ public class CustomerServlet extends HttpServlet {
                 case "merge":
                     mergeCustomers(request, response);
                     break;
+                case "sendFeedbackRequest":
+                    sendFeedbackRequest(request, response);
+                    break;
                 default:
                     response.sendRedirect(request.getContextPath() + "/customers");
                     break;
@@ -172,8 +180,12 @@ public class CustomerServlet extends HttpServlet {
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
         if (idStr != null) {
-            Customer customer = customerDAO.getCustomerById(Integer.parseInt(idStr));
+            int id = Integer.parseInt(idStr);
+            Customer customer = customerDAO.getCustomerById(id);
             request.setAttribute("customer", customer);
+            if (customer != null) {
+                request.setAttribute("reviews", reviewDAO.getReviewsByCustomer(id));
+            }
         }
         request.getRequestDispatcher("/views/customers/details.jsp").forward(request, response);
     }
@@ -261,6 +273,29 @@ public class CustomerServlet extends HttpServlet {
             customerDAO.mergeCustomers(primaryId, duplicateId);
         }
         response.sendRedirect(request.getContextPath() + "/customers");
+    }
+
+    private void sendFeedbackRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Customer c = customerDAO.getCustomerById(id);
+        if (c != null && c.getEmail() != null && !c.getEmail().isEmpty()) {
+            HttpSession session = request.getSession(false);
+            Integer userId = null;
+            if (session != null) {
+                Object uidObj = session.getAttribute(Constants.SESSION_USER_ID);
+                if (uidObj instanceof Integer) {
+                    userId = (Integer) uidObj;
+                }
+            }
+            String token = reviewDAO.generateFeedbackRequest(id, userId);
+            if (token != null) {
+                String domainUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
+                        + request.getContextPath();
+                EmailService.sendFeedbackEmailAsync(c.getEmail(), token, domainUrl);
+            }
+        }
+        response.sendRedirect(
+                request.getContextPath() + "/customers?action=details&id=" + id + "&success=feedback_sent");
     }
 
     private void populateCustomerFromRequest(Customer c, HttpServletRequest request) {
