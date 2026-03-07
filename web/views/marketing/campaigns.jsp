@@ -111,14 +111,16 @@
                                                                         id="filterStatus">
                                                                         <option value="">Tất cả</option>
                                                                         <option value="Draft" ${param.status=='Draft'
-                                                                            ? 'selected' : '' }>Draft</option>
+                                                                            ? 'selected' : '' }>Nháp (Draft)</option>
                                                                         <option value="Active" ${param.status=='Active'
-                                                                            ? 'selected' : '' }>Active</option>
+                                                                            ? 'selected' : '' }>Đang chạy (Active)
+                                                                        </option>
                                                                         <option value="Paused" ${param.status=='Paused'
-                                                                            ? 'selected' : '' }>Paused</option>
+                                                                            ? 'selected' : '' }>Tạm dừng (Paused)
+                                                                        </option>
                                                                         <option value="Finished"
                                                                             ${param.status=='Finished' ? 'selected' : ''
-                                                                            }>Finished</option>
+                                                                            }>Đã kết thúc (Finished)</option>
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-md-2">
@@ -208,7 +210,7 @@
                                                                                                 '-'}</td>
                                                                                             <td>
                                                                                                 <span
-                                                                                                    class="badge badge-${campaign.status.toLowerCase()}">${campaign.status}</span>
+                                                                                                    class="badge bg-${campaign.statusBadgeClass}">${campaign.statusDisplayName}</span>
                                                                                             </td>
                                                                                             <td class="table-actions">
                                                                                                 <c:choose>
@@ -220,6 +222,16 @@
                                                                                                             title="Đang chuyển giao - không thể chỉnh sửa">
                                                                                                             <i
                                                                                                                 class="fa fa-lock"></i>
+                                                                                                        </button>
+                                                                                                    </c:when>
+                                                                                                    <c:when
+                                                                                                        test="${campaign.status == 'Finished'}">
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-secondary"
+                                                                                                            disabled
+                                                                                                            title="Chiến dịch đã kết thúc - không thể chỉnh sửa">
+                                                                                                            <i
+                                                                                                                class="fa fa-edit"></i>
                                                                                                         </button>
                                                                                                     </c:when>
                                                                                                     <c:otherwise>
@@ -241,6 +253,16 @@
                                                                                                             title="Đang chuyển giao - không thể xóa">
                                                                                                             <i
                                                                                                                 class="fa fa-lock"></i>
+                                                                                                        </button>
+                                                                                                    </c:when>
+                                                                                                    <c:when
+                                                                                                        test="${campaign.status != 'Draft'}">
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-secondary"
+                                                                                                            disabled
+                                                                                                            title="Chỉ có thể xóa chiến dịch Nháp (Draft)">
+                                                                                                            <i
+                                                                                                                class="fa fa-trash"></i>
                                                                                                         </button>
                                                                                                     </c:when>
                                                                                                     <c:otherwise>

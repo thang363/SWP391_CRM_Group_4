@@ -3,7 +3,7 @@ package model.viewmodel;
 import model.entity.Role;
 
 public class UserViewModel {
-    private Long id;
+    private Integer id;
     private String username;
     private String email;
     private String fullName;
@@ -15,7 +15,7 @@ public class UserViewModel {
     public UserViewModel() {
     }
     
-    public UserViewModel(Long id, String username, String email, String fullName, String phone, 
+    public UserViewModel(Integer id, String username, String email, String fullName, String phone, 
                          Role role, String status) {
         this.id = id;
         this.username = username;
@@ -26,11 +26,11 @@ public class UserViewModel {
         this.status = status;
     }
     
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     

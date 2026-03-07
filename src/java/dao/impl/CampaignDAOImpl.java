@@ -21,7 +21,7 @@ public class CampaignDAOImpl implements CampaignDAO {
     }
     
     @Override
-    public Campaign findById(Long id) {
+    public Campaign findById(Integer id) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -33,7 +33,7 @@ public class CampaignDAOImpl implements CampaignDAO {
                         "WHERE c.id = ?";
             
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             rs = stmt.executeQuery();
             
             if (rs.next()) {
@@ -81,7 +81,7 @@ public class CampaignDAOImpl implements CampaignDAO {
     }
     
     @Override
-    public List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId, int offset, int limit) {
+    public List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId, int offset, int limit) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -141,8 +141,6 @@ public class CampaignDAOImpl implements CampaignDAO {
                     stmt.setTimestamp(i + 1, (Timestamp) param);
                 } else if (param instanceof Integer) {
                     stmt.setInt(i + 1, (Integer) param);
-                } else if (param instanceof Long) {
-                    stmt.setLong(i + 1, (Long) param);
                 }
             }
             
@@ -163,7 +161,7 @@ public class CampaignDAOImpl implements CampaignDAO {
     }
 
     @Override
-    public int countByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Long managerId) {
+    public int countByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -210,8 +208,8 @@ public class CampaignDAOImpl implements CampaignDAO {
                     stmt.setString(i + 1, (String) param);
                 } else if (param instanceof Timestamp) {
                     stmt.setTimestamp(i + 1, (Timestamp) param);
-                } else if (param instanceof Long) {
-                    stmt.setLong(i + 1, (Long) param);
+                } else if (param instanceof Integer) {
+                    stmt.setInt(i + 1, (Integer) param);
                 }
             }
             
@@ -249,7 +247,7 @@ public class CampaignDAOImpl implements CampaignDAO {
             stmt.setTimestamp(4, campaign.getEndDate());
             
             if (campaign.getManagerId() != null) {
-                stmt.setLong(5, campaign.getManagerId());
+                stmt.setInt(5, campaign.getManagerId());
             } else {
                 stmt.setNull(5, Types.INTEGER);
             }
@@ -262,7 +260,7 @@ public class CampaignDAOImpl implements CampaignDAO {
             if (affectedRows > 0) {
                 rs = stmt.getGeneratedKeys();
                 if (rs.next()) {
-                    campaign.setId(rs.getLong(1));
+                    campaign.setId(rs.getInt(1));
                     return campaign;
                 }
             }
@@ -295,14 +293,14 @@ public class CampaignDAOImpl implements CampaignDAO {
             stmt.setTimestamp(4, campaign.getEndDate());
             
             if (campaign.getManagerId() != null) {
-                stmt.setLong(5, campaign.getManagerId());
+                stmt.setInt(5, campaign.getManagerId());
             } else {
                 stmt.setNull(5, Types.INTEGER);
             }
             
             stmt.setString(6, campaign.getStatus());
             stmt.setString(7, campaign.getDescription());
-            stmt.setLong(8, campaign.getId());
+            stmt.setInt(8, campaign.getId());
             
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -318,7 +316,7 @@ public class CampaignDAOImpl implements CampaignDAO {
     }
     
     @Override
-    public boolean delete(Long id) {
+    public boolean delete(Integer id) {
         Connection conn = null;
         PreparedStatement stmt = null;
         
@@ -329,28 +327,28 @@ public class CampaignDAOImpl implements CampaignDAO {
             // 1. Delete LeadSubmissions (directly linked to Campaign)
             String delSubSql = "DELETE FROM LeadSubmissions WHERE campaign_id = ?";
             stmt = conn.prepareStatement(delSubSql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
             
             // 2. Delete LeadInteractions (directly linked to Campaign)
             String delIntSql = "DELETE FROM LeadInteractions WHERE campaign_id = ?";
             stmt = conn.prepareStatement(delIntSql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
             
             // 3. Delete CampaignTransferHistory
             String delTransHistSql = "DELETE FROM CampaignTransferHistory WHERE campaign_id = ?";
             stmt = conn.prepareStatement(delTransHistSql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
             
             // 4. Delete CampaignTransfers
             String delTransSql = "DELETE FROM CampaignTransfers WHERE campaign_id = ?";
             stmt = conn.prepareStatement(delTransSql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
             
@@ -359,28 +357,28 @@ public class CampaignDAOImpl implements CampaignDAO {
             String delLPSubSql = "DELETE FROM LeadSubmissions WHERE landing_page_id IN " +
                                 "(SELECT id FROM LandingPages WHERE campaign_id = ?)";
             stmt = conn.prepareStatement(delLPSubSql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
 
             // 6. Delete LandingPages
             String delLPSql = "DELETE FROM LandingPages WHERE campaign_id = ?";
             stmt = conn.prepareStatement(delLPSql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
             
             // 7. Unlink Leads (Set campaign_id to NULL)
             String unlinkLeadsSql = "UPDATE Leads SET campaign_id = NULL WHERE campaign_id = ?";
             stmt = conn.prepareStatement(unlinkLeadsSql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
             
             // 8. Finally delete the Campaign
             String sql = "DELETE FROM Campaigns WHERE id = ?";
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             
             int affectedRows = stmt.executeUpdate();
             conn.commit(); // Commit transaction
@@ -463,13 +461,13 @@ public class CampaignDAOImpl implements CampaignDAO {
      */
     private Campaign mapResultSetToCampaign(ResultSet rs) throws SQLException {
         Campaign campaign = new Campaign();
-        campaign.setId(rs.getLong("id"));
+        campaign.setId(rs.getInt("id"));
         campaign.setName(rs.getString("name"));
         campaign.setBudget(rs.getBigDecimal("budget"));
         campaign.setStartDate(rs.getTimestamp("start_date"));
         campaign.setEndDate(rs.getTimestamp("end_date"));
         
-        Long managerId = rs.getLong("manager_id");
+        Integer managerId = rs.getInt("manager_id");
         if (!rs.wasNull()) {
             campaign.setManagerId(managerId);
         }

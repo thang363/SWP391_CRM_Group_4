@@ -20,7 +20,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public Long insert(CampaignTransfer transfer) {
+    public Integer insert(CampaignTransfer transfer) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -32,9 +32,9 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            stmt.setLong(1, transfer.getCampaignId());
-            stmt.setLong(2, transfer.getFromManagerId());
-            stmt.setLong(3, transfer.getToManagerId());
+            stmt.setInt(1, transfer.getCampaignId());
+            stmt.setInt(2, transfer.getFromManagerId());
+            stmt.setInt(3, transfer.getToManagerId());
             stmt.setString(4, transfer.getTransferStatus());
             stmt.setString(5, transfer.getTransferReason());
             stmt.setString(6, transfer.getNotes());
@@ -45,7 +45,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
             if (affectedRows > 0) {
                 rs = stmt.getGeneratedKeys();
                 if (rs.next()) {
-                    Long id = rs.getLong(1);
+                    Integer id = rs.getInt(1);
                     transfer.setId(id);
                     return id;
                 }
@@ -76,7 +76,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
             stmt.setTimestamp(2, transfer.getRespondedAt());
             stmt.setString(3, transfer.getResponseNotes());
             stmt.setString(4, transfer.getNotes());
-            stmt.setLong(5, transfer.getId());
+            stmt.setInt(5, transfer.getId());
 
             stmt.executeUpdate();
 
@@ -89,7 +89,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public CampaignTransfer findById(Long id) {
+    public CampaignTransfer findById(Integer id) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -107,7 +107,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "WHERE ct.id = ?";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, id);
+            stmt.setInt(1, id);
             rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -125,7 +125,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public boolean hasPendingTransfer(Long campaignId) {
+    public boolean hasPendingTransfer(Integer campaignId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -136,7 +136,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "WHERE campaign_id = ? AND transfer_status = 'Pending'";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, campaignId);
+            stmt.setInt(1, campaignId);
             rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -154,7 +154,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public CampaignTransfer findPendingByCampaignId(Long campaignId) {
+    public CampaignTransfer findPendingByCampaignId(Integer campaignId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -172,7 +172,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "WHERE ct.campaign_id = ? AND ct.transfer_status = 'Pending'";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, campaignId);
+            stmt.setInt(1, campaignId);
             rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -190,7 +190,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public List<CampaignTransfer> findPendingTransfersByRecipient(Long managerId) {
+    public List<CampaignTransfer> findPendingTransfersByRecipient(Integer managerId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -210,7 +210,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "ORDER BY ct.requested_at DESC";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, managerId);
+            stmt.setInt(1, managerId);
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -228,7 +228,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public List<CampaignTransfer> findPendingTransfersBySender(Long managerId) {
+    public List<CampaignTransfer> findPendingTransfersBySender(Integer managerId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -248,7 +248,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "ORDER BY ct.requested_at DESC";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, managerId);
+            stmt.setInt(1, managerId);
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -266,7 +266,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public List<CampaignTransfer> findRecentTransfersBySender(Long managerId) {
+    public List<CampaignTransfer> findRecentTransfersBySender(Integer managerId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -286,7 +286,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "ORDER BY ct.requested_at DESC";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, managerId);
+            stmt.setInt(1, managerId);
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -304,7 +304,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public List<CampaignTransfer> findHistoryByCampaign(Long campaignId) {
+    public List<CampaignTransfer> findHistoryByCampaign(Integer campaignId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -324,7 +324,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "ORDER BY ct.requested_at DESC";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, campaignId);
+            stmt.setInt(1, campaignId);
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -343,10 +343,10 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
 
     private CampaignTransfer mapResultSetToTransfer(ResultSet rs) throws SQLException {
         CampaignTransfer transfer = new CampaignTransfer();
-        transfer.setId(rs.getLong("id"));
-        transfer.setCampaignId(rs.getLong("campaign_id"));
-        transfer.setFromManagerId(rs.getLong("from_manager_id"));
-        transfer.setToManagerId(rs.getLong("to_manager_id"));
+        transfer.setId(rs.getInt("id"));
+        transfer.setCampaignId(rs.getInt("campaign_id"));
+        transfer.setFromManagerId(rs.getInt("from_manager_id"));
+        transfer.setToManagerId(rs.getInt("to_manager_id"));
         transfer.setTransferStatus(rs.getString("transfer_status"));
         transfer.setTransferReason(rs.getString("transfer_reason"));
         transfer.setNotes(rs.getString("notes"));

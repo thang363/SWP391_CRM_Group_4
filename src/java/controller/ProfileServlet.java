@@ -32,7 +32,7 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
-        Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+        Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
         User user = userService.getUserById(userId);
 
         if (user == null) {
@@ -56,7 +56,7 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
-        Long userId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+        Integer userId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
         String fullName = request.getParameter("fullName");
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");

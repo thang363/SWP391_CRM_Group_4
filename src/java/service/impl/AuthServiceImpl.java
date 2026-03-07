@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public User validateSession(Long userId) {
+    public User validateSession(Integer userId) {
         if (userId == null) {
             return null;
         }
@@ -79,14 +79,14 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public void logout(Long userId) {
+    public void logout(Integer userId) {
         if (userId != null) {
             System.out.println("User logged out: ID=" + userId);
         }
     }
     
     @Override
-    public boolean isAccountActive(Long userId) {
+    public boolean isAccountActive(Integer userId) {
         if (userId == null) {
             return false;
         }

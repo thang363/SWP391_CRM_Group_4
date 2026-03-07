@@ -8,12 +8,12 @@ import java.sql.Timestamp;
  * Maps to Campaigns table in database
  */
 public class Campaign {
-    private Long id;
+    private Integer id;
     private String name;
     private BigDecimal budget;
     private Timestamp startDate;
     private Timestamp endDate;
-    private Long managerId;
+    private Integer managerId;
     private String status;
     private String description;
     private Timestamp createdAt;
@@ -24,7 +24,7 @@ public class Campaign {
     }
     
     public Campaign(String name, BigDecimal budget, Timestamp startDate, Timestamp endDate, 
-                    Long managerId, String description) {
+                    Integer managerId, String description) {
         this.name = name;
         this.budget = budget;
         this.startDate = startDate;
@@ -34,8 +34,8 @@ public class Campaign {
         this.status = "Draft";
     }
     
-    public Campaign(Long id, String name, BigDecimal budget, Timestamp startDate, 
-                    Timestamp endDate, Long managerId, String status, String description, 
+    public Campaign(Integer id, String name, BigDecimal budget, Timestamp startDate, 
+                    Timestamp endDate, Integer managerId, String status, String description, 
                     Timestamp createdAt) {
         this.id = id;
         this.name = name;
@@ -49,11 +49,11 @@ public class Campaign {
     }
     
     // Getters and Setters
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     
@@ -89,11 +89,11 @@ public class Campaign {
         this.endDate = endDate;
     }
     
-    public Long getManagerId() {
+    public Integer getManagerId() {
         return managerId;
     }
     
-    public void setManagerId(Long managerId) {
+    public void setManagerId(Integer managerId) {
         this.managerId = managerId;
     }
     

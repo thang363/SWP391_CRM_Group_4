@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public User getUserById(Long userId) {
+    public User getUserById(Integer userId) {
         if (userId == null) {
             return null;
         }
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public UserViewModel getUserViewModelById(Long userId) {
+    public UserViewModel getUserViewModelById(Integer userId) {
         User user = getUserById(userId);
         return user != null ? convertToViewModel(user) : null;
     }
@@ -183,7 +183,7 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public boolean updateProfile(Long userId, String fullName, String email, String phone) {
+    public boolean updateProfile(Integer userId, String fullName, String email, String phone) {
         if (userId == null) {
             return false;
         }
@@ -213,7 +213,7 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public boolean changePassword(Long userId, String oldPassword, String newPassword) {
+    public boolean changePassword(Integer userId, String oldPassword, String newPassword) {
         if (userId == null || oldPassword == null || newPassword == null) {
             return false;
         }
@@ -241,7 +241,7 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public boolean deleteUser(Long userId) {
+    public boolean deleteUser(Integer userId) {
         if (userId == null) {
             return false;
         }
@@ -256,7 +256,7 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public boolean setUserActiveStatus(Long userId, boolean isActive) {
+    public boolean setUserActiveStatus(Integer userId, boolean isActive) {
         if (userId == null) {
             return false;
         }

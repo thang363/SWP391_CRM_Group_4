@@ -3,7 +3,7 @@ package model.entity;
 import java.sql.Timestamp;
 
 public class User {
-    private Long id;
+    private Integer id;
     private String username;
     private String password;
     private String email;
@@ -27,7 +27,7 @@ public class User {
         this.status = "Active";
     }
     
-    public User(Long id, String username, String password, String email, String fullName, String phone, 
+    public User(Integer id, String username, String password, String email, String fullName, String phone, 
                 Role role, String status, Timestamp createdAt) {
         this.id = id;
         this.username = username;
@@ -40,11 +40,11 @@ public class User {
         this.createdAt = createdAt;
     }
     
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     

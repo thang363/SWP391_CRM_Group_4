@@ -7,10 +7,10 @@ import java.sql.Timestamp;
  * Maps to CampaignTransfers table in database
  */
 public class CampaignTransfer {
-    private Long id;
-    private Long campaignId;
-    private Long fromManagerId;
-    private Long toManagerId;
+    private Integer id;
+    private Integer campaignId;
+    private Integer fromManagerId;
+    private Integer toManagerId;
     private String transferStatus; // Pending, Accepted, Rejected, Cancelled
     private String transferReason;
     private String notes;
@@ -27,7 +27,7 @@ public class CampaignTransfer {
     public CampaignTransfer() {
     }
 
-    public CampaignTransfer(Long campaignId, Long fromManagerId, Long toManagerId, String transferReason) {
+    public CampaignTransfer(Integer campaignId, Integer fromManagerId, Integer toManagerId, String transferReason) {
         this.campaignId = campaignId;
         this.fromManagerId = fromManagerId;
         this.toManagerId = toManagerId;
@@ -37,35 +37,35 @@ public class CampaignTransfer {
     }
 
     // Getters and Setters
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Long getCampaignId() {
+    public Integer getCampaignId() {
         return campaignId;
     }
 
-    public void setCampaignId(Long campaignId) {
+    public void setCampaignId(Integer campaignId) {
         this.campaignId = campaignId;
     }
 
-    public Long getFromManagerId() {
+    public Integer getFromManagerId() {
         return fromManagerId;
     }
 
-    public void setFromManagerId(Long fromManagerId) {
+    public void setFromManagerId(Integer fromManagerId) {
         this.fromManagerId = fromManagerId;
     }
 
-    public Long getToManagerId() {
+    public Integer getToManagerId() {
         return toManagerId;
     }
 
-    public void setToManagerId(Long toManagerId) {
+    public void setToManagerId(Integer toManagerId) {
         this.toManagerId = toManagerId;
     }
 

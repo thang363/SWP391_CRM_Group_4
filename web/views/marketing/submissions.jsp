@@ -149,338 +149,363 @@
                                                     </div>
 
                                                     <!-- Filter Section -->
-                                                    <div class="filter-section">
-                                                        <form id="filterForm" method="get"
-                                                            action="${pageContext.request.contextPath}/marketing/submissions">
-                                                            <input type="hidden" name="page" id="pageInput" value="1">
-                                                            <div class="row g-3">
-                                                                <div class="col-md-3">
-                                                                    <label class="form-label">Tìm kiếm</label>
-                                                                    <input type="text" class="form-control"
-                                                                        name="keyword" id="filterKeyword"
-                                                                        placeholder="Tên, Email, SĐT..."
-                                                                        value="${param.keyword}">
-                                                                </div>
-                                                                <div class="col-md-2">
-                                                                    <label class="form-label">Chiến dịch</label>
-                                                                    <select class="form-select" name="campaignId"
-                                                                        id="filterCampaign">
-                                                                        <option value="">Tất cả</option>
-                                                                        <c:forEach var="campaign" items="${campaigns}">
-                                                                            <option value="${campaign.id}"
-                                                                                ${param.campaignId==campaign.id
-                                                                                ? 'selected' : '' }>
-                                                                                ${campaign.name}
-                                                                            </option>
-                                                                        </c:forEach>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="col-md-2">
-                                                                    <label class="form-label">Trạng thái</label>
-                                                                    <select class="form-select" name="status"
-                                                                        id="filterStatus">
-                                                                        <option value="">Tất cả</option>
-                                                                        <option value="PENDING"
-                                                                            ${param.status=='PENDING' ? 'selected' : ''
-                                                                            }>Chưa xử lý
-                                                                        </option>
-                                                                        <option value="PROCESSED"
-                                                                            ${param.status=='PROCESSED' ? 'selected'
-                                                                            : '' }>Đã xử lý
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="col-md-2">
-                                                                    <label class="form-label">Từ ngày</label>
-                                                                    <input type="date" class="form-control"
-                                                                        name="fromDate" id="filterFromDate"
-                                                                        value="${param.fromDate}">
-                                                                </div>
-                                                                <div class="col-md-3 d-flex align-items-end gap-2">
-                                                                    <div class="flex-grow-1">
-                                                                        <label class="form-label">Đến ngày</label>
-                                                                        <input type="date" class="form-control"
-                                                                            name="toDate" id="filterToDate"
-                                                                            value="${param.toDate}">
+                                                    <c:if test="${not isManagerView}">
+                                                        <div class="filter-section">
+                                                            <form id="filterForm" method="get"
+                                                                action="${pageContext.request.contextPath}/marketing/submissions">
+                                                                <input type="hidden" name="page" id="pageInput"
+                                                                    value="1">
+                                                                <div class="row g-3">
+                                                                    <div class="col-md-3">
+                                                                        <label class="form-label">Tìm kiếm</label>
+                                                                        <input type="text" class="form-control"
+                                                                            name="keyword" id="filterKeyword"
+                                                                            placeholder="Tên, Email, SĐT..."
+                                                                            value="${param.keyword}">
                                                                     </div>
-                                                                    <button type="submit" class="btn btn-primary">
-                                                                        <i class="fa fa-search me-1"></i>Lọc
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        onclick="resetFilters()">
-                                                                        <i class="fa fa-redo me-1"></i>
-                                                                    </button>
+                                                                    <div class="col-md-2">
+                                                                        <label class="form-label">Chiến dịch</label>
+                                                                        <select class="form-select" name="campaignId"
+                                                                            id="filterCampaign">
+                                                                            <option value="">Tất cả</option>
+                                                                            <c:forEach var="campaign"
+                                                                                items="${campaigns}">
+                                                                                <option value="${campaign.id}"
+                                                                                    ${param.campaignId==campaign.id
+                                                                                    ? 'selected' : '' }>
+                                                                                    ${campaign.name}
+                                                                                </option>
+                                                                            </c:forEach>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label class="form-label">Trạng thái</label>
+                                                                        <select class="form-select" name="status"
+                                                                            id="filterStatus">
+                                                                            <option value="">Tất cả</option>
+                                                                            <option value="PENDING"
+                                                                                ${param.status=='PENDING' ? 'selected'
+                                                                                : '' }>Chưa xử lý
+                                                                            </option>
+                                                                            <option value="PROCESSED"
+                                                                                ${param.status=='PROCESSED' ? 'selected'
+                                                                                : '' }>Đã xử lý
+                                                                            </option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label class="form-label">Từ ngày</label>
+                                                                        <input type="date" class="form-control"
+                                                                            name="fromDate" id="filterFromDate"
+                                                                            value="${param.fromDate}">
+                                                                    </div>
+                                                                    <div class="col-md-3 d-flex align-items-end gap-2">
+                                                                        <div class="flex-grow-1">
+                                                                            <label class="form-label">Đến ngày</label>
+                                                                            <input type="date" class="form-control"
+                                                                                name="toDate" id="filterToDate"
+                                                                                value="${param.toDate}">
+                                                                        </div>
+                                                                        <button type="submit" class="btn btn-primary">
+                                                                            <i class="fa fa-search me-1"></i>Lọc
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-secondary"
+                                                                            onclick="resetFilters()">
+                                                                            <i class="fa fa-redo me-1"></i>
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </form>
-                                                    </div>
+                                                            </form>
+                                                        </div>
 
-                                                    <!-- Submissions Table -->
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            <div class="bg-light rounded p-4">
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-hover align-middle">
-                                                                        <thead>
-                                                                            <tr>
-                                                                                <th style="width:60px">ID</th>
-                                                                                <th>Thời gian</th>
-                                                                                <th>Chiến dịch</th>
-                                                                                <th>Nguồn</th>
-                                                                                <th>Khách hàng</th>
-                                                                                <th>Trạng thái</th>
-                                                                                <th class="table-actions">Hành động</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody id="submissionTableBody">
-                                                                            <c:choose>
-                                                                                <c:when test="${empty submissions}">
-                                                                                    <tr>
-                                                                                        <td colspan="7"
-                                                                                            class="text-center text-muted py-5">
-                                                                                            <i
-                                                                                                class="fa fa-inbox fa-3x mb-3 d-block"></i>
-                                                                                            Chưa có đăng ký nào
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                </c:when>
-                                                                                <c:otherwise>
-                                                                                    <c:forEach var="sub"
-                                                                                        items="${submissions}">
-                                                                                        <tr
-                                                                                            id="submission-row-${sub.id}">
-                                                                                            <td><strong>#${sub.id}</strong>
-                                                                                            </td>
-                                                                                            <td>
-                                                                                                <fmt:formatDate
-                                                                                                    value="${sub.submittedAt}"
-                                                                                                    pattern="dd/MM/yyyy HH:mm" />
-                                                                                            </td>
-                                                                                            <td>
-                                                                                                <c:choose>
-                                                                                                    <c:when
-                                                                                                        test="${not empty sub.campaignName}">
-                                                                                                        <span
-                                                                                                            class="fw-bold text-primary">${sub.campaignName}</span>
-                                                                                                    </c:when>
-                                                                                                    <c:otherwise>
-                                                                                                        <span
-                                                                                                            class="text-muted">Direct
-                                                                                                            /
-                                                                                                            Other</span>
-                                                                                                    </c:otherwise>
-                                                                                                </c:choose>
-                                                                                            </td>
-                                                                                            <td>
-                                                                                                <c:choose>
-                                                                                                    <c:when
-                                                                                                        test="${sub.landingPageId != null}">
-                                                                                                        <span
-                                                                                                            class="badge bg-info source-badge"
-                                                                                                            title="Landing Page">
-                                                                                                            <i
-                                                                                                                class="fa fa-laptop-code me-1"></i>
-                                                                                                            <c:out
-                                                                                                                value="${sub.landingPageName}"
-                                                                                                                default="Landing Page" />
-                                                                                                        </span>
-                                                                                                    </c:when>
-                                                                                                    <c:otherwise>
-                                                                                                        <span
-                                                                                                            class="badge bg-secondary source-badge">
-                                                                                                            <c:choose>
-                                                                                                                <c:when
-                                                                                                                    test="${not empty sub.source}">
-                                                                                                                    <i
-                                                                                                                        class="fa fa-file-import me-1"></i>
-                                                                                                                    ${sub.source}
-                                                                                                                </c:when>
-                                                                                                                <c:otherwise>
-                                                                                                                    N/A
-                                                                                                                </c:otherwise>
-                                                                                                            </c:choose>
-                                                                                                        </span>
-                                                                                                    </c:otherwise>
-                                                                                                </c:choose>
-                                                                                            </td>
-                                                                                            <td>
-                                                                                                <div
-                                                                                                    class="customer-info">
-                                                                                                    <div
-                                                                                                        class="customer-name">
-                                                                                                        ${sub.fullName}
-                                                                                                    </div>
-                                                                                                    <c:if
-                                                                                                        test="${not empty sub.email}">
-                                                                                                        <div
-                                                                                                            class="customer-detail">
-                                                                                                            <i
-                                                                                                                class="fa fa-envelope me-1"></i>${sub.email}
-                                                                                                        </div>
-                                                                                                    </c:if>
-                                                                                                    <c:if
-                                                                                                        test="${not empty sub.phone}">
-                                                                                                        <div
-                                                                                                            class="customer-detail">
-                                                                                                            <i
-                                                                                                                class="fa fa-phone me-1"></i>${sub.phone}
-                                                                                                        </div>
-                                                                                                    </c:if>
-                                                                                                </div>
-                                                                                            </td>
-                                                                                            <td>
-                                                                                                <c:choose>
-                                                                                                    <c:when
-                                                                                                        test="${sub.isProcessed}">
-                                                                                                        <span
-                                                                                                            class="badge badge-processed">Đã
-                                                                                                            xử
-                                                                                                            lý</span>
-                                                                                                    </c:when>
-                                                                                                    <c:otherwise>
-                                                                                                        <span
-                                                                                                            class="badge badge-pending">Chưa
-                                                                                                            xử
-                                                                                                            lý</span>
-                                                                                                    </c:otherwise>
-                                                                                                </c:choose>
-                                                                                            </td>
-                                                                                            <td class="table-actions">
-                                                                                                <button
-                                                                                                    class="btn btn-sm btn-info text-white"
-                                                                                                    onclick='handleViewDetails(${sub.id}, "${sub.fullName}", "${sub.email}", "${sub.phone}", "${sub.campaignName}", "${sub.landingPageName}", "${sub.source}", "${sub.submittedAt}", "${sub.isProcessed}")'
-                                                                                                    title="Xem chi tiết">
-                                                                                                    <i
-                                                                                                        class="fa fa-eye"></i>
-                                                                                                </button>
-                                                                                                <c:if
-                                                                                                    test="${!sub.isProcessed}">
-                                                                                                    <button
-                                                                                                        class="btn btn-sm btn-success"
-                                                                                                        onclick="handleConvert(${sub.id})"
-                                                                                                        title="Chuyển thành Lead">
-                                                                                                        <i
-                                                                                                            class="fa fa-check"></i>
-                                                                                                    </button>
-                                                                                                </c:if>
-                                                                                                <button
-                                                                                                    class="btn btn-sm btn-danger"
-                                                                                                    onclick="handleDelete(${sub.id})"
-                                                                                                    title="Xóa">
-                                                                                                    <i
-                                                                                                        class="fa fa-trash"></i>
-                                                                                                </button>
+                                                        <!-- Submissions Table -->
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <div class="bg-light rounded p-4">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-hover align-middle">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th style="width:60px">ID</th>
+                                                                                    <th>Thời gian</th>
+                                                                                    <th>Chiến dịch</th>
+                                                                                    <th>Nguồn</th>
+                                                                                    <th>Khách hàng</th>
+                                                                                    <th>Trạng thái</th>
+                                                                                    <th class="table-actions">Hành động
+                                                                                    </th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody id="submissionTableBody">
+                                                                                <c:choose>
+                                                                                    <c:when test="${empty submissions}">
+                                                                                        <tr>
+                                                                                            <td colspan="7"
+                                                                                                class="text-center text-muted py-5">
+                                                                                                <i
+                                                                                                    class="fa fa-inbox fa-3x mb-3 d-block"></i>
+                                                                                                Chưa có đăng ký nào
                                                                                             </td>
                                                                                         </tr>
-                                                                                    </c:forEach>
-                                                                                </c:otherwise>
-                                                                            </c:choose>
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
+                                                                                    </c:when>
+                                                                                    <c:otherwise>
+                                                                                        <c:forEach var="sub"
+                                                                                            items="${submissions}">
+                                                                                            <tr
+                                                                                                id="submission-row-${sub.id}">
+                                                                                                <td><strong>#${sub.id}</strong>
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <fmt:formatDate
+                                                                                                        value="${sub.submittedAt}"
+                                                                                                        pattern="dd/MM/yyyy HH:mm" />
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <c:choose>
+                                                                                                        <c:when
+                                                                                                            test="${not empty sub.campaignName}">
+                                                                                                            <span
+                                                                                                                class="fw-bold text-primary">${sub.campaignName}</span>
+                                                                                                        </c:when>
+                                                                                                        <c:otherwise>
+                                                                                                            <span
+                                                                                                                class="text-muted">Direct
+                                                                                                                /
+                                                                                                                Other</span>
+                                                                                                        </c:otherwise>
+                                                                                                    </c:choose>
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <c:choose>
+                                                                                                        <c:when
+                                                                                                            test="${sub.landingPageId != null}">
+                                                                                                            <span
+                                                                                                                class="badge bg-info source-badge"
+                                                                                                                title="Landing Page">
+                                                                                                                <i
+                                                                                                                    class="fa fa-laptop-code me-1"></i>
+                                                                                                                <c:out
+                                                                                                                    value="${sub.landingPageName}"
+                                                                                                                    default="Landing Page" />
+                                                                                                            </span>
+                                                                                                        </c:when>
+                                                                                                        <c:otherwise>
+                                                                                                            <span
+                                                                                                                class="badge bg-secondary source-badge">
+                                                                                                                <c:choose>
+                                                                                                                    <c:when
+                                                                                                                        test="${not empty sub.source}">
+                                                                                                                        <i
+                                                                                                                            class="fa fa-file-import me-1"></i>
+                                                                                                                        ${sub.source}
+                                                                                                                    </c:when>
+                                                                                                                    <c:otherwise>
+                                                                                                                        N/A
+                                                                                                                    </c:otherwise>
+                                                                                                                </c:choose>
+                                                                                                            </span>
+                                                                                                        </c:otherwise>
+                                                                                                    </c:choose>
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <div
+                                                                                                        class="customer-info">
+                                                                                                        <div
+                                                                                                            class="customer-name">
+                                                                                                            ${sub.fullName}
+                                                                                                        </div>
+                                                                                                        <c:if
+                                                                                                            test="${not empty sub.email}">
+                                                                                                            <div
+                                                                                                                class="customer-detail">
+                                                                                                                <i
+                                                                                                                    class="fa fa-envelope me-1"></i>${sub.email}
+                                                                                                            </div>
+                                                                                                        </c:if>
+                                                                                                        <c:if
+                                                                                                            test="${not empty sub.phone}">
+                                                                                                            <div
+                                                                                                                class="customer-detail">
+                                                                                                                <i
+                                                                                                                    class="fa fa-phone me-1"></i>${sub.phone}
+                                                                                                            </div>
+                                                                                                        </c:if>
+                                                                                                    </div>
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <c:choose>
+                                                                                                        <c:when
+                                                                                                            test="${sub.isProcessed}">
+                                                                                                            <span
+                                                                                                                class="badge badge-processed">Đã
+                                                                                                                xử
+                                                                                                                lý</span>
+                                                                                                        </c:when>
+                                                                                                        <c:otherwise>
+                                                                                                            <span
+                                                                                                                class="badge badge-pending">Chưa
+                                                                                                                xử
+                                                                                                                lý</span>
+                                                                                                        </c:otherwise>
+                                                                                                    </c:choose>
+                                                                                                </td>
+                                                                                                <td
+                                                                                                    class="table-actions">
+                                                                                                    <button
+                                                                                                        class="btn btn-sm btn-info text-white"
+                                                                                                        onclick='handleViewDetails(${sub.id}, "${sub.fullName}", "${sub.email}", "${sub.phone}", "${sub.campaignName}", "${sub.landingPageName}", "${sub.source}", "${sub.submittedAt}", "${sub.isProcessed}")'
+                                                                                                        title="Xem chi tiết">
+                                                                                                        <i
+                                                                                                            class="fa fa-eye"></i>
+                                                                                                    </button>
+                                                                                                    <c:if
+                                                                                                        test="${!sub.isProcessed}">
+                                                                                                        <button
+                                                                                                            class="btn btn-sm btn-success"
+                                                                                                            onclick="handleConvert(${sub.id})"
+                                                                                                            title="Chuyển thành Lead">
+                                                                                                            <i
+                                                                                                                class="fa fa-check"></i>
+                                                                                                        </button>
+                                                                                                    </c:if>
+                                                                                                    <button
+                                                                                                        class="btn btn-sm btn-danger"
+                                                                                                        onclick="handleDelete(${sub.id})"
+                                                                                                        title="Xóa">
+                                                                                                        <i
+                                                                                                            class="fa fa-trash"></i>
+                                                                                                    </button>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        </c:forEach>
+                                                                                    </c:otherwise>
+                                                                                </c:choose>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
 
-                                                                <!-- Details Modal -->
-                                                                <div class="modal fade" id="detailsModal" tabindex="-1"
-                                                                    aria-hidden="true">
-                                                                    <div class="modal-dialog modal-dialog-centered">
-                                                                        <div class="modal-content">
-                                                                            <div
-                                                                                class="modal-header bg-primary text-white">
-                                                                                <h5 class="modal-title"><i
-                                                                                        class="fa fa-info-circle me-2"></i>Chi
-                                                                                    tiết Đăng ký</h5>
-                                                                                <button type="button"
-                                                                                    class="btn-close btn-close-white"
-                                                                                    data-bs-dismiss="modal"
-                                                                                    aria-label="Close"></button>
-                                                                            </div>
-                                                                            <div class="modal-body">
-                                                                                <div class="mb-3">
-                                                                                    <h6
-                                                                                        class="fw-bold text-primary border-bottom pb-2">
-                                                                                        Thông tin Khách hàng</h6>
-                                                                                    <p class="mb-1"><strong>Họ
-                                                                                            tên:</strong> <span
-                                                                                            id="modalFullName"></span>
-                                                                                    </p>
-                                                                                    <p class="mb-1">
-                                                                                        <strong>Email:</strong> <span
-                                                                                            id="modalEmail"></span>
-                                                                                    </p>
-                                                                                    <p class="mb-1"><strong>Số điện
-                                                                                            thoại:</strong> <span
-                                                                                            id="modalPhone"></span></p>
+                                                                    <!-- Details Modal -->
+                                                                    <div class="modal fade" id="detailsModal"
+                                                                        tabindex="-1" aria-hidden="true">
+                                                                        <div class="modal-dialog modal-dialog-centered">
+                                                                            <div class="modal-content">
+                                                                                <div
+                                                                                    class="modal-header bg-primary text-white">
+                                                                                    <h5 class="modal-title"><i
+                                                                                            class="fa fa-info-circle me-2"></i>Chi
+                                                                                        tiết Đăng ký</h5>
+                                                                                    <button type="button"
+                                                                                        class="btn-close btn-close-white"
+                                                                                        data-bs-dismiss="modal"
+                                                                                        aria-label="Close"></button>
                                                                                 </div>
-                                                                                <div class="mb-3">
+                                                                                <div class="modal-body">
+                                                                                    <div class="mb-3">
+                                                                                        <h6
+                                                                                            class="fw-bold text-primary border-bottom pb-2">
+                                                                                            Thông tin Khách hàng</h6>
+                                                                                        <p class="mb-1"><strong>Họ
+                                                                                                tên:</strong> <span
+                                                                                                id="modalFullName"></span>
+                                                                                        </p>
+                                                                                        <p class="mb-1">
+                                                                                            <strong>Email:</strong>
+                                                                                            <span
+                                                                                                id="modalEmail"></span>
+                                                                                        </p>
+                                                                                        <p class="mb-1"><strong>Số điện
+                                                                                                thoại:</strong> <span
+                                                                                                id="modalPhone"></span>
+                                                                                        </p>
+                                                                                    </div>
+                                                                                    <div class="mb-3">
 
-                                                                                    <p class="mb-1"><strong>Chiến
-                                                                                            dịch:</strong> <span
-                                                                                            id="modalCampaign"></span>
-                                                                                    </p>
-                                                                                    <p class="mb-1">
-                                                                                        <strong>Nguồn:</strong> <span
-                                                                                            id="modalSource"></span>
-                                                                                    </p>
-                                                                                    <p class="mb-1"><strong>Thời gian
-                                                                                            gửi:</strong> <span
-                                                                                            id="modalTime"></span></p>
+                                                                                        <p class="mb-1"><strong>Chiến
+                                                                                                dịch:</strong> <span
+                                                                                                id="modalCampaign"></span>
+                                                                                        </p>
+                                                                                        <p class="mb-1">
+                                                                                            <strong>Nguồn:</strong>
+                                                                                            <span
+                                                                                                id="modalSource"></span>
+                                                                                        </p>
+                                                                                        <p class="mb-1"><strong>Thời
+                                                                                                gian
+                                                                                                gửi:</strong> <span
+                                                                                                id="modalTime"></span>
+                                                                                        </p>
+                                                                                    </div>
+                                                                                    <div class="mb-3">
+                                                                                        <h6
+                                                                                            class="fw-bold text-primary border-bottom pb-2">
+                                                                                            Trạng thái</h6>
+                                                                                        <span id="modalStatus"></span>
+                                                                                    </div>
                                                                                 </div>
-                                                                                <div class="mb-3">
-                                                                                    <h6
-                                                                                        class="fw-bold text-primary border-bottom pb-2">
-                                                                                        Trạng thái</h6>
-                                                                                    <span id="modalStatus"></span>
+                                                                                <div class="modal-footer">
+                                                                                    <button type="button"
+                                                                                        class="btn btn-secondary"
+                                                                                        data-bs-dismiss="modal">Đóng</button>
                                                                                 </div>
-                                                                            </div>
-                                                                            <div class="modal-footer">
-                                                                                <button type="button"
-                                                                                    class="btn btn-secondary"
-                                                                                    data-bs-dismiss="modal">Đóng</button>
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
 
-                                                                <!-- Pagination -->
-                                                                <c:if test="${totalPages > 1}">
-                                                                    <nav aria-label="Page navigation" class="mt-4">
-                                                                        <ul class="pagination justify-content-center">
-                                                                            <li
-                                                                                class="page-item ${currentPageNumber == 1 ? 'disabled' : ''}">
-                                                                                <button class="page-link"
-                                                                                    onclick="goToPage(${currentPageNumber - 1})"
-                                                                                    ${currentPageNumber==1 ? 'disabled'
-                                                                                    : '' }>
-                                                                                    Previous
-                                                                                </button>
-                                                                            </li>
-                                                                            <c:forEach begin="1" end="${totalPages}"
-                                                                                var="i">
+                                                                    <!-- Pagination -->
+                                                                    <c:if test="${totalPages > 1}">
+                                                                        <nav aria-label="Page navigation" class="mt-4">
+                                                                            <ul
+                                                                                class="pagination justify-content-center">
                                                                                 <li
-                                                                                    class="page-item ${currentPageNumber == i ? 'active' : ''}">
+                                                                                    class="page-item ${currentPageNumber == 1 ? 'disabled' : ''}">
                                                                                     <button class="page-link"
-                                                                                        onclick="goToPage(${i})">${i}</button>
+                                                                                        onclick="goToPage(${currentPageNumber - 1})"
+                                                                                        ${currentPageNumber==1
+                                                                                        ? 'disabled' : '' }>
+                                                                                        Previous
+                                                                                    </button>
                                                                                 </li>
-                                                                            </c:forEach>
-                                                                            <li
-                                                                                class="page-item ${currentPageNumber == totalPages ? 'disabled' : ''}">
-                                                                                <button class="page-link"
-                                                                                    onclick="goToPage(${currentPageNumber + 1})"
-                                                                                    ${currentPageNumber==totalPages
-                                                                                    ? 'disabled' : '' }>
-                                                                                    Next
-                                                                                </button>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </nav>
-                                                                    <div class="text-center text-muted small">
-                                                                        Hiển thị trang ${currentPageNumber} trên tổng số
-                                                                        ${totalPages} trang (${totalItems} kết quả)
-                                                                    </div>
-                                                                </c:if>
+                                                                                <c:forEach begin="1" end="${totalPages}"
+                                                                                    var="i">
+                                                                                    <li
+                                                                                        class="page-item ${currentPageNumber == i ? 'active' : ''}">
+                                                                                        <button class="page-link"
+                                                                                            onclick="goToPage(${i})">${i}</button>
+                                                                                    </li>
+                                                                                </c:forEach>
+                                                                                <li
+                                                                                    class="page-item ${currentPageNumber == totalPages ? 'disabled' : ''}">
+                                                                                    <button class="page-link"
+                                                                                        onclick="goToPage(${currentPageNumber + 1})"
+                                                                                        ${currentPageNumber==totalPages
+                                                                                        ? 'disabled' : '' }>
+                                                                                        Next
+                                                                                    </button>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </nav>
+                                                                        <div class="text-center text-muted small">
+                                                                            Hiển thị trang ${currentPageNumber} trên
+                                                                            tổng số
+                                                                            ${totalPages} trang (${totalItems} kết quả)
+                                                                        </div>
+                                                                    </c:if>
+                                                                </div>
+                                                            </div>
+                                                    </c:if>
+
+                                                    <!-- Manager View Notice -->
+                                                    <c:if test="${isManagerView}">
+                                                        <div class="row mt-4">
+                                                            <div class="col-12 text-center text-muted">
+                                                                <i class="fa fa-chart-bar fa-3x mb-3"></i>
+                                                                <h5>Chế độ Quản lý</h5>
+                                                                <p>Bạn đang xem số liệu tổng hợp của toàn hệ thống. Để
+                                                                    xem và xử lý chi tiết từng lượt đăng ký, vui lòng sử
+                                                                    dụng tài khoản Marketing.</p>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </c:if>
                                                 </div>
 
                                                 <%-- Include Footer --%>

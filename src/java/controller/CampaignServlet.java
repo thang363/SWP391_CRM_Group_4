@@ -56,7 +56,7 @@ public class CampaignServlet extends HttpServlet {
 
         // Get current user from session
         HttpSession session = request.getSession(false);
-        Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+        Integer currentUserId =  (Integer) session.getAttribute(Constants.SESSION_USER_ID);
         Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
         // Handle AJAX GET requests (e.g., fetch particular campaign for edit)
@@ -95,7 +95,7 @@ public class CampaignServlet extends HttpServlet {
         int offset = (page - 1) * pageSize;
 
         // Manager-level access control: filter by managerId unless Admin
-        Long managerIdFilter = null;
+        Integer managerIdFilter = null;
         if (Role.MANAGER.equals(currentUserRole)) {
             managerIdFilter = currentUserId; // Only show campaigns managed by this user
         }
@@ -117,7 +117,7 @@ public class CampaignServlet extends HttpServlet {
         if (idFilterStr != null && !idFilterStr.trim().isEmpty()) {
             // Filter by specific ID (from LP list link)
             try {
-                Long idFilter = Long.parseLong(idFilterStr);
+                Integer idFilter = Integer.parseInt(idFilterStr);
                 Campaign specificCampaign = campaignService.getCampaignById(idFilter);
                 if (specificCampaign != null) {
                     // Check manager permission
@@ -156,14 +156,14 @@ public class CampaignServlet extends HttpServlet {
             
             // Get Landing Page info
             String lpStatus = "null";
-            Long assigneeId = null;
+            Integer assigneeId = null;
             String assigneeName = "-";
             
             model.entity.LandingPage lp = lpService.getLandingPageByCampaignId(c.getId().intValue());
             if (lp != null) {
                 lpStatus = lp.getStatus();
                 if (lp.getCreatedBy() != null) {
-                    assigneeId = Long.valueOf(lp.getCreatedBy());
+                    assigneeId = Integer.valueOf(lp.getCreatedBy());
                     User assignee = userService.getUserById(assigneeId);
                     assigneeName = (assignee != null) ? assignee.getFullName() : "Unknown ID: " + assigneeId;
                 }
@@ -247,7 +247,7 @@ public class CampaignServlet extends HttpServlet {
 
             // Auto-assign current user as campaign manager
             HttpSession session = request.getSession(false);
-            Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
             campaign.setManagerId(currentUserId);
 
             // Validate
@@ -283,11 +283,11 @@ public class CampaignServlet extends HttpServlet {
                 return;
             }
 
-            campaign.setId(Long.parseLong(idStr));
+            campaign.setId(Integer.parseInt(idStr));
 
             // Authorization check: Manager can only update their own campaigns
             HttpSession session = request.getSession(false);
-            Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
             Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
             Campaign existingCampaign = campaignService.getCampaignById(campaign.getId());
@@ -301,6 +301,12 @@ public class CampaignServlet extends HttpServlet {
                     sendJsonResponse(response, false, "Bạn không có quyền chỉnh sửa chiến dịch này", null);
                     return;
                 }
+            }
+
+            // Prevent editing Finished campaigns
+            if ("Finished".equals(existingCampaign.getStatus())) {
+                sendJsonResponse(response, false, "Không thể chỉnh sửa chiến dịch đã kết thúc", null);
+                return;
             }
 
             // Check if campaign has pending transfer - prevent editing during handover
@@ -372,11 +378,36 @@ public class CampaignServlet extends HttpServlet {
                 return;
             }
 
-            Long id = Long.parseLong(idStr);
+            Integer id = Integer.parseInt(idStr);
 
             // Check if campaign has pending transfer - prevent deletion during handover
             if (transferDAO.hasPendingTransfer(id)) {
                 sendJsonResponse(response, false, "Chiến dịch đang trong quá trình chuyển giao, không thể xóa", null);
+                return;
+            }
+
+            // Get existing campaign for status and ownership check
+            Campaign existingCampaign = campaignService.getCampaignById(id);
+            if (existingCampaign == null) {
+                sendJsonResponse(response, false, "Chiến dịch không tồn tại", null);
+                return;
+            }
+
+            // Authorization check: Only Admin or the owner can delete
+            HttpSession session = request.getSession(false);
+            Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
+            Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
+
+            if (Role.MANAGER.equals(currentUserRole)) {
+                if (existingCampaign.getManagerId() == null || !existingCampaign.getManagerId().equals(currentUserId)) {
+                    sendJsonResponse(response, false, "Bạn không có quyền xóa chiến dịch này", null);
+                    return;
+                }
+            }
+
+            // Check if campaign status is Draft - prevent deletion if not Draft
+            if (!"Draft".equals(existingCampaign.getStatus())) {
+                sendJsonResponse(response, false, "Chỉ có thể xóa chiến dịch ở trạng thái Draft", null);
                 return;
             }
 
@@ -403,7 +434,7 @@ public class CampaignServlet extends HttpServlet {
                 return;
             }
 
-            Long id = Long.parseLong(idStr);
+            Integer id = Integer.parseInt(idStr);
             Campaign campaign = campaignService.getCampaignById(id);
 
             if (campaign == null) {
@@ -413,7 +444,7 @@ public class CampaignServlet extends HttpServlet {
 
             // Authorization: Manager can only view their own campaigns
             HttpSession session = request.getSession(false);
-            Long currentUserId = (Long) session.getAttribute(Constants.SESSION_USER_ID);
+            Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
             Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
             if (Role.MANAGER.equals(currentUserRole)) {
@@ -455,7 +486,7 @@ public class CampaignServlet extends HttpServlet {
 
         String managerIdStr = request.getParameter("managerId");
         if (managerIdStr != null && !managerIdStr.trim().isEmpty()) {
-            campaign.setManagerId(Long.parseLong(managerIdStr));
+            campaign.setManagerId(Integer.parseInt(managerIdStr));
         }
 
         String status = request.getParameter("status");
