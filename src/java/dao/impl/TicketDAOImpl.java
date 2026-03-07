@@ -19,7 +19,7 @@ public class TicketDAOImpl implements TicketDAO {
     @Override
     public List<Ticket> getAllTickets() {
         String sql = "SELECT t.id, t.customer_id, t.title, t.description, t.status, t.priority, " +
-                "t.assigned_to, t.solution_note, t.created_at, t.updated_at, " +
+                "t.assigned_to, t.solution_note, t.rejection_reason, t.created_at, t.updated_at, " +
                 "c.company_name as customer_name, " +
                 "u.full_name as assigned_to_name " +
                 "FROM Tickets t " +
@@ -54,7 +54,7 @@ public class TicketDAOImpl implements TicketDAO {
             boolean isUnassigned) {
         StringBuilder sql = new StringBuilder(
                 "SELECT t.id, t.customer_id, t.title, t.description, t.status, t.priority, " +
-                        "t.assigned_to, t.solution_note, t.created_at, t.updated_at, " +
+                        "t.assigned_to, t.solution_note, t.rejection_reason, t.created_at, t.updated_at, " +
                         "c.company_name as customer_name, " +
                         "u.full_name as assigned_to_name " +
                         "FROM Tickets t " +
@@ -128,7 +128,7 @@ public class TicketDAOImpl implements TicketDAO {
     @Override
     public Ticket getTicketById(int id) {
         String sql = "SELECT t.id, t.customer_id, t.title, t.description, t.status, t.priority, " +
-                "t.assigned_to, t.solution_note, t.created_at, t.updated_at, " +
+                "t.assigned_to, t.solution_note, t.rejection_reason, t.created_at, t.updated_at, " +
                 "c.company_name as customer_name, " +
                 "u.full_name as assigned_to_name " +
                 "FROM Tickets t " +
@@ -285,6 +285,20 @@ public class TicketDAOImpl implements TicketDAO {
         }
     }
 
+    @Override
+    public boolean updateRejectionReason(int ticketId, String reason) {
+        String sql = "UPDATE Tickets SET rejection_reason = ?, updated_at = GETDATE() WHERE id = ?";
+        try (Connection conn = dbUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, reason);
+            stmt.setInt(2, ticketId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private Ticket mapResultSetToTicket(ResultSet rs) throws SQLException {
         Ticket ticket = new Ticket();
         ticket.setId(rs.getInt("id"));
@@ -295,6 +309,7 @@ public class TicketDAOImpl implements TicketDAO {
         ticket.setStatus(rs.getString("status"));
         ticket.setPriority(rs.getString("priority"));
         ticket.setSolutionNote(rs.getString("solution_note"));
+        ticket.setRejectionReason(rs.getString("rejection_reason"));
 
         int assignedTo = rs.getInt("assigned_to");
         if (rs.wasNull()) {

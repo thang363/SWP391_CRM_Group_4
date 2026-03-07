@@ -179,7 +179,70 @@
                                                     <p class="mb-0" style="white-space: pre-wrap;">${ticket.description}
                                                     </p>
                                                 </div>
+                                                <!-- Ticket Attachments -->
+                                                <c:if test="${not empty ticketAttachments}">
+                                                    <div class="p-3 bg-white border rounded mt-3">
+                                                        <h6 class="fw-bold mb-2">
+                                                            <i class="fa fa-paperclip me-1"></i>File đính kèm:
+                                                        </h6>
+                                                        <div class="list-group">
+                                                            <c:forEach var="att" items="${ticketAttachments}">
+                                                                <a href="${pageContext.request.contextPath}/${att.filePath}"
+                                                                    target="_blank"
+                                                                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                                    <span>
+                                                                        <i class="fa fa-file me-2"></i>${att.fileName}
+                                                                    </span>
+                                                                    <span class="badge bg-secondary">
+                                                                        <fmt:formatNumber value="${att.fileSize / 1024}"
+                                                                            maxFractionDigits="0" /> KB
+                                                                    </span>
+                                                                </a>
+                                                            </c:forEach>
+                                                        </div>
+                                                    </div>
+                                                </c:if>
                                             </div>
+
+                                            <!-- Rejection Feedback Section -->
+                                            <c:if test="${not empty ticket.rejectionReason}">
+                                                <div class="bg-light rounded p-4 mb-4"
+                                                    style="border-left: 4px solid #dc3545;">
+                                                    <h5 class="mb-3" style="color: #dc3545;">
+                                                        <i class="fa fa-exclamation-triangle me-2"></i>Phản hồi từ chối
+                                                        của khách hàng
+                                                    </h5>
+                                                    <div class="alert alert-danger mb-3" style="white-space: pre-wrap;">
+                                                        <strong>Lý do từ chối:</strong><br>
+                                                        ${ticket.rejectionReason}
+                                                    </div>
+                                                    <c:if test="${not empty rejectionAttachments}">
+                                                        <div class="mt-3">
+                                                            <h6 class="fw-bold mb-2">
+                                                                <i class="fa fa-paperclip me-1"></i>File đính kèm từ
+                                                                khách hàng:
+                                                            </h6>
+                                                            <div class="list-group">
+                                                                <c:forEach var="att" items="${rejectionAttachments}">
+                                                                    <a href="${pageContext.request.contextPath}/${att.filePath}"
+                                                                        target="_blank"
+                                                                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                                        <span>
+                                                                            <i
+                                                                                class="fa fa-file me-2"></i>${att.fileName}
+                                                                        </span>
+                                                                        <span class="badge bg-secondary">
+                                                                            <fmt:formatNumber
+                                                                                value="${att.fileSize / 1024}"
+                                                                                maxFractionDigits="0" /> KB
+                                                                        </span>
+                                                                    </a>
+                                                                </c:forEach>
+                                                            </div>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+                                            </c:if>
 
                                             <!-- Part B: Activity Stream / Processing -->
                                             <div class="bg-light rounded p-4">
