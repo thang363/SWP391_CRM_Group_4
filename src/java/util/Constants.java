@@ -77,6 +77,7 @@ public class Constants {
     
     // Bulk Email constants
     public static final String PAGE_BULK_EMAIL = "/views/marketing/bulk-email.jsp";
+    public static final String PAGE_MARKETING_PERFORMANCE = "/views/marketing/marketing-performance.jsp";
     public static final String SERVLET_BULK_EMAIL = "/marketing/bulk-email";
     
     public static final String SUCCESS_CAMPAIGN_CREATED = "Tạo chiến dịch thành công.";

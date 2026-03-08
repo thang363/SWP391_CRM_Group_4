@@ -3,6 +3,7 @@ package service.impl;
 import dao.CampaignDAO;
 import dao.impl.CampaignDAOImpl;
 import model.entity.Campaign;
+import model.viewmodel.CampaignPerformanceVM;
 import service.CampaignService;
 
 import java.math.BigDecimal;
@@ -176,5 +177,13 @@ public class CampaignServiceImpl implements CampaignService {
             return 0;
         }
         return campaignDAO.countByStatus(status);
+    }
+
+    @Override
+    public List<CampaignPerformanceVM> getMarketingPerformance(Integer marketingId) {
+        if (marketingId == null || marketingId <= 0) {
+            return new java.util.ArrayList<>();
+        }
+        return campaignDAO.getMarketingPerformance(marketingId);
     }
 }
