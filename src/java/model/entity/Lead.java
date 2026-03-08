@@ -28,6 +28,7 @@ public class Lead {
     // Optional: object mapping
     private User assignedSale;    // dùng khi JOIN Users
     //private LeadSource source;    // dùng khi JOIN LeadSources
+    private Campaign campaign;      // dùng khi JOIN Campaigns
 
     public Lead() {
     }
@@ -143,9 +144,17 @@ public class Lead {
         this.assignedSale = assignedSale;
     }
 
+    public Campaign getCampaign() {
+        return campaign;
+    }
+
+    public void setCampaign(Campaign campaign) {
+        this.campaign = campaign;
+    }
+
     @Override
     public String toString() {
-        return "Lead{" + "id=" + id + ", campaignId=" + campaignId + ", sourceId=" + sourceId + ", fullName=" + fullName + ", email=" + email + ", phone=" + phone + ", currentScore=" + currentScore + ", status=" + status + ", isConverted=" + isConverted + ", assignedTo=" + assignedTo + ", createdAt=" + createdAt + ", assignedSale=" + assignedSale + '}';
+        return "Lead{" + "id=" + id + ", campaignId=" + campaignId + ", sourceId=" + sourceId + ", fullName=" + fullName + ", email=" + email + ", phone=" + phone + ", currentScore=" + currentScore + ", status=" + status + ", isConverted=" + isConverted + ", assignedTo=" + assignedTo + ", createdAt=" + createdAt + ", assignedSale=" + assignedSale + ", campaign=" + campaign + '}';
     }
 
     

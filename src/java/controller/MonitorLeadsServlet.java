@@ -65,6 +65,12 @@ public class MonitorLeadsServlet extends HttpServlet {
                 // Ignore invalid ID formats
             }
         }
+        
+        String searchQuery = request.getParameter("searchQuery");
+        String dateFilter = request.getParameter("dateFilter");
+        if (dateFilter == null) {
+            dateFilter = "all"; // Default
+        }
 
         // 3. Fetch data for the screen
         try {
@@ -81,7 +87,7 @@ public class MonitorLeadsServlet extends HttpServlet {
             request.setAttribute("kpis", kpis);
 
             // Hot Unassigned Leads (limit 50 for performance)
-            List<Lead> hotLeads = leadDAO.getHotUnassignedLeads(campaignId, 50);
+            List<Lead> hotLeads = leadDAO.getHotUnassignedLeads(campaignId, searchQuery, dateFilter, 50);
             request.setAttribute("hotLeads", hotLeads);
 
             // Recent Interactions (limit 20)
@@ -90,6 +96,8 @@ public class MonitorLeadsServlet extends HttpServlet {
 
             // Keep selected filter in view
             request.setAttribute("selectedCampaignId", campaignId);
+            request.setAttribute("searchQuery", searchQuery);
+            request.setAttribute("dateFilter", dateFilter);
             request.setAttribute("currentPage", "monitor-leads");
 
             request.getRequestDispatcher("/views/manager/monitor-leads.jsp").forward(request, response);
@@ -114,6 +122,8 @@ public class MonitorLeadsServlet extends HttpServlet {
         String action = request.getParameter("action");
         if ("assign".equals(action)) {
             processAssignment(request, response, session);
+        } else if ("massAssign".equals(action)) {
+            processMassAssignment(request, response, session);
         } else {
             doGet(request, response);
         }
@@ -124,6 +134,8 @@ public class MonitorLeadsServlet extends HttpServlet {
         String leadIdStr = request.getParameter("leadId");
         String salesIdStr = request.getParameter("salesId");
         String campaignIdStr = request.getParameter("listCampaignId"); // to keep filter active
+        String searchQuery = request.getParameter("searchQuery");
+        String dateFilter = request.getParameter("dateFilter");
 
         if (leadIdStr == null || salesIdStr == null || salesIdStr.isEmpty()) {
             session.setAttribute("errorMsg", "Vui lòng chọn nhân viên Sales.");
@@ -145,10 +157,67 @@ public class MonitorLeadsServlet extends HttpServlet {
         }
         
         // Redirect back to GET to refresh data
-        String redirectUrl = request.getContextPath() + "/marketing/monitor-leads";
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/marketing/monitor-leads?");
         if (campaignIdStr != null && !campaignIdStr.isEmpty()) {
-            redirectUrl += "?campaignId=" + campaignIdStr;
+            redirectUrl.append("campaignId=").append(campaignIdStr).append("&");
         }
-        response.sendRedirect(redirectUrl);
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            redirectUrl.append("searchQuery=").append(searchQuery).append("&");
+        }
+        if (dateFilter != null && !dateFilter.isEmpty()) {
+            redirectUrl.append("dateFilter=").append(dateFilter);
+        }
+        response.sendRedirect(redirectUrl.toString());
+    }
+
+    private void processMassAssignment(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws IOException {
+        Integer managerId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
+        String[] leadIdsStr = request.getParameterValues("selectedLeadIds");
+        String salesIdStr = request.getParameter("massSalesId");
+        String campaignIdStr = request.getParameter("listCampaignId");
+        String searchQuery = request.getParameter("searchQuery");
+        String dateFilter = request.getParameter("dateFilter");
+
+        if (leadIdsStr == null || leadIdsStr.length == 0) {
+            session.setAttribute("errorMsg", "Vui lòng chọn ít nhất một Lead để phân công.");
+        } else if (salesIdStr == null || salesIdStr.isEmpty()) {
+            session.setAttribute("errorMsg", "Vui lòng chọn nhân viên Sales.");
+        } else {
+            try {
+                int salesId = Integer.parseInt(salesIdStr);
+                int successCount = 0;
+                
+                for (String leadIdStr : leadIdsStr) {
+                    try {
+                        int leadId = Integer.parseInt(leadIdStr);
+                        if (leadDAO.assignLeadToSales(leadId, salesId, managerId)) {
+                            successCount++;
+                        }
+                    } catch (NumberFormatException ignored) {
+                        // Ignore malformed individual inputs but continue loops
+                    }
+                }
+                
+                if (successCount > 0) {
+                    session.setAttribute("successMsg", "Đã phân công thành công " + successCount + " Lead(s).");
+                } else {
+                    session.setAttribute("errorMsg", "Phân công thất bại. Các Lead có thể đã được phân công trước đó.");
+                }
+            } catch (NumberFormatException e) {
+                session.setAttribute("errorMsg", "Lỗi định dạng dữ liệu nhân viên Sales.");
+            }
+        }
+        
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/marketing/monitor-leads?");
+        if (campaignIdStr != null && !campaignIdStr.isEmpty()) {
+            redirectUrl.append("campaignId=").append(campaignIdStr).append("&");
+        }
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            redirectUrl.append("searchQuery=").append(searchQuery).append("&");
+        }
+        if (dateFilter != null && !dateFilter.isEmpty()) {
+            redirectUrl.append("dateFilter=").append(dateFilter);
+        }
+        response.sendRedirect(redirectUrl.toString());
     }
 }
