@@ -101,10 +101,12 @@ public interface LeadDAO {
     /**
      * Get list of unassigned leads sorted by score descending (Hot leads first).
      * @param campaignId Campaign ID (null for all campaigns)
+     * @param searchQuery Search by name, phone, or email
+     * @param dateFilter Date range filter (e.g., "today", "this_week")
      * @param limit Maximum number of records to return
      * @return List of Hot Unassigned Leads
      */
-    List<Lead> getHotUnassignedLeads(Integer campaignId, int limit);
+    List<Lead> getHotUnassignedLeads(Integer campaignId, String searchQuery, String dateFilter, int limit);
     
     /**
      * Get recent interactions for feed.

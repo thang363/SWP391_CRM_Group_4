@@ -4,6 +4,7 @@ import dao.LeadDAO;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import model.entity.Campaign;
 import model.entity.Lead;
 import util.DatabaseUtil;
 
@@ -32,7 +33,14 @@ public class LeadDAOImpl implements LeadDAO {
             stmt.setInt(1, saleId);
             rs = stmt.executeQuery();
             while (rs.next()) {
-                list.add(mapResultSetToLead(rs));
+                Lead lead = mapResultSetToLead(rs);
+                if (rs.getString("campaign_name") != null) {
+                    Campaign campaign = new Campaign();
+                    campaign.setId(lead.getCampaignId());
+                    campaign.setName(rs.getString("campaign_name"));
+                    lead.setCampaign(campaign);
+                }
+                list.add(lead);
             }
         } catch (SQLException e) {
             System.err.println("Error finding leads by sale ID: " + e.getMessage());
@@ -213,7 +221,14 @@ public class LeadDAOImpl implements LeadDAO {
             stmt.setInt(1, campaignId);
             rs = stmt.executeQuery();
             while (rs.next()) {
-                list.add(mapResultSetToLead(rs));
+                Lead lead = mapResultSetToLead(rs);
+                if (rs.getString("campaign_name") != null) {
+                    Campaign campaign = new Campaign();
+                    campaign.setId(lead.getCampaignId());
+                    campaign.setName(rs.getString("campaign_name"));
+                    lead.setCampaign(campaign);
+                }
+                list.add(lead);
             }
         } catch (SQLException e) {
             System.err.println("Error finding leads by campaign ID with email: " + e.getMessage());
@@ -236,7 +251,14 @@ public class LeadDAOImpl implements LeadDAO {
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
             while (rs.next()) {
-                list.add(mapResultSetToLead(rs));
+                Lead lead = mapResultSetToLead(rs);
+                if (rs.getString("campaign_name") != null) {
+                    Campaign campaign = new Campaign();
+                    campaign.setId(lead.getCampaignId());
+                    campaign.setName(rs.getString("campaign_name"));
+                    lead.setCampaign(campaign);
+                }
+                list.add(lead);
             }
         } catch (SQLException e) {
             System.err.println("Error finding all leads with email: " + e.getMessage());
@@ -332,7 +354,14 @@ public class LeadDAOImpl implements LeadDAO {
             }
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapResultSetToLead(rs));
+                    Lead lead = mapResultSetToLead(rs);
+                if (rs.getString("campaign_name") != null) {
+                    Campaign campaign = new Campaign();
+                    campaign.setId(lead.getCampaignId());
+                    campaign.setName(rs.getString("campaign_name"));
+                    lead.setCampaign(campaign);
+                }
+                list.add(lead);
                 }
             }
         } catch (SQLException e) {
@@ -527,17 +556,42 @@ public class LeadDAOImpl implements LeadDAO {
     }
 
     @Override
-    public List<Lead> getHotUnassignedLeads(Integer campaignId, int limit) {
+    public List<Lead> getHotUnassignedLeads(Integer campaignId, String searchQuery, String dateFilter, int limit) {
         List<Lead> list = new ArrayList<>();
-        String sql = "SELECT * FROM Leads WHERE assigned_to IS NULL AND status = 'New'";
+        StringBuilder sql = new StringBuilder(
+            "SELECT l.*, c.name as campaign_name FROM Leads l " +
+            "LEFT JOIN Campaigns c ON l.campaign_id = c.id " +
+            "WHERE l.assigned_to IS NULL AND l.status = 'New'"
+        );
+        
         if (campaignId != null) {
-            sql += " AND campaign_id = ?";
+            sql.append(" AND l.campaign_id = ?");
         }
-        sql += " ORDER BY current_score DESC";
-        // MS SQL Server uses TOP instead of LIMIT, assuming SQL Server based on previous code.
-        // Changing to support top n rows if limit is > 0
+        
+        boolean hasSearch = (searchQuery != null && !searchQuery.trim().isEmpty());
+        if (hasSearch) {
+            sql.append(" AND (l.full_name LIKE ? OR l.email LIKE ? OR l.phone LIKE ?)");
+        }
+        
+        if (dateFilter != null && !dateFilter.isEmpty() && !dateFilter.equals("all")) {
+            switch (dateFilter) {
+                case "today":
+                    sql.append(" AND CAST(l.created_at AS DATE) = CAST(GETDATE() AS DATE)");
+                    break;
+                case "this_week":
+                    sql.append(" AND l.created_at >= DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 0)");
+                    break;
+                case "this_month":
+                    sql.append(" AND l.created_at >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)");
+                    break;
+            }
+        }
+        
+        sql.append(" ORDER BY l.current_score DESC");
+        
+        String finalSql = sql.toString();
         if (limit > 0) {
-            sql = sql.replaceFirst("SELECT \\*", "SELECT TOP " + limit + " *"); // Basic handling for TOP
+            finalSql = finalSql.replaceFirst("SELECT l\\.\\*", "SELECT TOP " + limit + " l.*");
         }
 
         Connection conn = null;
@@ -546,13 +600,29 @@ public class LeadDAOImpl implements LeadDAO {
 
         try {
             conn = dbUtil.getConnection();
-            stmt = conn.prepareStatement(sql);
+            stmt = conn.prepareStatement(finalSql);
+            
+            int paramIndex = 1;
             if (campaignId != null) {
-                stmt.setInt(1, campaignId);
+                stmt.setInt(paramIndex++, campaignId);
             }
+            if (hasSearch) {
+                String likeQuery = "%" + searchQuery.trim() + "%";
+                stmt.setString(paramIndex++, likeQuery);
+                stmt.setString(paramIndex++, likeQuery);
+                stmt.setString(paramIndex++, likeQuery);
+            }
+            
             rs = stmt.executeQuery();
             while (rs.next()) {
-                list.add(mapResultSetToLead(rs));
+                Lead lead = mapResultSetToLead(rs);
+                if (rs.getString("campaign_name") != null) {
+                    Campaign campaign = new Campaign();
+                    campaign.setId(lead.getCampaignId());
+                    campaign.setName(rs.getString("campaign_name"));
+                    lead.setCampaign(campaign);
+                }
+                list.add(lead);
             }
         } catch (SQLException e) {
             System.err.println("Error getting hot unassigned leads: " + e.getMessage());
@@ -666,3 +736,4 @@ public class LeadDAOImpl implements LeadDAO {
         }
     }
 }
+
