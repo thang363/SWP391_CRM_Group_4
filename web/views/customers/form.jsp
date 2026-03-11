@@ -196,9 +196,22 @@
                                                                                         ${customer.tier=='Standard'
                                                                                         ? 'selected' : '' }>Standard
                                                                                     </option>
+                                                                                    <option value="Silver"
+                                                                                        ${customer.tier=='Silver'
+                                                                                        ? 'selected' : '' }>Silver
+                                                                                    </option>
+                                                                                    <option value="Gold"
+                                                                                        ${customer.tier=='Gold'
+                                                                                        ? 'selected' : '' }>Gold
+                                                                                    </option>
+                                                                                    <option value="Platinum"
+                                                                                        ${customer.tier=='Platinum'
+                                                                                        ? 'selected' : '' }>Platinum
+                                                                                    </option>
                                                                                     <option value="VIP"
                                                                                         ${customer.tier=='VIP'
-                                                                                        ? 'selected' : '' }>VIP</option>
+                                                                                        ? 'selected' : '' }>VIP
+                                                                                    </option>
                                                                                 </select>
                                                                             </div>
                                                                         </div>
@@ -218,6 +231,14 @@
                                                                                     <option value="Inactive"
                                                                                         ${customer.status=='Inactive'
                                                                                         ? 'selected' : '' }>Inactive
+                                                                                    </option>
+                                                                                    <option value="Churned"
+                                                                                        ${customer.status=='Churned'
+                                                                                        ? 'selected' : '' }>Churned
+                                                                                    </option>
+                                                                                    <option value="Blacklisted"
+                                                                                        ${customer.status=='Blacklisted'
+                                                                                        ? 'selected' : '' }>Blacklisted
                                                                                     </option>
                                                                                 </select>
                                                                             </div>
