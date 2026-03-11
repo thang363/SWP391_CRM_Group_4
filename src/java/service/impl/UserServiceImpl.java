@@ -320,4 +320,71 @@ public class UserServiceImpl implements UserService {
             return 0;
         }
     }
+    
+    @Override
+    public boolean resetPassword(Integer userId, String newPassword) {
+        if (userId == null || newPassword == null) {
+            return false;
+        }
+        
+        if (!PasswordUtil.meetsRequirements(newPassword)) {
+            return false;
+        }
+        
+        try {
+            User user = userDAO.findById(userId);
+            if (user == null) {
+                return false;
+            }
+            
+            String hashedPassword = PasswordUtil.hashPassword(newPassword);
+            user.setPassword(hashedPassword);
+            
+            return userDAO.update(user);
+            
+        } catch (SQLException e) {
+            System.err.println("Database error while resetting password: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    @Override
+    public User createUser(String username, String password, String email, String fullName, String phone, Role role) {
+        if (username == null || password == null || email == null || fullName == null || role == null) {
+            return null;
+        }
+        
+        if (!PasswordUtil.meetsRequirements(password)) {
+            return null;
+        }
+        
+        try {
+            if (userDAO.usernameExists(username)) {
+                return null;
+            }
+            
+            if (userDAO.emailExists(email)) {
+                return null;
+            }
+            
+            String hashedPassword = PasswordUtil.hashPassword(password);
+            
+            User user = new User();
+            user.setUsername(username);
+            user.setPassword(hashedPassword);
+            user.setEmail(email);
+            user.setFullName(fullName);
+            user.setPhone(phone);
+            user.setRole(role);
+            user.setStatus("Active");
+            
+            return userDAO.create(user);
+            
+        } catch (SQLException e) {
+            System.err.println("Database error while creating user: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
