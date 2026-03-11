@@ -1,6 +1,7 @@
 package dao;
 
 import model.entity.Campaign;
+import model.viewmodel.CampaignPerformanceVM;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -79,4 +80,11 @@ public interface CampaignDAO {
      * @return Number of campaigns with given status
      */
     int countByStatus(String status);
+
+    /**
+     * Get marketing performance stats for campaigns where the marketing user created landing pages.
+     * @param marketingId ID of the marketing user
+     * @return List of campaign performance stats
+     */
+    List<CampaignPerformanceVM> getMarketingPerformance(Integer marketingId);
 }

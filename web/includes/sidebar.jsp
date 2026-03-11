@@ -64,9 +64,9 @@
                                                     class="dropdown-item ${currentPage == 'monitor-leads' ? 'active' : ''}">Monitor
                                                     Leads
                                                 </a>
-                                                    <a href="${pageContext.request.contextPath}/marketing/submissions"
-                                                        class="dropdown-item ${currentPage == 'submissions' ? 'active' : ''}">
-                                                        <i class="fa fa-clipboard-list me-1"></i>List Submission</a>
+                                                <a href="${pageContext.request.contextPath}/marketing/submissions"
+                                                    class="dropdown-item ${currentPage == 'submissions' ? 'active' : ''}">
+                                                    <i class="fa fa-clipboard-list me-1"></i>List Submission</a>
                                                 <c:if test="${sessionScope.userRole == 'MANAGER'}">
                                                     <a href="${pageContext.request.contextPath}/campaigns"
                                                         class="dropdown-item ${currentPage == 'campaigns' ? 'active' : ''}">Campaigns
@@ -87,6 +87,9 @@
                                                     <a href="${pageContext.request.contextPath}/marketing/import-leads"
                                                         class="dropdown-item ${currentPage == 'import-leads' ? 'active' : ''}">
                                                         <i class="fa fa-file-import me-1"></i>Import Submission</a>
+                                                    <a href="${pageContext.request.contextPath}/marketing/performance"
+                                                        class="dropdown-item ${currentPage == 'marketing-performance' ? 'active' : ''}">
+                                                        <i class="fa fa-chart-pie me-1"></i>Thành quả Chiến dịch</a>
                                                 </c:if>
                                                 <%-- Chung --%>
                                                     <a href="${pageContext.request.contextPath}/landing-pages"
