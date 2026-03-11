@@ -73,11 +73,11 @@ public class FeedbackServlet extends HttpServlet {
             boolean success = reviewDAO.submitFeedback(token, serviceRating, staffRating, comment);
             if (success) {
                 request.setAttribute("successMessage",
-                        "Cảm ơn bạn đã dành thời gian quý báu để gửi phản hồi. Ý kiến của bạn đã được ghi nhận thành công!");
+                        "Cảm ơn bạn đã dành thời gian để gửi phản hồi. Ý kiến của bạn đã được ghi nhận thành công!");
                 request.getRequestDispatcher("/views/feedbacks/feedback_success.jsp").forward(request, response);
             } else {
                 request.setAttribute("error",
-                        "Đánh giá không thành công. Có thể đường dẫn đã hết hạn bảo mật hoặc đã được đăng ký trước đó.");
+                        "Đánh giá không thành công. Đường dẫn có thể đã hết hạn bảo mật hoặc đã được dùng trước đó.");
                 request.getRequestDispatcher("/views/feedbacks/feedback_error.jsp").forward(request, response);
             }
         } catch (NumberFormatException e) {
