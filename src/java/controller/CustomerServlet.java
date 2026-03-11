@@ -255,8 +255,12 @@ public class CustomerServlet extends HttpServlet {
 
     private void deleteCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-        customerDAO.deleteCustomer(id);
-        response.sendRedirect(request.getContextPath() + "/customers");
+        boolean success = customerDAO.deleteCustomer(id);
+        if (success) {
+            response.sendRedirect(request.getContextPath() + "/customers?success=delete");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/customers?error=delete_constraint");
+        }
     }
 
     private void setCustomerTier(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -269,10 +273,15 @@ public class CustomerServlet extends HttpServlet {
     private void mergeCustomers(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int primaryId = Integer.parseInt(request.getParameter("primaryId"));
         int duplicateId = Integer.parseInt(request.getParameter("duplicateId"));
+        boolean success = false;
         if (primaryId != duplicateId) {
-            customerDAO.mergeCustomers(primaryId, duplicateId);
+            success = customerDAO.mergeCustomers(primaryId, duplicateId);
         }
-        response.sendRedirect(request.getContextPath() + "/customers");
+        if (success) {
+            response.sendRedirect(request.getContextPath() + "/customers?success=merge");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/customers?action=merge&error=merge_fail");
+        }
     }
 
     private void sendFeedbackRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {

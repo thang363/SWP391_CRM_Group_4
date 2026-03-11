@@ -52,6 +52,13 @@
                                                                 sơ bị gộp. Thao tác này không thể hoàn tác.
                                                             </div>
 
+                                                            <c:if test="${param.error == 'merge_fail'}">
+                                                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                                    <i class="fa fa-times-circle me-2"></i><strong>Lỗi gộp hồ sơ:</strong> Không thể gộp 2 hồ sơ này vì có lỗi ràng buộc dữ liệu hoặc hồ sơ bị gộp đang được liên kết cố định!
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                                                </div>
+                                                            </c:if>
+
                                                             <form
                                                                 action="${pageContext.request.contextPath}/customers?action=merge"
                                                                 method="POST" onsubmit="return validateMerge()">

@@ -467,10 +467,16 @@ public class CustomerDAOImpl implements CustomerDAO {
             stmt3.setInt(2, duplicateId);
             stmt3.executeUpdate();
 
-            // Delete Duplicate Customer
-            stmt4 = conn.prepareStatement("DELETE FROM Customers WHERE id=?");
-            stmt4.setInt(1, duplicateId);
+            // Update CustomerReviews
+            stmt4 = conn.prepareStatement("UPDATE CustomerReviews SET customer_id=? WHERE customer_id=?");
+            stmt4.setInt(1, primaryId);
+            stmt4.setInt(2, duplicateId);
             stmt4.executeUpdate();
+
+            // Delete Duplicate Customer
+            PreparedStatement stmt5 = conn.prepareStatement("DELETE FROM Customers WHERE id=?");
+            stmt5.setInt(1, duplicateId);
+            stmt5.executeUpdate();
 
             conn.commit();
             return true;
