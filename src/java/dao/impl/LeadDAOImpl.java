@@ -354,14 +354,8 @@ public class LeadDAOImpl implements LeadDAO {
             }
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Lead lead = mapResultSetToLead(rs);
-                if (rs.getString("campaign_name") != null) {
-                    Campaign campaign = new Campaign();
-                    campaign.setId(lead.getCampaignId());
-                    campaign.setName(rs.getString("campaign_name"));
-                    lead.setCampaign(campaign);
-                }
-                list.add(lead);
+                    
+                list.add(mapResultSetToLead(rs));
                 }
             }
         } catch (SQLException e) {

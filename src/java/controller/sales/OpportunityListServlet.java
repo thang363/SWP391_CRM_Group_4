@@ -54,7 +54,7 @@ public class OpportunityListServlet extends HttpServlet {
 
         request.getRequestDispatcher("/views/sales/opportunity-list.jsp").forward(request, response);
     }
-    
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
