@@ -58,10 +58,8 @@ public class LandingPageViewModel {
         
         switch (status.toLowerCase()) {
             case "draft": return "secondary"; // Grey
-            case "pending": return "warning"; // Yellow
-            case "approved": return "info"; // Blue/Teal
+            case "public": return "success"; // Green
             case "active": return "success"; // Green
-            case "rejected": return "danger"; // Red
             case "archived": return "dark"; // Black
             case "paused": return "light"; // White/Grey
             default: return "secondary";

@@ -11,7 +11,7 @@ public class LandingPage {
     private Integer campaignId;
     private String htmlTemplate;
     private String dataConfig; // JSON string
-    private String status; // Draft, Pending, Approved, Rejected, Active, Archived
+    private String status; // Draft, Public, Active, Archived
     private String managerComment;
     private Integer approvedBy;
     private Timestamp createdAt;
@@ -50,14 +50,6 @@ public class LandingPage {
 
     public void setCampaignId(Integer campaignId) {
         this.campaignId = campaignId;
-    }
-
-    public String getHtmlTemplate() {
-        return htmlTemplate;
-    }
-
-    public void setHtmlTemplate(String htmlTemplate) {
-        this.htmlTemplate = htmlTemplate;
     }
 
     public String getDataConfig() {

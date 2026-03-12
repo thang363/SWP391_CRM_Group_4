@@ -123,14 +123,14 @@ public class LandingPageDAOImpl implements LandingPageDAO {
 
         try {
             conn = dbUtil.getConnection();
-            String sql = "INSERT INTO LandingPages (campaign_id, html_template, data_config, status, " +
+            String sql = "INSERT INTO LandingPages (campaign_id, data_config, status, " +
                     "manager_comment, approved_by, created_at, name, created_by, view_count, brief) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             
             stmt.setObject(1, lp.getCampaignId());
-            stmt.setString(2, lp.getHtmlTemplate());
+            // stmt.setString(2, lp.getHtmlTemplate()); -> NULL since column might be NOT NULL in DB
             stmt.setString(3, lp.getDataConfig());
             stmt.setString(4, lp.getStatus());
             stmt.setString(5, lp.getManagerComment());
@@ -165,22 +165,21 @@ public class LandingPageDAOImpl implements LandingPageDAO {
 
         try {
             conn = dbUtil.getConnection();
-            String sql = "UPDATE LandingPages SET campaign_id=?, html_template=?, data_config=?, status=?, " +
+            String sql = "UPDATE LandingPages SET campaign_id=?, data_config=?, status=?, " +
                     "manager_comment=?, approved_by=?, name=?, created_by=?, view_count=?, brief=? WHERE id=?";
             
             stmt = conn.prepareStatement(sql);
             
             stmt.setObject(1, lp.getCampaignId());
-            stmt.setString(2, lp.getHtmlTemplate());
-            stmt.setString(3, lp.getDataConfig());
-            stmt.setString(4, lp.getStatus());
-            stmt.setString(5, lp.getManagerComment());
-            stmt.setObject(6, lp.getApprovedBy());
-            stmt.setString(7, lp.getName());
-            stmt.setObject(8, lp.getCreatedBy());
-            stmt.setInt(9, lp.getViewCount());
-            stmt.setString(10, lp.getBrief());
-            stmt.setInt(11, lp.getId());
+            stmt.setString(2, lp.getDataConfig());
+            stmt.setString(3, lp.getStatus());
+            stmt.setString(4, lp.getManagerComment());
+            stmt.setObject(5, lp.getApprovedBy());
+            stmt.setString(6, lp.getName());
+            stmt.setObject(7, lp.getCreatedBy());
+            stmt.setInt(8, lp.getViewCount());
+            stmt.setString(9, lp.getBrief());
+            stmt.setInt(10, lp.getId());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -279,7 +278,6 @@ public class LandingPageDAOImpl implements LandingPageDAO {
         LandingPage lp = new LandingPage();
         lp.setId(rs.getInt("id"));
         lp.setCampaignId((Integer) rs.getObject("campaign_id"));
-        lp.setHtmlTemplate(rs.getString("html_template"));
         lp.setDataConfig(rs.getString("data_config"));
         lp.setStatus(rs.getString("status"));
         lp.setManagerComment(rs.getString("manager_comment"));
