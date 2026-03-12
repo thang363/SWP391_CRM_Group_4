@@ -86,8 +86,23 @@
 
                             .rate-badge {
                                 font-size: 0.75rem;
-                                padding: 0.2rem 0.5rem;
-                                border-radius: 0.25rem;
+                                padding: 0.1rem 0.6rem;
+                                border-radius: 1rem;
+                                display: inline-block;
+                                font-weight: 700;
+                                margin-top: 5px;
+                            }
+
+                            .rate-badge-warning {
+                                background-color: rgba(245, 158, 11, 0.15);
+                                color: #d97706;
+                                border: 1px solid rgba(245, 158, 11, 0.3);
+                            }
+
+                            .rate-badge-success {
+                                background-color: rgba(16, 185, 129, 0.15);
+                                color: #059669;
+                                border: 1px solid rgba(16, 185, 129, 0.3);
                             }
                         </style>
                 </head>
@@ -225,7 +240,7 @@
                                                                                                 test="${perf.totalLeads > 0}">
                                                                                                 <br>
                                                                                                 <span
-                                                                                                    class="rate-badge bg-warning bg-opacity-10 text-warning">
+                                                                                                    class="rate-badge rate-badge-warning">
                                                                                                     <fmt:formatNumber
                                                                                                         value="${perf.leadToOpportunityRate}"
                                                                                                         maxFractionDigits="1" />
@@ -240,7 +255,7 @@
                                                                                                 test="${perf.totalLeads > 0}">
                                                                                                 <br>
                                                                                                 <span
-                                                                                                    class="rate-badge bg-success bg-opacity-10 text-success">
+                                                                                                    class="rate-badge rate-badge-success">
                                                                                                     <fmt:formatNumber
                                                                                                         value="${perf.leadToCustomerRate}"
                                                                                                         maxFractionDigits="1" />
