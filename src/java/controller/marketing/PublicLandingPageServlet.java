@@ -70,9 +70,9 @@ public class PublicLandingPageServlet extends HttpServlet {
 
             // Check Visibility Logic
             // Campaign MUST be Active
-            // LP can be Active OR Approved (as per user request)
+            // LP can be Active OR Public (as per user request)
             boolean isCampaignActive = "Active".equalsIgnoreCase(campaignStatus);
-            boolean isLPPublic = "active".equalsIgnoreCase(lp.getStatus()) || "Approved".equalsIgnoreCase(lp.getStatus());
+            boolean isLPPublic = "active".equalsIgnoreCase(lp.getStatus()) || "Public".equalsIgnoreCase(lp.getStatus());
             
             boolean isPubliclyVisible = isCampaignActive && isLPPublic;
             
@@ -226,7 +226,7 @@ public class PublicLandingPageServlet extends HttpServlet {
                          return;
                     }
                     
-                    boolean isLPPublic = "active".equalsIgnoreCase(lp.getStatus()) || "Approved".equalsIgnoreCase(lp.getStatus());
+                    boolean isLPPublic = "active".equalsIgnoreCase(lp.getStatus()) || "Public".equalsIgnoreCase(lp.getStatus());
                     
                     if ("Draft".equalsIgnoreCase(status)) {
                         submission.setSource("Internal Test (Draft Campaign)");

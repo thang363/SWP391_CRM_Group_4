@@ -162,8 +162,36 @@ public class LandingPageServlet extends HttpServlet {
         // Get all Marketing staff for assignment dropdown
         List<User> marketingStaffs = userService.getUsersByRole(Role.MARKETING);
 
+        // --- Pagination Logic ---
+        int page = 1;
+        int pageSize = 10; // Items per page
+        String pageStr = request.getParameter("page");
+        if (pageStr != null && !pageStr.trim().isEmpty()) {
+            try {
+                page = Integer.parseInt(pageStr);
+            } catch (NumberFormatException e) {
+                // Default to 1
+            }
+        }
+
+        int totalItems = viewModels.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+
+        if (page < 1) page = 1;
+        if (page > totalPages && totalPages > 0) page = totalPages;
+
+        List<LandingPageViewModel> paginatedList = new ArrayList<>();
+        if (totalItems > 0) {
+            int startIndex = (page - 1) * pageSize;
+            int endIndex = Math.min(startIndex + pageSize, totalItems);
+            paginatedList = viewModels.subList(startIndex, endIndex);
+        }
+
         // Set attributes
-        request.setAttribute("landingPages", viewModels);
+        request.setAttribute("landingPages", paginatedList); 
+        request.setAttribute("currentPageNum", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
         request.setAttribute("campaigns", campaigns);
         request.setAttribute("marketingStaffs", marketingStaffs);
         request.setAttribute("isManager", isManager);
@@ -382,6 +410,7 @@ public class LandingPageServlet extends HttpServlet {
                  // Simple ownership check
             }
 
+            /* - REMOVED FOR SIMPLIFIED FLOW
             if ("Pending".equals(lp.getStatus())) {
                 sendJsonResponse(response, false, "Không thể sửa khi đang chờ duyệt (Pending)", null);
                 return;
@@ -390,6 +419,7 @@ public class LandingPageServlet extends HttpServlet {
                 sendJsonResponse(response, false, "Không thể sửa bài đã duyệt (Approved). Vui lòng liên hệ quản lý.", null);
                 return;
             }
+            */
 
             // Collect Content Fields
             java.util.Map<String, String> contentFields = new HashMap<>();
@@ -443,15 +473,13 @@ public class LandingPageServlet extends HttpServlet {
             // However, we can just enforce role rules:
             
             if (isManager) {
-                // Manager can set Approved or Rejected
-                if (!"Approved".equals(newStatus) && !"Rejected".equals(newStatus)) {
-                     sendJsonResponse(response, false, "Manager chỉ có thể Duyệt hoặc Từ chối", null);
-                     return;
-                }
+                // Manager only deletes now, cannot change status via UI natively
+                sendJsonResponse(response, false, "Manager không được đổi trạng thái thông qua UI này", null);
+                return;
             } else {
-                // Marketing can set Pending (Request Review)
-                if (!"Pending".equals(newStatus)) {
-                     sendJsonResponse(response, false, "Staff chỉ có thể Gửi yêu cầu duyệt", null);
+                // Marketing can set Public (Publish)
+                if (!"Public".equals(newStatus) && !"Draft".equals(newStatus)) {
+                     sendJsonResponse(response, false, "Staff chỉ có thể Công khai hoặc Lưu nháp", null);
                      return;
                 }
             }

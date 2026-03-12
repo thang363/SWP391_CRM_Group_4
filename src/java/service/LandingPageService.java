@@ -18,14 +18,10 @@ public interface LandingPageService {
     boolean assignMarketing(Integer campaignId, Integer marketingId, String brief);
     
     boolean saveContent(Integer lpId, String dataConfig);
-    boolean submitForApproval(Integer lpId);
-    boolean approveLandingPage(Integer lpId, Integer managerId, String comment);
-    boolean rejectLandingPage(Integer lpId, String managerId, String reason);
     
     // Public Facing
     /**
      * Update landing page content.
-     * Handles status transitions (e.g., Approved -> Draft on edit).
      */
     boolean updateLandingPage(Integer id, String name, String brief, java.util.Map<String, String> contentFields, boolean isManager);
     

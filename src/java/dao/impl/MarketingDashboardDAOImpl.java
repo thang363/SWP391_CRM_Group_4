@@ -63,7 +63,7 @@ public class MarketingDashboardDAOImpl implements MarketingDashboardDAO {
             // 3. Landing Page Stats (linked to manager's campaigns)
             String lpSql = "SELECT " +
                     "SUM(CASE WHEN lp.status IN ('Draft', 'Pending') THEN 1 ELSE 0 END) as pending, " +
-                    "SUM(CASE WHEN lp.status = 'Approved' THEN 1 ELSE 0 END) as approved " +
+                    "SUM(CASE WHEN lp.status = 'Public' THEN 1 ELSE 0 END) as approved " +
                     "FROM LandingPages lp " +
                     "INNER JOIN Campaigns c ON lp.campaign_id = c.id " +
                     "WHERE c.manager_id = ?";
