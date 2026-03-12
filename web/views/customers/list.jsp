@@ -48,6 +48,27 @@
                                                     </div>
                                                 </div>
 
+                                                <c:if test="${param.success == 'delete'}">
+                                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                                        <i class="fa fa-check-circle me-2"></i>Đã xóa khách hàng thành công!
+                                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                                    </div>
+                                                </c:if>
+
+                                                <c:if test="${param.error == 'delete_constraint'}">
+                                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                        <i class="fa fa-exclamation-triangle me-2"></i><strong>Lỗi:</strong> Không thể xóa khách hàng này vì tài khoản đã có dữ liệu liên kết (như Cơ hội, Thông tin liên hệ, Vé hỗ trợ, Đánh giá...). Hãy dùng tính năng <strong>Gộp hồ sơ</strong> hoặc đổi Trạng thái thành <strong>Inactive</strong>.
+                                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                                    </div>
+                                                </c:if>
+
+                                                <c:if test="${param.success == 'merge'}">
+                                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                                        <i class="fa fa-check-circle me-2"></i>Đã gộp hồ sơ khách hàng thành công!
+                                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                                    </div>
+                                                </c:if>
+
                                                 <div class="bg-light rounded p-4 mb-4">
                                                     <!-- Search/Filter -->
                                                     <form action="${pageContext.request.contextPath}/customers"
