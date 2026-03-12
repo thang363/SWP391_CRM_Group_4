@@ -101,6 +101,11 @@
                                                     </div>
                                                     <!-- Support Dashboard End -->
                                                 </c:when>
+                                                
+                                                <c:when test="${sessionScope.userRole == 'MANAGER'}">
+                                                    <!-- Marketing Dashboard for Manager -->
+                                                    <jsp:include page="/views/marketing/marketing-dashboard-fragment.jsp" />
+                                                </c:when>
 
                                                 <c:otherwise>
                                                     <!-- Sale & Revenue Start -->
