@@ -137,8 +137,8 @@
                                                                                     <i class="fa fa-link"></i>
                                                                                 </button>
 
-                                                                                <c:if
-                                                                                    test="${!isManager and (lp.status == 'Draft' or lp.status == 'Rejected')}">
+                                                                                <%-- Edit Button: Marketing (Always visible if NOT Manager) --%>
+                                                                                <c:if test="${!isManager}">
                                                                                     <button type="button"
                                                                                         class="btn btn-outline-warning"
                                                                                         onclick="openEditModal(${lp.id})"
@@ -158,36 +158,27 @@
 
                                                                                 <%-- Request Review: Marketing
                                                                                     (Draft/Rejected) --%>
-                                                                                    <c:if
-                                                                                        test="${!isManager and (lp.status == 'Draft' or lp.status == 'Rejected')}">
+                                                                                    <%-- Publish: Marketing (Draft) --%>
+                                                                                    <c:if test="${!isManager and lp.status != 'Public'}">
                                                                                         <button type="button"
-                                                                                            class="btn btn-outline-info"
-                                                                                            onclick="updateLsStatus(${lp.id}, 'Pending')"
-                                                                                            title="Gửi duyệt">
-                                                                                            <i
-                                                                                                class="fa fa-paper-plane"></i>
+                                                                                            class="btn btn-outline-success"
+                                                                                            onclick="updateLsStatus(${lp.id}, 'Public')"
+                                                                                            title="Công khai (Publish) - Đưa trang lên chạy thực tế">
+                                                                                            <i class="fa fa-globe"></i>
                                                                                         </button>
                                                                                     </c:if>
 
-                                                                                    <%-- Approve/Reject: Manager
-                                                                                        (Pending) --%>
-                                                                                        <c:if
-                                                                                            test="${isManager and lp.status == 'Pending'}">
-                                                                                            <button type="button"
-                                                                                                class="btn btn-outline-success"
-                                                                                                onclick="updateLsStatus(${lp.id}, 'Approved')"
-                                                                                                title="Duyệt">
-                                                                                                <i
-                                                                                                    class="fa fa-check"></i>
-                                                                                            </button>
-                                                                                            <button type="button"
-                                                                                                class="btn btn-outline-secondary"
-                                                                                                onclick="updateLsStatus(${lp.id}, 'Rejected')"
-                                                                                                title="Từ chối">
-                                                                                                <i
-                                                                                                    class="fa fa-times"></i>
-                                                                                            </button>
-                                                                                        </c:if>
+                                                                                    <%-- Unpublish: Marketing (Public) --%>
+                                                                                    <c:if test="${!isManager and lp.status == 'Public'}">
+                                                                                        <button type="button"
+                                                                                            class="btn btn-outline-secondary"
+                                                                                            onclick="updateLsStatus(${lp.id}, 'Draft')"
+                                                                                            title="Hủy công khai (Unpublish) - Đưa trang về bản nháp">
+                                                                                            <i class="fa fa-eye-slash"></i>
+                                                                                        </button>
+                                                                                    </c:if>
+
+                                                                                    <%-- Manager Buttons Removed --%>
                                                                             </div>
                                                                         </td>
                                                                     </tr>
@@ -197,6 +188,36 @@
                                                     </tbody>
                                                 </table>
                                             </div>
+                                            
+                                            <!-- Pagination Start -->
+                                            <c:if test="${totalPages > 1}">
+                                                <div class="row mt-3">
+                                                    <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start">
+                                                        <div class="dataTables_info">
+                                                            Hiển thị trang ${currentPageNum} / ${totalPages} (Tổng cộng ${totalItems} Landing Pages)
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
+                                                        <ul class="pagination mb-0">
+                                                            <li class="page-item ${currentPageNum == 1 ? 'disabled' : ''}">
+                                                                <a class="page-link" href="?page=${currentPageNum - 1}${not empty campaignIdFilter ? '&campaignId='.concat(campaignIdFilter) : ''}">Trước</a>
+                                                            </li>
+                                                            
+                                                            <c:forEach begin="1" end="${totalPages}" var="i">
+                                                                <li class="page-item ${currentPageNum == i ? 'active' : ''}">
+                                                                    <a class="page-link" href="?page=${i}${not empty campaignIdFilter ? '&campaignId='.concat(campaignIdFilter) : ''}">${i}</a>
+                                                                </li>
+                                                            </c:forEach>
+
+                                                            <li class="page-item ${currentPageNum == totalPages ? 'disabled' : ''}">
+                                                                <a class="page-link" href="?page=${currentPageNum + 1}${not empty campaignIdFilter ? '&campaignId='.concat(campaignIdFilter) : ''}">Sau</a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </c:if>
+                                            <!-- Pagination End -->
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -275,9 +296,7 @@
                                         readonly></textarea>
                                 </div>
                                 <div id="editWarning" class="alert alert-warning d-none">
-                                    <i class="fa fa-exclamation-triangle"></i> Cảnh báo: Landing Page này đang ở trạng
-                                    thái <strong>Approved</strong>. Việc chỉnh sửa sẽ chuyển trạng thái về
-                                    <strong>Draft</strong>.
+                                    <i class="fa fa-exclamation-triangle"></i> Lưu ý: Nội dung sẽ được cập nhật trực tiếp lên Landing Page đang hoạt động.
                                 </div>
 
                                 <!-- Tabs -->
@@ -437,7 +456,7 @@
 
                                     // Show/Hide Warning based on status
                                     const warningDiv = document.getElementById('editWarning');
-                                    if (data.status === 'Approved') {
+                                    if (data.status === 'Public') {
                                         warningDiv.classList.remove('d-none');
                                     } else {
                                         warningDiv.classList.add('d-none');
@@ -467,9 +486,8 @@
                     // Update Status Function
                     function updateLsStatus(id, newStatus) {
                         let actionName = "";
-                        if (newStatus === 'Pending') actionName = "Gửi yêu cầu duyệt";
-                        else if (newStatus === 'Approved') actionName = "Duyệt Landing Page";
-                        else if (newStatus === 'Rejected') actionName = "Từ chối Landing Page";
+                        if (newStatus === 'Public') actionName = "Công khai Landing Page";
+                        else if (newStatus === 'Draft') actionName = "Hủy công khai Landing Page";
 
                         showConfirmDialog(
                             'Bạn có chắc chắn muốn <strong>' + actionName + '</strong>?',
@@ -477,16 +495,6 @@
                                 const params = new URLSearchParams();
                                 params.append('id', id);
                                 params.append('status', newStatus);
-
-                                if (newStatus === 'Rejected') {
-                                    const reason = prompt("Vui lòng nhập lý do từ chối / góp ý:");
-                                    if (reason === null) return;
-                                    if (!reason.trim()) {
-                                        alert("Bạn phải nhập lý do từ chối.");
-                                        return;
-                                    }
-                                    params.append('comment', reason);
-                                }
 
                                 fetch(contextPath + '/landing-pages?action=change-status', {
                                     method: 'POST',
@@ -520,6 +528,7 @@
                         const status = document.getElementById('editLpStatus').value;
 
                         // Extra confirmation for Approved status
+                        /* - REMOVED FOR SIMPLIFIED FLOW
                         if (status === 'Approved') {
                             showConfirmDialog(
                                 '<strong>LƯU Ý:</strong> Landing Page đang Approved. Việc lưu sẽ chuyển trạng thái về <strong>DRAFT</strong> (gỡ public). Tiếp tục?',
@@ -528,6 +537,7 @@
                             );
                             return;
                         }
+                        */
 
                         doSubmitEditForm();
                     }

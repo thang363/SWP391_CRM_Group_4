@@ -207,7 +207,7 @@
                                                                                 value="${param.toDate}">
                                                                         </div>
                                                                         <button type="submit" class="btn btn-primary">
-                                                                            <i class="fa fa-search me-1"></i>Lọc
+                                                                            <i class="fa fa-search me-1"></i>
                                                                         </button>
                                                                         <button type="button" class="btn btn-secondary"
                                                                             onclick="resetFilters()">
@@ -267,12 +267,7 @@
                                                                                                             <span
                                                                                                                 class="fw-bold text-primary">${sub.campaignName}</span>
                                                                                                         </c:when>
-                                                                                                        <c:otherwise>
-                                                                                                            <span
-                                                                                                                class="text-muted">Direct
-                                                                                                                /
-                                                                                                                Other</span>
-                                                                                                        </c:otherwise>
+                                                                                                       
                                                                                                     </c:choose>
                                                                                                 </td>
                                                                                                 <td>

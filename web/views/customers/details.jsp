@@ -35,15 +35,34 @@
                                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                                     <h4 class="mb-0">Chi tiết Khách hàng: ${customer.companyName}</h4>
                                                     <div class="d-flex gap-2">
-                                                        <form action="${pageContext.request.contextPath}/customers"
-                                                            method="post" class="m-0">
-                                                            <input type="hidden" name="action"
-                                                                value="sendFeedbackRequest">
-                                                            <input type="hidden" name="id" value="${customer.id}">
-                                                            <button type="submit" class="btn btn-primary"><i
-                                                                    class="fa fa-envelope me-2"></i>Gửi Email Đánh
-                                                                Giá</button>
-                                                        </form>
+                                                        <!-- Modal Trigger Button -->
+                                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmFeedbackModal">
+                                                            <i class="fa fa-envelope me-2"></i>Gửi Email Đánh Giá
+                                                        </button>
+
+                                                        <!-- Confirmation Modal -->
+                                                        <div class="modal fade" id="confirmFeedbackModal" tabindex="-1" aria-labelledby="confirmFeedbackModalLabel" aria-hidden="true">
+                                                            <div class="modal-dialog">
+                                                                <div class="modal-content text-start">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="confirmFeedbackModalLabel">Xác nhận gửi Email</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p>Bạn có chắc chắn muốn gửi Email yêu cầu đánh giá cho khách hàng này không?</p>
+                                                                        <p class="mb-0"><strong>Email nhận:</strong> <span class="text-primary">${customer.email != null && !customer.email.isEmpty() ? customer.email : 'Khách hàng chưa cập nhật email (Không thể gửi)'}</span></p>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <form action="${pageContext.request.contextPath}/customers" method="post" class="m-0">
+                                                                            <input type="hidden" name="action" value="sendFeedbackRequest">
+                                                                            <input type="hidden" name="id" value="${customer.id}">
+                                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                                            <button type="submit" class="btn btn-primary" ${empty customer.email ? 'disabled' : ''}>Xác nhận gửi</button>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                         <a href="${pageContext.request.contextPath}/customers?action=history&id=${customer.id}"
                                                             class="btn btn-info text-white"><i
                                                                 class="fa fa-history me-2"></i>Lịch sử Tương tác</a>

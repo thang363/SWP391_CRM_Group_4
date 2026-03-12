@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
     <%@ taglib prefix="c" uri="jakarta.tags.core" %>
         <!DOCTYPE html>
         <html class="no-js" lang="vi">
@@ -518,6 +518,72 @@
                                 </div>
                             </c:when>
                             <c:otherwise>
+                                <!-- Form CSS Enhancements -->
+                                <style>
+                                    .contact-form .form-field {
+                                        margin-bottom: 2.4rem;
+                                        position: relative;
+                                    }
+                                    .contact-form input[type="text"],
+                                    .contact-form input[type="email"],
+                                    .contact-form input[type="tel"],
+                                    .contact-form textarea {
+                                        width: 100%;
+                                        padding: 1.6rem 2.2rem;
+                                        background-color: #f8fafc;
+                                        border: 2px solid #e2e8f0;
+                                        border-radius: 8px;
+                                        font-size: 1.5rem;
+                                        color: #334155;
+                                        transition: all 0.25s ease;
+                                        outline: none;
+                                        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+                                        font-family: inherit;
+                                        height: auto;
+                                    }
+                                    .contact-form input::placeholder,
+                                    .contact-form textarea::placeholder {
+                                        color: #94a3b8;
+                                    }
+                                    .contact-form input:focus,
+                                    .contact-form textarea:focus {
+                                        border-color: #00a650;
+                                        background-color: #ffffff;
+                                        box-shadow: 0 0 0 4px rgba(0, 166, 80, 0.1);
+                                    }
+                                    .contact-form textarea {
+                                        resize: vertical;
+                                        min-height: 16rem;
+                                    }
+                                    .contact-form .btn {
+                                        border-radius: 8px;
+                                        padding: 1.8rem 3.5rem;
+                                        font-size: 1.6rem;
+                                        font-weight: 700;
+                                        text-transform: uppercase;
+                                        letter-spacing: 1.2px;
+                                        transition: all 0.3s ease;
+                                        background-color: #00a650;
+                                        border: none;
+                                        color: white;
+                                    }
+                                    .contact-form .btn:hover {
+                                        transform: translateY(-2px);
+                                        box-shadow: 0 8px 15px rgba(0, 166, 80, 0.3);
+                                        background-color: #008f45;
+                                    }
+                                    #charCount {
+                                        position: absolute;
+                                        bottom: 1.5rem;
+                                        right: 2.2rem;
+                                        font-size: 1.2rem;
+                                        color: #94a3b8;
+                                        pointer-events: none;
+                                        background: transparent;
+                                        margin: 0;
+                                    }
+                                </style>
+
                                 <form id="contactForm" method="POST"
                                     action="${pageContext.request.contextPath}/lp/submit" class="contact-form">
                                     <input type="hidden" name="landingPageId" value="${landingPageId}">
@@ -536,12 +602,10 @@
                                         <input name="phone" type="tel" id="contactPhone" placeholder="Your Phone">
                                     </div>
 
-                                    <div class="form-field">
+                                    <div class="form-field" style="position: relative;">
                                         <textarea name="message" id="contactMessage" placeholder="Your Message" rows="6"
                                             maxlength="1000"></textarea>
-                                        <div id="charCount"
-                                            style="text-align: right; font-size: 1.2rem; margin-top: -3rem; margin-bottom: 3rem; color: rgba(0, 0, 0, 0.5);">
-                                            0/1000</div>
+                                        <div id="charCount">0/1000</div>
                                     </div>
 
                                     <div class="form-field">
