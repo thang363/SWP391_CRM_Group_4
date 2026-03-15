@@ -9,6 +9,9 @@ public interface QuoteDAO {
     /** Lấy toàn bộ quote của 1 opportunity, mới nhất trước */
     List<Quote> getByOpportunityId(int opportunityId);
 
+    /** Lấy tất cả quote (cho Manager xem & duyệt) */
+    List<Quote> getAll();
+
     /** Lấy 1 quote theo id */
     Quote getById(int id);
 
@@ -19,10 +22,20 @@ public interface QuoteDAO {
     int create(int opportunityId, String subject, BigDecimal grandTotal, LocalDate validUntil, int createdBy);
 
     /**
-     * Chuyển Draft → Sent.
+     * Chuyển Draft → Pending Approval.
      * Gọi trước hasActiveSent() để đảm bảo không có quote Sent nào khác.
      */
     void send(int quoteId);
+
+    /**
+     * Chuyển Pending Approval → Approved.
+     */
+    void approve(int quoteId);
+
+    /**
+     * Chuyển Approved → Sent.
+     */
+    void markAsSent(int quoteId);
 
     /**
      * Chuyển Sent → Accepted.
@@ -30,8 +43,8 @@ public interface QuoteDAO {
      */
     void accept(int quoteId, int opportunityId);
 
-    /** Chuyển Sent → Rejected */
-    void reject(int quoteId);
+    /** Chuyển Sent/Pending Approval/Approved → Rejected với lý do */
+    void reject(int quoteId, String reason);
 
     /** Xóa quote (chỉ khi Draft) */
     void delete(int quoteId);

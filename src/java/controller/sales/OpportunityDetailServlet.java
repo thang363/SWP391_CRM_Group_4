@@ -40,7 +40,18 @@ public class OpportunityDetailServlet extends HttpServlet {
             }
 
             List<Quote> quotes = quoteDAO.getByOpportunityId(oppId);
+            
+            // Nạp thêm chi tiết sản phẩm vào mỗi quote để show modal
+            dao.QuoteDetailDAO quoteDetailDAO = new dao.impl.QuoteDetailDAOImpl();
+            for (Quote q : quotes) {
+                q.setDetails(quoteDetailDAO.getByQuoteId(q.getId()));
+            }
+
             boolean hasActiveSent = quoteDAO.hasActiveSent(oppId);
+
+            dao.ProductDAO productDAO = new dao.impl.ProductDAOImpl();
+            List<model.entity.Product> products = productDAO.getAllActiveProducts();
+            request.setAttribute("productList", products);
 
             request.setAttribute("opp", opp);
             request.setAttribute("quotes", quotes);

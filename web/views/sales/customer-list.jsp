@@ -9,7 +9,7 @@
                         <html lang="vi">
 
                         <head>
-                            <title>Customer List - CRM System</title>
+                            <title>Danh sách Khách hàng - Hệ thống CRM</title>
                             <%@ include file="/includes/head.jsp" %>
                         </head>
 
@@ -38,13 +38,14 @@
                                                         <div class="bg-light rounded p-4 mb-4">
                                                             <div
                                                                 class="d-flex justify-content-between align-items-center mb-4">
-                                                                <h3 class="mb-0"><i
-                                                                        class="fa fa-users me-2"></i>Customer List</h3>
+                                                                <h3 class="mb-0"><i class="fa fa-users me-2"></i>Danh
+                                                                    sách Khách hàng</h3>
                                                             </div>
 
                                                             <!-- Search and Filter Form -->
-                                                            <form action="#" method="get"
-                                                                class="row g-3 align-items-center">
+                                                            <form
+                                                                action="${pageContext.request.contextPath}/sales/customers"
+                                                                method="get" class="row g-3 align-items-center">
                                                                 <div class="col-md-4">
                                                                     <div class="input-group">
                                                                         <span
@@ -52,28 +53,35 @@
                                                                                 class="fa fa-search text-muted"></i></span>
                                                                         <input type="text"
                                                                             class="form-control border-start-0"
-                                                                            name="search"
-                                                                            placeholder="Search Company, Email or Phone...">
+                                                                            name="search" value="${searchQuery}"
+                                                                            placeholder="Tìm kiếm Công ty, Email hoặc Số điện thoại...">
                                                                     </div>
                                                                 </div>
                                                                 <div class="col-md-3">
                                                                     <select class="form-select" name="tier">
-                                                                        <option value="">All Tiers</option>
-                                                                        <option value="Standard">Standard</option>
-                                                                        <option value="VIP">VIP</option>
-                                                                        <option value="VVIP">VVIP</option>
+                                                                        <option value="">Tất cả hạng</option>
+                                                                        <option value="Standard"
+                                                                            ${tierFilter=='Standard' ? 'selected' : ''
+                                                                            }>Standard</option>
+                                                                        <option value="VIP" ${tierFilter=='VIP'
+                                                                            ? 'selected' : '' }>VIP</option>
+                                                                        <option value="VVIP" ${tierFilter=='VVIP'
+                                                                            ? 'selected' : '' }>VVIP</option>
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-md-3">
                                                                     <select class="form-select" name="status">
-                                                                        <option value="">All Statuses</option>
-                                                                        <option value="Active">Active</option>
-                                                                        <option value="Inactive">Inactive</option>
+                                                                        <option value="">Tất cả trạng thái</option>
+                                                                        <option value="Active" ${statusFilter=='Active'
+                                                                            ? 'selected' : '' }>Active</option>
+                                                                        <option value="Inactive"
+                                                                            ${statusFilter=='Inactive' ? 'selected' : ''
+                                                                            }>Inactive</option>
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-md-2">
                                                                     <button type="submit" class="btn btn-primary w-100">
-                                                                        <i class="fa fa-filter me-2"></i>Filter
+                                                                        <i class="fa fa-filter me-2"></i>Lọc
                                                                     </button>
                                                                 </div>
                                                             </form>
@@ -90,158 +98,116 @@
                                                                             <thead>
                                                                                 <tr>
                                                                                     <th>ID</th>
-                                                                                    <th>Company Name</th>
-                                                                                    <th>Contact Info</th>
-                                                                                    <th>Tier</th>
-                                                                                    <th>Status</th>
-                                                                                    <th>Last Interacted</th>
-                                                                                    <th>Actions</th>
+                                                                                    <th>Tên Công ty</th>
+                                                                                    <th>Thông tin liên hệ</th>
+                                                                                    <th>Hạng</th>
+                                                                                    <th>Trạng thái</th>
+                                                                                    <th>Tương tác cuối</th>
+                                                                                    <th>Thao tác</th>
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
-                                                                                <%-- Mock Data for demonstration --%>
-                                                                                    <c:choose>
-                                                                                        <c:when
-                                                                                            test="${empty customerList}">
+                                                                                <c:choose>
+                                                                                    <c:when
+                                                                                        test="${empty customerList}">
+                                                                                        <tr>
+                                                                                            <td colspan="7"
+                                                                                                class="text-center py-4 text-muted">
+                                                                                                <i
+                                                                                                    class="fa fa-info-circle me-2"></i>Không
+                                                                                                tìm thấy khách hàng nào.
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </c:when>
+                                                                                    <c:otherwise>
+                                                                                        <c:forEach var="customer"
+                                                                                            items="${customerList}">
                                                                                             <tr>
-                                                                                                <td>101</td>
-                                                                                                <td><strong>Antigravity
-                                                                                                        Tech</strong>
+                                                                                                <td>${customer.id}</td>
+                                                                                                <td><strong>${customer.companyName}</strong>
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <div class="small">
                                                                                                         <i
-                                                                                                            class="fa fa-envelope me-1 text-primary"></i>contact@antigravity.io
+                                                                                                            class="fa fa-envelope me-2 text-primary"></i>${customer.email}
                                                                                                     </div>
                                                                                                     <div class="small">
                                                                                                         <i
-                                                                                                            class="fa fa-phone me-1 text-primary"></i>+84
-                                                                                                        123 456 789
+                                                                                                            class="fa fa-phone me-2 text-primary"></i>${customer.phone}
                                                                                                     </div>
                                                                                                 </td>
-                                                                                                <td><span
-                                                                                                        class="badge bg-warning text-dark">VIP</span>
+                                                                                                <td>
+                                                                                                    <span
+                                                                                                        class="badge ${customer.tier == 'VIP' ? 'bg-warning text-dark' : (customer.tier == 'VVIP' ? 'bg-danger' : 'bg-primary')}">
+                                                                                                        ${customer.tier}
+                                                                                                    </span>
                                                                                                 </td>
-                                                                                                <td><span
-                                                                                                        class="badge bg-success">Active</span>
+                                                                                                <td>
+                                                                                                    <span
+                                                                                                        class="badge ${customer.status == 'Active' ? 'bg-success' : 'bg-secondary'}">
+                                                                                                        ${customer.status}
+                                                                                                    </span>
                                                                                                 </td>
-                                                                                                <td class="small">
-                                                                                                    2026-03-01 14:30
+                                                                                                <td
+                                                                                                    class="small text-muted">
+                                                                                                    <c:if
+                                                                                                        test="${not empty customer.lastCareDate}">
+                                                                                                        <fmt:formatDate
+                                                                                                            value="${customer.lastCareDate}"
+                                                                                                            pattern="yyyy-MM-dd HH:mm" />
+                                                                                                    </c:if>
+                                                                                                    <c:if
+                                                                                                        test="${empty customer.lastCareDate}">
+                                                                                                        -</c:if>
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <div
                                                                                                         class="d-flex gap-2">
                                                                                                         <button
+                                                                                                            type="button"
+                                                                                                            class="btn btn-sm btn-outline-success"
+                                                                                                            title="Tạo Cơ hội mới"
+                                                                                                            data-bs-toggle="modal"
+                                                                                                            data-bs-target="#createOppModal"
+                                                                                                            data-id="${customer.id}"
+                                                                                                            data-name="${fn:escapeXml(customer.companyName)}">
+                                                                                                            <i
+                                                                                                                class="fa fa-plus-circle"></i>
+                                                                                                        </button>
+                                                                                                        <a href="${pageContext.request.contextPath}/customers?action=details&id=${customer.id}"
                                                                                                             class="btn btn-sm btn-outline-primary"
-                                                                                                            title="Details"><i
-                                                                                                                class="fa fa-eye"></i></button>
-                                                                                                        <button
+                                                                                                            title="Chi tiết"><i
+                                                                                                                class="fa fa-eye"></i></a>
+                                                                                                        <a href="${pageContext.request.contextPath}/customers?action=history&id=${customer.id}"
                                                                                                             class="btn btn-sm btn-outline-warning"
-                                                                                                            title="Interaction"><i
-                                                                                                                class="fa fa-history"></i></button>
+                                                                                                            title="Lịch sử tương tác"><i
+                                                                                                                class="fa fa-history"></i></a>
                                                                                                     </div>
                                                                                                 </td>
                                                                                             </tr>
-                                                                                            <tr>
-                                                                                                <td>102</td>
-                                                                                                <td><strong>Global
-                                                                                                        Solutions</strong>
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <div class="small">
-                                                                                                        <i
-                                                                                                            class="fa fa-envelope me-1 text-primary"></i>info@globalsol.com
-                                                                                                    </div>
-                                                                                                    <div class="small">
-                                                                                                        <i
-                                                                                                            class="fa fa-phone me-1 text-primary"></i>+84
-                                                                                                        987 654 321
-                                                                                                    </div>
-                                                                                                </td>
-                                                                                                <td><span
-                                                                                                        class="badge bg-primary">Standard</span>
-                                                                                                </td>
-                                                                                                <td><span
-                                                                                                        class="badge bg-success">Active</span>
-                                                                                                </td>
-                                                                                                <td class="small">
-                                                                                                    2026-02-25 09:15
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <div
-                                                                                                        class="d-flex gap-2">
-                                                                                                        <button
-                                                                                                            class="btn btn-sm btn-outline-primary"
-                                                                                                            title="Details"><i
-                                                                                                                class="fa fa-eye"></i></button>
-                                                                                                        <button
-                                                                                                            class="btn btn-sm btn-outline-warning"
-                                                                                                            title="Interaction"><i
-                                                                                                                class="fa fa-history"></i></button>
-                                                                                                    </div>
-                                                                                                </td>
-                                                                                            </tr>
-                                                                                        </c:when>
-                                                                                        <c:otherwise>
-                                                                                            <%-- Actual dynamic
-                                                                                                rendering when backend
-                                                                                                is ready --%>
-                                                                                                <c:forEach
-                                                                                                    var="customer"
-                                                                                                    items="${customerList}">
-                                                                                                    <tr>
-                                                                                                        <td>${customer.id}
-                                                                                                        </td>
-                                                                                                        <td><strong>${customer.companyName}</strong>
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <div
-                                                                                                                class="small">
-                                                                                                                <i
-                                                                                                                    class="fa fa-envelope me-2 text-primary"></i>${customer.email}
-                                                                                                            </div>
-                                                                                                            <div
-                                                                                                                class="small">
-                                                                                                                <i
-                                                                                                                    class="fa fa-phone me-2 text-primary"></i>${customer.phone}
-                                                                                                            </div>
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <span
-                                                                                                                class="badge ${customer.tier == 'VIP' ? 'bg-warning text-dark' : (customer.tier == 'VVIP' ? 'bg-danger' : 'bg-primary')}">
-                                                                                                                ${customer.tier}
-                                                                                                            </span>
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <span
-                                                                                                                class="badge ${customer.status == 'Active' ? 'bg-success' : 'bg-secondary'}">
-                                                                                                                ${customer.status}
-                                                                                                            </span>
-                                                                                                        </td>
-                                                                                                        <td
-                                                                                                            class="small">
-                                                                                                            ${customer.lastCareDate}
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <div
-                                                                                                                class="d-flex gap-2">
-                                                                                                                <a href="${pageContext.request.contextPath}/customers?action=details&id=${customer.id}"
-                                                                                                                    class="btn btn-sm btn-outline-primary"
-                                                                                                                    title="Details"><i
-                                                                                                                        class="fa fa-eye"></i></a>
-                                                                                                                <button
-                                                                                                                    class="btn btn-sm btn-outline-warning"
-                                                                                                                    title="Log Interaction"><i
-                                                                                                                        class="fa fa-history"></i></button>
-                                                                                                            </div>
-                                                                                                        </td>
-                                                                                                    </tr>
-                                                                                                </c:forEach>
-                                                                                        </c:otherwise>
-                                                                                    </c:choose>
+                                                                                        </c:forEach>
+                                                                                    </c:otherwise>
+                                                                                </c:choose>
                                                                             </tbody>
                                                                         </table>
                                                                     </div>
+
+                                                                    <!-- Pagination -->
+                                                                    <c:if test="${totalPages > 1}">
+                                                                        <nav aria-label="Page navigation" class="mt-4">
+                                                                            <ul
+                                                                                class="pagination justify-content-center">
+                                                                                <c:forEach begin="1" end="${totalPages}"
+                                                                                    var="i">
+                                                                                    <li
+                                                                                        class="page-item ${i == pageNumber ? 'active' : ''}">
+                                                                                        <a class="page-link"
+                                                                                            href="${pageContext.request.contextPath}/sales/customers?page=${i}&search=${searchQuery}&tier=${tierFilter}&status=${statusFilter}">${i}</a>
+                                                                                    </li>
+                                                                                </c:forEach>
+                                                                            </ul>
+                                                                        </nav>
+                                                                    </c:if>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -250,6 +216,44 @@
                                                     <%@ include file="/includes/footer.jsp" %>
                                         </div>
                                         <!-- Content End -->
+
+                                        <!-- Create Opportunity Modal -->
+                                        <div class="modal fade" id="createOppModal" tabindex="-1"
+                                            aria-labelledby="createOppModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form action="${pageContext.request.contextPath}/sales/customers"
+                                                        method="get">
+                                                        <input type="hidden" name="action" value="createOpportunity">
+                                                        <input type="hidden" name="customerId" id="modalCustomerId">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="createOppModalLabel">Tạo Cơ hội
+                                                                mới</h5>
+                                                            <button type="button" class="btn-close"
+                                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="modalCompanyName" class="form-label">Tên Cơ
+                                                                    hội / Đơn hàng</label>
+                                                                <input type="text" class="form-control"
+                                                                    name="companyName" id="modalCompanyName" required>
+                                                                <div class="form-text">Nhập tên để phân biệt cơ hội bán
+                                                                    hàng này.</div>
+                                                            </div>
+                                                            <p>Bạn có chắc chắn muốn tạo một cơ hội bán hàng mới cho
+                                                                khách hàng này không?</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">Hủy</button>
+                                                            <button type="submit" class="btn btn-success">Xác nhận
+                                                                tạo</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <!-- Back to Top -->
                                         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i
@@ -263,6 +267,22 @@
                                             var spinner = document.getElementById('spinner');
                                             if (spinner) {
                                                 spinner.classList.remove('show');
+                                            }
+
+                                            // Handle Create Opportunity Modal
+                                            var createOppModal = document.getElementById('createOppModal');
+                                            if (createOppModal) {
+                                                createOppModal.addEventListener('show.bs.modal', function (event) {
+                                                    var button = event.relatedTarget;
+                                                    var customerId = button.getAttribute('data-id');
+                                                    var companyName = button.getAttribute('data-name');
+
+                                                    var modalCustomerId = createOppModal.querySelector('#modalCustomerId');
+                                                    var modalCompanyName = createOppModal.querySelector('#modalCompanyName');
+
+                                                    modalCustomerId.value = customerId;
+                                                    modalCompanyName.value = "Đơn hàng - " + companyName;
+                                                });
                                             }
                                         });
                                     </script>
