@@ -60,7 +60,7 @@ public class DashboardServlet extends HttpServlet {
                 request.setAttribute("supportOverdueTasks", overdueTasks);
                 request.setAttribute("supportOpenTickets", openTickets);
                 request.setAttribute("supportResolvedTickets", resolvedTickets);
-            } else if (Role.MANAGER.equals(role)) {
+            } else if (Role.MANAGER.equals(role) || Role.MARKETING.equals(role)) {
                 int userId = ((Number) session.getAttribute(Constants.SESSION_USER_ID)).intValue();
                 MarketingDashboardVM stats = marketingDashboardService.getDashboardData(userId);
                 request.setAttribute("stats", stats);

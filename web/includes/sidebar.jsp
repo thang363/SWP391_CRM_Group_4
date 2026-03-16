@@ -64,9 +64,7 @@
                                                     class="dropdown-item ${currentPage == 'monitor-leads' ? 'active' : ''}">Monitor
                                                     Leads
                                                 </a>
-                                                <a href="${pageContext.request.contextPath}/marketing/submissions"
-                                                    class="dropdown-item ${currentPage == 'submissions' ? 'active' : ''}">
-                                                    <i class="fa fa-clipboard-list me-1"></i>List Submission</a>
+                                                
                                                 <c:if test="${sessionScope.userRole == 'MANAGER'}">
                                                     <a href="${pageContext.request.contextPath}/campaigns"
                                                         class="dropdown-item ${currentPage == 'campaigns' ? 'active' : ''}">Campaigns
@@ -76,11 +74,7 @@
                                                         Campaigns</a>
                                                 </c:if>
                                                 <c:if test="${sessionScope.userRole == 'MARKETING'}">
-                                                    <a href="${pageContext.request.contextPath}/marketing/bulk-email"
-                                                        class="dropdown-item ${currentPage == 'bulk-email' ? 'active' : ''}">
-                                                        <i class="fa fa-envelope me-1"></i>Email Marketing</a>
-                                                    <a href="${pageContext.request.contextPath}/lead-sources"
-                                                        class="dropdown-item">Lead Sources</a>
+                                                   
                                                     <a href="${pageContext.request.contextPath}/marketing/submissions"
                                                         class="dropdown-item ${currentPage == 'submissions' ? 'active' : ''}">
                                                         <i class="fa fa-clipboard-list me-1"></i>List Submission</a>

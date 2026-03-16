@@ -255,6 +255,7 @@ public class SubmissionsServlet extends HttpServlet {
                 lead.setSourceId(sourceId);
             }
             
+            lead.setPotentialStatus("Hot"); // Valid info submitted -> Hot
             lead.setStatus("New"); // Default status
 
             // Insert Lead
@@ -267,7 +268,10 @@ public class SubmissionsServlet extends HttpServlet {
             // Mark submission as processed
             boolean updateSuccess = submissionDAO.markAsProcessed(id);
             if (updateSuccess) {
-                sendJsonResponse(response, true, "Đã tạo Lead và cập nhật trạng thái thành công!", null);
+                // Send automated Thank You email
+                util.EmailService.sendThankYouEmailAsync(lead.getEmail(), lead.getFullName());
+                
+                sendJsonResponse(response, true, "Đã tạo Lead và gửi email cảm ơn thành công!", null);
             } else {
                 sendJsonResponse(response, false, "Đã tạo Lead nhưng lỗi khi cập nhật trạng thái submission", null);
             }

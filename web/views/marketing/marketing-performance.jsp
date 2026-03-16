@@ -299,8 +299,63 @@
                                                                     </tbody>
                                                                 </table>
                                                             </div>
+
+                                                            <!-- Pagination -->
+                                                            <c:if test="${totalPages > 1}">
+                                                                <nav aria-label="Page navigation" class="mt-4">
+                                                                    <ul class="pagination justify-content-center mb-0">
+                                                                        <li class="page-item ${currentPageNum == 1 ? 'disabled' : ''}">
+                                                                            <a class="page-link" href="?page=${currentPageNum - 1}" tabindex="-1">
+                                                                                <i class="fa fa-angle-left"></i>
+                                                                            </a>
+                                                                        </li>
+                                                                        
+                                                                        <c:forEach var="i" begin="1" end="${totalPages}">
+                                                                            <c:choose>
+                                                                                <c:when test="${i <= 3 || i > totalPages - 2 || (i >= currentPageNum - 1 && i <= currentPageNum + 1)}">
+                                                                                    <li class="page-item ${currentPageNum == i ? 'active' : ''}">
+                                                                                        <a class="page-link" href="?page=${i}">${i}</a>
+                                                                                    </li>
+                                                                                </c:when>
+                                                                                <c:when test="${i == 4 || i == totalPages - 2}">
+                                                                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                                                </c:when>
+                                                                            </c:choose>
+                                                                        </c:forEach>
+
+                                                                        <li class="page-item ${currentPageNum == totalPages ? 'disabled' : ''}">
+                                                                            <a class="page-link" href="?page=${currentPageNum + 1}">
+                                                                                <i class="fa fa-angle-right"></i>
+                                                                            </a>
+                                                                        </li>
+                                                                    </ul>
+                                                                </nav>
+                                                                <div class="text-center mt-2">
+                                                                    <small class="text-muted">Trang ${currentPageNum} / ${totalPages} (Tổng số ${totalRecords} chiến dịch)</small>
+                                                                </div>
+                                                            </c:if>
                                                         </div>
                                                     </div>
+                                                </div>
+
+                                                <!-- Hidden table for Exporting all data -->
+                                                <div style="display:none">
+                                                    <table id="fullPerformanceTable">
+                                                        <tbody>
+                                                            <c:forEach var="perf" items="${allPerformance}">
+                                                                <tr>
+                                                                    <td>${perf.campaignId}</td>
+                                                                    <td>${perf.campaignName}</td>
+                                                                    <td>${perf.statusDisplayName}</td>
+                                                                    <td>${perf.totalLeads}</td>
+                                                                    <td>${perf.convertedToOpportunity}</td>
+                                                                    <td>${perf.convertedToCustomer}</td>
+                                                                    <td><fmt:formatNumber value="${perf.leadToOpportunityRate}" maxFractionDigits="1" /></td>
+                                                                    <td><fmt:formatNumber value="${perf.leadToCustomerRate}" maxFractionDigits="1" /></td>
+                                                                </tr>
+                                                            </c:forEach>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
 
@@ -319,7 +374,7 @@
 
                             <script>
                                 function exportCSV() {
-                                    var table = document.getElementById('performanceTable');
+                                    var table = document.getElementById('fullPerformanceTable');
                                     if (!table) return;
 
                                     var rows = table.querySelectorAll('tr');
@@ -328,25 +383,20 @@
                                     // Header
                                     csvContent += 'ID,Chiến dịch,Trạng thái,Leads,Opportunity,Customer,Tỉ lệ Lead→Opp (%),Tỉ lệ Lead→Cust (%)\n';
 
-                                    // Data rows (skip header row)
-                                    for (var i = 1; i < rows.length; i++) {
+                                    // Data rows
+                                    for (var i = 0; i < rows.length; i++) {
                                         var cells = rows[i].querySelectorAll('td');
-                                        if (cells.length < 7) continue; // Skip empty row
-
-                                        var id = cells[0].textContent.trim().replace('#', '');
+                                        
+                                        var id = cells[0].textContent.trim();
                                         var name = '"' + cells[1].textContent.trim().replace(/"/g, '""') + '"';
                                         var status = cells[2].textContent.trim();
                                         var leads = cells[3].textContent.trim();
-                                        var opps = cells[4].textContent.trim().split('\n')[0].trim();
-                                        var custs = cells[5].textContent.trim().split('\n')[0].trim();
+                                        var opps = cells[4].textContent.trim();
+                                        var custs = cells[5].textContent.trim();
+                                        var oppRate = cells[6].textContent.trim();
+                                        var custRate = cells[7].textContent.trim();
 
-                                        var leadsNum = parseInt(leads) || 0;
-                                        var oppsNum = parseInt(opps) || 0;
-                                        var custsNum = parseInt(custs) || 0;
-                                        var oppRate = leadsNum > 0 ? (oppsNum * 100.0 / leadsNum).toFixed(1) : '0.0';
-                                        var custRate = leadsNum > 0 ? (custsNum * 100.0 / leadsNum).toFixed(1) : '0.0';
-
-                                        csvContent += id + ',' + name + ',' + status + ',' + leads + ',' + oppsNum + ',' + custsNum + ',' + oppRate + ',' + custRate + '\n';
+                                        csvContent += id + ',' + name + ',' + status + ',' + leads + ',' + opps + ',' + custs + ',' + oppRate + ',' + custRate + '\n';
                                     }
 
                                     // Create download
@@ -354,7 +404,7 @@
                                     var link = document.createElement('a');
                                     var url = URL.createObjectURL(blob);
                                     link.setAttribute('href', url);
-                                    link.setAttribute('download', 'campaign_performance_' + new Date().toISOString().slice(0, 10) + '.csv');
+                                    link.setAttribute('download', 'campaign_performance_full_' + new Date().toISOString().slice(0, 10) + '.csv');
                                     link.style.display = 'none';
                                     document.body.appendChild(link);
                                     link.click();

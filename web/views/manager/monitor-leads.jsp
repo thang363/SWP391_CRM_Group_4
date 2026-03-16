@@ -124,17 +124,7 @@
 
                                         <!-- 1. KPI Cards -->
                                         <div class="row g-4 mb-4">
-                                            <div class="col-sm-6 col-xl-3">
-                                                <div
-                                                    class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-start border-primary border-4">
-                                                    <i class="fa fa-users fa-3x text-primary"></i>
-                                                    <div class="ms-3 text-end">
-                                                        <p class="mb-2 text-muted fw-bold">Tổng Leads</p>
-                                                        <h4 class="mb-0">${kpis.totalLeads}</h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6 col-xl-3">
+                                            <div class="col-sm-6 col-xl-4">
                                                 <div
                                                     class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-start border-danger border-4">
                                                     <i class="fa fa-fire fa-3x text-danger"></i>
@@ -144,7 +134,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-sm-6 col-xl-3">
+                                            <div class="col-sm-6 col-xl-4">
                                                 <div
                                                     class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-start border-warning border-4">
                                                     <i class="fa fa-user-plus fa-3x text-warning"></i>
@@ -154,15 +144,15 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-sm-6 col-xl-3">
+                                            <div class="col-sm-6 col-xl-4">
                                                 <div
                                                     class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-start border-success border-4">
                                                     <i class="fa fa-chart-line fa-3x text-success"></i>
                                                     <div class="ms-3 text-end">
-                                                        <p class="mb-2 text-muted fw-bold">Avg. Score</p>
+                                                        <p class="mb-2 text-muted fw-bold">Conversion Rate</p>
                                                         <h4 class="mb-0">
-                                                            <fmt:formatNumber type="number" maxFractionDigits="1"
-                                                                value="${kpis.avgScore}" />
+                                                            <fmt:formatNumber type="percent" maxFractionDigits="1"
+                                                                value="${kpis.hotLeads > 0 ? kpis.hotLeads / kpis.hotLeads : 1}" />
                                                         </h4>
                                                     </div>
                                                 </div>
@@ -171,7 +161,7 @@
 
                                         <div class="row g-4 mb-4">
                                             <!-- 2. Bảng phân công Hot Leads -->
-                                            <div class="col-sm-12 col-xl-9">
+                                            <div class="col-sm-12 col-xl-12">
                                                 <div class="bg-white text-center rounded p-4 h-100 shadow-sm">
                                                     <div class="d-flex align-items-center justify-content-between mb-4">
                                                         <h6 class="mb-0 fw-bold text-dark"><i
@@ -223,7 +213,7 @@
                                                                     <th scope="col" style="min-width: 180px;">Khách hàng
                                                                     </th>
                                                                     <th scope="col">Chiến dịch</th>
-                                                                    <th scope="col" class="text-center">Điểm</th>
+                                                                    <th scope="col" class="text-center">Tiềm năng</th>
                                                                     <th scope="col">Phone</th>
                                                                     <th scope="col" style="min-width: 130px;">Phân công
                                                                     </th>
@@ -285,27 +275,9 @@
                                                                                         </c:choose>
                                                                                     </td>
                                                                                     <td class="text-center">
-                                                                                        <c:choose>
-                                                                                            <c:when
-                                                                                                test="${lead.currentScore >= 50}">
-                                                                                                <span
-                                                                                                    class="badge bg-danger rounded-pill score-badge px-3 py-2"><i
-                                                                                                        class="fa fa-fire me-1"></i>
-                                                                                                    ${lead.currentScore}
-                                                                                                    đ</span>
-                                                                                            </c:when>
-                                                                                            <c:when
-                                                                                                test="${lead.currentScore >= 20}">
-                                                                                                <span
-                                                                                                    class="badge bg-warning text-dark rounded-pill score-badge px-3 py-2">${lead.currentScore}
-                                                                                                    đ</span>
-                                                                                            </c:when>
-                                                                                            <c:otherwise>
-                                                                                                <span
-                                                                                                    class="badge bg-secondary rounded-pill score-badge px-3 py-2">${lead.currentScore}
-                                                                                                    đ</span>
-                                                                                            </c:otherwise>
-                                                                                        </c:choose>
+                                                                                        <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm">
+                                                                                            <i class="fa fa-fire me-1"></i> HOT 🔥
+                                                                                        </span>
                                                                                     </td>
                                                                                     <td class="text-nowrap">${lead.phone
                                                                                         != null && !lead.phone.isEmpty()
@@ -316,12 +288,9 @@
                                                                                             name="singleSalesId_${lead.id}"
                                                                                             class="form-select form-select-sm"
                                                                                             onchange="quickAssign(${lead.id}, this.value)">
-                                                                                            <option value="">-- Chọn --
-                                                                                            </option>
-                                                                                            <c:forEach var="sale"
-                                                                                                items="${salesUsers}">
-                                                                                                <option
-                                                                                                    value="${sale.id}">
+                                                                                            <option value="">-- Chọn --</option>
+                                                                                            <c:forEach var="sale" items="${salesUsers}">
+                                                                                                <option value="${sale.id}">
                                                                                                     ${sale.fullName}
                                                                                                 </option>
                                                                                             </c:forEach>
@@ -342,75 +311,6 @@
                                                             </tbody>
                                                         </table>
                                                     </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- 3. Luồng hoạt động (Activity Feed) -->
-                                            <div class="col-sm-12 col-xl-3">
-                                                <div class="bg-white rounded p-4 h-100 shadow-sm">
-                                                    <div
-                                                        class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
-                                                        <h6 class="mb-0 fw-bold text-dark"><i
-                                                                class="fa fa-bolt text-warning me-2"></i>Tương tác gần
-                                                            đây</h6>
-                                                    </div>
-
-                                                    <div class="timeline ps-2 pe-1"
-                                                        style="max-height: 500px; overflow-y: auto;">
-                                                        <c:choose>
-                                                            <c:when test="${empty interactions}">
-                                                                <p class="text-center text-muted">Chưa có tương tác nào
-                                                                    được ghi
-                                                                    nhận.</p>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <c:forEach var="ix" items="${interactions}">
-                                                                    <div class="timeline-item">
-                                                                        <div class="timeline-icon"></div>
-                                                                        <div
-                                                                            class="d-flex w-100 justify-content-between mb-1">
-                                                                            <h6 class="mb-0 text-dark fw-bold"
-                                                                                style="font-size: 0.95rem;">
-                                                                                ${ix.leadName}</h6>
-                                                                            <small class="text-muted"
-                                                                                style="font-size: 0.8rem;">
-                                                                                <fmt:formatDate value="${ix.createdAt}"
-                                                                                    pattern="dd/MM HH:mm" />
-                                                                            </small>
-                                                                        </div>
-                                                                        <div class="mb-1">
-                                                                            <c:choose>
-                                                                                <c:when test="${ix.scoreChange > 0}">
-                                                                                    <span
-                                                                                        class="text-success fw-bold me-2">+${ix.scoreChange}đ</span>
-                                                                                </c:when>
-                                                                                <c:when test="${ix.scoreChange < 0}">
-                                                                                    <span
-                                                                                        class="text-danger fw-bold me-2">${ix.scoreChange}đ</span>
-                                                                                </c:when>
-                                                                            </c:choose>
-                                                                            <span class="text-primary fw-bold"
-                                                                                style="font-size: 0.85rem;">[${ix.activityName}]</span>
-                                                                        </div>
-                                                                        <p class="mb-0 text-muted"
-                                                                            style="font-size: 0.85rem; line-height: 1.3;">
-                                                                            <c:choose>
-                                                                                <c:when
-                                                                                    test="${ix.activityName == 'Email Click'}">
-                                                                                    Đã nhấp vào liên kết theo dõi trong
-                                                                                    email.
-                                                                                </c:when>
-                                                                                <c:otherwise>
-                                                                                    Hành động: ${ix.details}
-                                                                                </c:otherwise>
-                                                                            </c:choose>
-                                                                        </p>
-                                                                    </div>
-                                                                </c:forEach>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-
                                                 </div>
                                             </div>
                                         </div>

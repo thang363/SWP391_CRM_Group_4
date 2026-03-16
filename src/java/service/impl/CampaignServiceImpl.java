@@ -181,9 +181,26 @@ public class CampaignServiceImpl implements CampaignService {
 
     @Override
     public List<CampaignPerformanceVM> getMarketingPerformance(Integer marketingId) {
+        return campaignDAO.getMarketingPerformance(marketingId);
+    }
+
+    @Override
+    public List<CampaignPerformanceVM> getMarketingPerformancePaged(Integer marketingId, int page, int pageSize) {
         if (marketingId == null || marketingId <= 0) {
             return new java.util.ArrayList<>();
         }
-        return campaignDAO.getMarketingPerformance(marketingId);
+        if (page < 1) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+        
+        int offset = (page - 1) * pageSize;
+        return campaignDAO.getMarketingPerformancePaged(marketingId, offset, pageSize);
+    }
+
+    @Override
+    public int countMarketingPerformance(Integer marketingId) {
+        if (marketingId == null || marketingId <= 0) {
+            return 0;
+        }
+        return campaignDAO.countMarketingPerformance(marketingId);
     }
 }

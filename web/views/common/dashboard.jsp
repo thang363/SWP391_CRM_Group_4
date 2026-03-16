@@ -103,8 +103,13 @@
                                                 </c:when>
                                                 
                                                 <c:when test="${sessionScope.userRole == 'MANAGER'}">
-                                                    <!-- Marketing Dashboard for Manager -->
-                                                    <jsp:include page="/views/marketing/marketing-dashboard-fragment.jsp" />
+                                                    <!-- Marketing Overview for Manager -->
+                                                    <jsp:include page="/views/dashboard/manager-marketing-stats.jsp" />
+                                                </c:when>
+
+                                                <c:when test="${sessionScope.userRole == 'MARKETING'}">
+                                                    <!-- Dedicated Dashboard for Marketing -->
+                                                    <jsp:include page="/views/dashboard/marketing-dashboard.jsp" />
                                                 </c:when>
 
                                                 <c:otherwise>

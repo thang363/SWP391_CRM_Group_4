@@ -1,6 +1,9 @@
 package model.viewmodel;
 
 import java.math.BigDecimal;
+import java.util.List;
+import model.entity.LeadSubmission;
+
 
 /**
  * ViewModel for the Marketing Dashboard for Managers.
@@ -24,6 +27,11 @@ public class MarketingDashboardVM {
     private int assignedLeads;
     private int totalOpportunities;
     private int totalCustomers;
+    
+    // Marketing-specific Submission stats
+    private int submissionsToday;
+    private int pendingSubmissions;
+    private List<LeadSubmission> recentSubmissions;
     
     // Financial stats
     private BigDecimal totalBudget;
@@ -71,6 +79,15 @@ public class MarketingDashboardVM {
 
     public int getTotalCustomers() { return totalCustomers; }
     public void setTotalCustomers(int totalCustomers) { this.totalCustomers = totalCustomers; }
+
+    public int getSubmissionsToday() { return submissionsToday; }
+    public void setSubmissionsToday(int submissionsToday) { this.submissionsToday = submissionsToday; }
+
+    public int getPendingSubmissions() { return pendingSubmissions; }
+    public void setPendingSubmissions(int pendingSubmissions) { this.pendingSubmissions = pendingSubmissions; }
+
+    public List<LeadSubmission> getRecentSubmissions() { return recentSubmissions; }
+    public void setRecentSubmissions(List<LeadSubmission> recentSubmissions) { this.recentSubmissions = recentSubmissions; }
 
     public BigDecimal getTotalBudget() { return totalBudget; }
     public void setTotalBudget(BigDecimal totalBudget) { this.totalBudget = totalBudget; }
