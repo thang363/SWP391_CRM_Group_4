@@ -79,7 +79,7 @@ public class SalesDashboardDAOImpl implements SalesDashboardDAO {
 
             // 4. Open Deals Count
             String openDealsSql = "SELECT COUNT(*) FROM Opportunities " +
-                    "WHERE stage NOT IN ('Closed Won', 'Closed Lost')" +
+                    "WHERE stage NOT IN ('Won', 'Lost')" +
                     (salesId != null ? " AND sales_id = ?" : "");
             stmt = conn.prepareStatement(openDealsSql);
             if (salesId != null) stmt.setInt(1, salesId);

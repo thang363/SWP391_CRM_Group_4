@@ -97,7 +97,8 @@
                                     </c:if>
 
                                     <%-- Customers Module --%>
-                                        <c:if test="${sessionScope.userRole == 'MANAGER'}">
+                                        <c:if
+                                            test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SALE'}">
                                             <div class="nav-item dropdown">
                                                 <a href="#"
                                                     class="nav-link dropdown-toggle ${currentPage == 'customers' ? 'active' : ''}"
@@ -111,19 +112,6 @@
                                                         class="dropdown-item">Phân loại VIP</a>
                                                     <a href="${pageContext.request.contextPath}/contracts"
                                                         class="dropdown-item">Hợp đồng</a>
-                                                </div>
-                                            </div>
-                                        </c:if>
-                                        <c:if test="${sessionScope.userRole == 'SALE'}">
-                                            <div class="nav-item dropdown">
-                                                <a href="#"
-                                                    class="nav-link dropdown-toggle ${currentPage == 'customers' ? 'active' : ''}"
-                                                    data-bs-toggle="dropdown">
-                                                    <i class="fa fa-users me-2"></i>Customers
-                                                </a>
-                                                <div class="dropdown-menu bg-transparent border-0">
-                                                    <a href="${pageContext.request.contextPath}/sales/customers"
-                                                        class="dropdown-item">Danh sách KH</a>
                                                 </div>
                                             </div>
                                         </c:if>
