@@ -679,14 +679,76 @@ public class LeadDAOImpl implements LeadDAO {
         } catch (SQLException e) {
             System.err.println("Error assigning lead: " + e.getMessage());
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) {}
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                }
             }
             return false;
         } finally {
             if (conn != null) {
-                try { conn.setAutoCommit(true); } catch (SQLException ex) {}
-                dbUtil.closeConnection(conn);
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException ex) {
+                }
             }
+            closeResources(null, null, conn);
+        }
+    }
+
+    @Override
+    public boolean delete(int leadId) {
+        Connection conn = null;
+        try {
+            conn = dbUtil.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. Delete from LeadInteractions
+            String sqlInteractions = "DELETE FROM LeadInteractions WHERE lead_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlInteractions)) {
+                ps.setInt(1, leadId);
+                ps.executeUpdate();
+            }
+
+            // 2. Delete from LeadStatusHistory 
+            String sqlHistory = "DELETE FROM LeadStatusHistory WHERE lead_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlHistory)) {
+                ps.setInt(1, leadId);
+                ps.executeUpdate();
+            }
+
+            // 3. Delete from Leads - only if NOT assigned
+            String sqlLead = "DELETE FROM Leads WHERE id = ? AND assigned_to IS NULL";
+            int affected = 0;
+            try (PreparedStatement ps = conn.prepareStatement(sqlLead)) {
+                ps.setInt(1, leadId);
+                affected = ps.executeUpdate();
+            }
+
+            if (affected > 0) {
+                conn.commit();
+                return true;
+            } else {
+                conn.rollback();
+                return false;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error deleting lead: " + e.getMessage());
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                }
+            }
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException ex) {
+                }
+            }
+            closeResources(null, null, conn);
         }
     }
 }

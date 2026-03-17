@@ -543,16 +543,7 @@
                                                     .then(function (res) { return res.json(); })
                                                     .then(function (data) {
                                                         if (data.success) {
-                                                            var row = document.getElementById('submission-row-' + id);
-                                                            if (row) {
-                                                                var badgeCell = row.cells[4];
-                                                                badgeCell.innerHTML = '<span class="badge badge-processed">Đã xử lý</span>';
-                                                                var actionCell = row.cells[5];
-                                                                actionCell.innerHTML =
-                                                                    '<button class="btn btn-sm btn-danger" onclick="handleDelete(' + id + ')" title="Xóa">' +
-                                                                    '<i class="fa fa-trash"></i></button>';
-                                                            }
-                                                            showToast('success', data.message);
+                                                            window.location.reload();
                                                         } else {
                                                             showToast('error', data.message);
                                                         }

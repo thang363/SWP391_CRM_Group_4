@@ -49,12 +49,6 @@ public class MonitorLeadsServlet extends HttpServlet {
             return;
         }
 
-        Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
-        if (role == null || (role != Role.MANAGER && role != Role.MARKETING)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập trang này.");
-            return;
-        }
-
         // 2. Fetch parameters for filtering
         String campaignIdStr = request.getParameter("campaignId");
         Integer campaignId = null;
@@ -124,6 +118,8 @@ public class MonitorLeadsServlet extends HttpServlet {
             processAssignment(request, response, session);
         } else if ("massAssign".equals(action)) {
             processMassAssignment(request, response, session);
+        } else if ("delete".equals(action)) {
+            processDeletion(request, response, session);
         } else {
             doGet(request, response);
         }
@@ -208,6 +204,38 @@ public class MonitorLeadsServlet extends HttpServlet {
             }
         }
         
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/marketing/monitor-leads?");
+        if (campaignIdStr != null && !campaignIdStr.isEmpty()) {
+            redirectUrl.append("campaignId=").append(campaignIdStr).append("&");
+        }
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            redirectUrl.append("searchQuery=").append(searchQuery).append("&");
+        }
+        if (dateFilter != null && !dateFilter.isEmpty()) {
+            redirectUrl.append("dateFilter=").append(dateFilter);
+        }
+        response.sendRedirect(redirectUrl.toString());
+    }
+    private void processDeletion(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws IOException {
+        String leadIdStr = request.getParameter("leadId");
+        String campaignIdStr = request.getParameter("listCampaignId");
+        String searchQuery = request.getParameter("searchQuery");
+        String dateFilter = request.getParameter("dateFilter");
+
+        if (leadIdStr != null) {
+            try {
+                int leadId = Integer.parseInt(leadIdStr);
+                if (leadDAO.delete(leadId)) {
+                    session.setAttribute("successMsg", "Đã xóa Lead thành công.");
+                } else {
+                    session.setAttribute("errorMsg", "Xóa thất bại. Lead có thể đã được phân công hoặc không tồn tại.");
+                }
+            } catch (NumberFormatException e) {
+                session.setAttribute("errorMsg", "Lỗi định dạng ID Lead.");
+            }
+        }
+
+        // Redirect back with filters
         StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/marketing/monitor-leads?");
         if (campaignIdStr != null && !campaignIdStr.isEmpty()) {
             redirectUrl.append("campaignId=").append(campaignIdStr).append("&");

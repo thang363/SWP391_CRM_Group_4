@@ -30,6 +30,7 @@ public class RoleFilter implements Filter {
         roleRequirements.put("/admin", Set.of(Role.MANAGER));
         roleRequirements.put("/users", Set.of(Role.MANAGER));
         roleRequirements.put("/campaigns", Set.of(Role.MANAGER));
+        roleRequirements.put("/marketing/monitor-leads", Set.of(Role.MANAGER));
         roleRequirements.put("/marketing", Set.of(Role.MARKETING, Role.MANAGER));
         sortedRequirements = roleRequirements.entrySet().stream()
         .sorted((e1, e2) -> Integer.compare(e2.getKey().length(), e1.getKey().length()))
@@ -91,7 +92,8 @@ public class RoleFilter implements Filter {
             if (userRole == null) {
                 httpResponse.sendRedirect(contextPath + Constants.SERVLET_LOGIN);
             } else {
-                httpResponse.sendRedirect(contextPath + Constants.SERVLET_DASHBOARD);
+                httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                httpRequest.getRequestDispatcher("/views/error/403.jsp").forward(httpRequest, httpResponse);
             }
         }
     }

@@ -296,11 +296,12 @@
                                                                                             </c:forEach>
                                                                                         </select>
                                                                                     </td>
-                                                                                    <td class="text-center pe-2">
+                                                                                      <td class="text-center pe-2">
                                                                                         <button type="button"
-                                                                                            class="btn btn-sm btn-outline-info disabled p-1 px-2"
-                                                                                            title="Chi tiết lịch sử">
-                                                                                            <i class="fa fa-eye"></i>
+                                                                                            class="btn btn-sm btn-outline-danger p-1 px-2 ms-1"
+                                                                                            onclick="handleDeleteLead(${lead.id})"
+                                                                                            title="Xóa Lead">
+                                                                                            <i class="fa fa-trash"></i>
                                                                                         </button>
                                                                                     </td>
                                                                                 </tr>
@@ -317,6 +318,7 @@
 
                                 </div>
                                 <!-- Monitor Leads End -->
+                                <%@ include file="/includes/confirm-modal.jsp" %>
                                 <%@ include file="/includes/footer.jsp" %>
 
                         </div>
@@ -402,6 +404,55 @@
                             document.body.appendChild(form);
                             form.submit();
                         }
+
+                         function handleDeleteLead(leadId) {
+                            showConfirmDialog(
+                                'Bạn có chắc chắn muốn xóa Lead #<strong>' + leadId + '</strong>? Hành động này không thể hoàn tác.',
+                                function() {
+                                    const form = document.createElement('form');
+                                    form.method = 'post';
+                                    form.action = '${pageContext.request.contextPath}/marketing/monitor-leads';
+
+                                    const actionInput = document.createElement('input');
+                                    actionInput.type = 'hidden';
+                                    actionInput.name = 'action';
+                                    actionInput.value = 'delete';
+                                    form.appendChild(actionInput);
+
+                                    const leadInput = document.createElement('input');
+                                    leadInput.type = 'hidden';
+                                    leadInput.name = 'leadId';
+                                    leadInput.value = leadId;
+                                    form.appendChild(leadInput);
+
+                                    const campaignInput = document.createElement('input');
+                                    campaignInput.type = 'hidden';
+                                    campaignInput.name = 'listCampaignId';
+                                    campaignInput.value = '${selectedCampaignId}';
+                                    form.appendChild(campaignInput);
+
+                                    const searchInput = document.createElement('input');
+                                    searchInput.type = 'hidden';
+                                    searchInput.name = 'searchQuery';
+                                    searchInput.value = '${searchQuery}';
+                                    form.appendChild(searchInput);
+
+                                    const dateInput = document.createElement('input');
+                                    dateInput.type = 'hidden';
+                                    dateInput.name = 'dateFilter';
+                                    dateInput.value = '${dateFilter}';
+                                    form.appendChild(dateInput);
+
+                                    document.body.appendChild(form);
+                                    form.submit();
+                                },
+                                { 
+                                    title: 'Xóa Lead', 
+                                    confirmText: 'Xóa', 
+                                    confirmClass: 'btn-danger' 
+                                }
+                            );
+                         }
                     </script>
             </body>
 
