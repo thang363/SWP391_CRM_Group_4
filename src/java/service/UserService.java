@@ -38,4 +38,8 @@ public interface UserService {
     int getTotalUserCount();
     
     int getActiveUserCount();
+    
+    boolean resetPassword(Integer userId, String newPassword);
+    
+    User createUser(String username, String password, String email, String fullName, String phone, Role role);
 }

@@ -51,6 +51,7 @@ public class Constants {
     public static final String PAGE_SALES_PIPELINE = "/views/sales/pipeline.jsp";
     public static final String PAGE_CUSTOMERS = "/views/customers.jsp";
     public static final String PAGE_USERS = "/views/users.jsp";
+    public static final String PAGE_USER_MANAGEMENT = "/views/manager/user-management.jsp";
     public static final String PAGE_ERROR = "/views/error.jsp";
     public static final String PAGE_403 = "/views/403.jsp";
     public static final String PAGE_404 = "/views/404.jsp";

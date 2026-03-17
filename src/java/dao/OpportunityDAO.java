@@ -15,6 +15,8 @@ import model.entity.Opportunity;
 public interface OpportunityDAO {
     void createFromLead(int leadID,String leadName,int saleID);
 
+    void createFromCustomer(int customerID, String companyName, int saleID);
+
     List<Opportunity> getOpportunitiesBySalesId(int salesId);
 
     /** Lấy cả quoteCount theo JOIN */

@@ -68,6 +68,33 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
     }
 
     @Override
+    public void createFromCustomer(int customerID, String companyName, int saleID) {
+        String sql = """
+            INSERT INTO Opportunities 
+            (customer_id, name, stage, expected_value, sales_id, created_at)
+            VALUES (?, ?, ?, ?, ?, GETDATE())
+        """;
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = dbUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, customerID);
+            ps.setString(2, "Đơn hàng - " + companyName);
+            ps.setString(3, "Prospecting");
+            ps.setDouble(4, 0);
+            ps.setInt(5, saleID);
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, conn);
+        }
+    }
+
+    @Override
     public List<Opportunity> getOpportunitiesBySalesId(int salesId) {
         List<Opportunity> list = new ArrayList<>();
         String sql = "SELECT * FROM Opportunities WHERE sales_id = ? ORDER BY created_at DESC";

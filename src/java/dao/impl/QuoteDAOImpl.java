@@ -37,6 +37,31 @@ public class QuoteDAOImpl implements QuoteDAO {
     }
 
     @Override
+    public List<Quote> getAll() {
+        List<Quote> list = new ArrayList<>();
+        String sql = "SELECT q.*, o.name AS opportunity_name, u.full_name as creator_name " +
+                     "FROM Quotes q " +
+                     "LEFT JOIN Opportunities o ON q.opportunity_id = o.id " +
+                     "LEFT JOIN Users u ON q.created_by = u.id " +
+                     "ORDER BY q.created_at DESC";
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Quote q = mapRow(rs);
+                    q.setOpportunityName(rs.getString("opportunity_name"));
+                    q.setCreatorName(rs.getString("creator_name"));
+                    // Tận dụng setter nếu có, không có thì thôi vì entity Quote đã được tạo từ trước.
+                    list.add(q);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
     public Quote getById(int id) {
         String sql = "SELECT q.*, o.name AS opportunity_name FROM Quotes q " +
                      "JOIN Opportunities o ON q.opportunity_id = o.id WHERE q.id = ?";
@@ -88,7 +113,31 @@ public class QuoteDAOImpl implements QuoteDAO {
 
     @Override
     public void send(int quoteId) {
-        String sql = "UPDATE Quotes SET status = 'Sent' WHERE id = ? AND status = 'Draft'";
+        String sql = "UPDATE Quotes SET status = 'Pending Approval' WHERE id = ? AND status = 'Draft'";
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, quoteId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void approve(int quoteId) {
+        String sql = "UPDATE Quotes SET status = 'Approved' WHERE id = ? AND status = 'Pending Approval'";
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, quoteId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void markAsSent(int quoteId) {
+        String sql = "UPDATE Quotes SET status = 'Sent' WHERE id = ? AND status = 'Approved'";
         try (Connection conn = dbUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, quoteId);
@@ -147,11 +196,12 @@ public class QuoteDAOImpl implements QuoteDAO {
     }
 
     @Override
-    public void reject(int quoteId) {
-        String sql = "UPDATE Quotes SET status = 'Rejected' WHERE id = ? AND status = 'Sent'";
+    public void reject(int quoteId, String reason) {
+        String sql = "UPDATE Quotes SET status = 'Rejected', rejection_reason = ? WHERE id = ? AND status IN ('Sent', 'Pending Approval', 'Approved')";
         try (Connection conn = dbUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, quoteId);
+            ps.setString(1, reason);
+            ps.setInt(2, quoteId);
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,7 +222,7 @@ public class QuoteDAOImpl implements QuoteDAO {
 
     @Override
     public boolean hasActiveSent(int opportunityId) {
-        String sql = "SELECT COUNT(*) FROM Quotes WHERE opportunity_id = ? AND status = 'Sent'";
+        String sql = "SELECT COUNT(*) FROM Quotes WHERE opportunity_id = ? AND status IN ('Sent', 'Pending Approval', 'Approved')";
         try (Connection conn = dbUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, opportunityId);
@@ -196,6 +246,7 @@ public class QuoteDAOImpl implements QuoteDAO {
         q.setTaxAmount(rs.getBigDecimal("tax_amount"));
         q.setGrandTotal(rs.getBigDecimal("grand_total"));
         q.setStatus(rs.getString("status"));
+        q.setRejectionReason(rs.getString("rejection_reason"));
 
         Date validUntil = rs.getDate("valid_until");
         if (validUntil != null) q.setValidUntil(validUntil.toLocalDate());
