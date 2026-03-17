@@ -89,9 +89,25 @@ public interface CampaignService {
     int getCountByStatus(String status);
 
     /**
-     * Get marketing performance stats for campaigns where the marketing user created landing pages.
+     * Get marketing performance stats for all campaigns.
      * @param marketingId ID of the marketing user
      * @return List of campaign performance stats
      */
     List<CampaignPerformanceVM> getMarketingPerformance(Integer marketingId);
+
+    /**
+     * Get marketing performance stats with pagination.
+     * @param marketingId ID of the marketing user
+     * @param page Current page number (1-indexed)
+     * @param pageSize Number of records per page
+     * @return List of campaign performance stats
+     */
+    List<CampaignPerformanceVM> getMarketingPerformancePaged(Integer marketingId, int page, int pageSize);
+
+    /**
+     * Count total campaigns for marketing performance.
+     * @param marketingId ID of the marketing user
+     * @return Total count
+     */
+    int countMarketingPerformance(Integer marketingId);
 }

@@ -131,7 +131,7 @@
                     </li>
                     <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
                         <span><i class="fa fa-user-clock text-warning me-2"></i>Chưa phân bổ</span>
-                        <span class="badge bg-warning rounded-pill text-dark">${stats.totalLeads - stats.assignedLeads}</span>
+                        <span class="badge bg-warning rounded-pill text-dark">${stats.hotLeads - stats.assignedLeads}</span>
                     </li>
                     <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
                         <span><i class="fa fa-check-double text-success me-2"></i>Landing Page đã duyệt</span>

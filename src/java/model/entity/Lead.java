@@ -18,8 +18,8 @@ public class Lead {
     private String email;
     private String phone;
 
-    private Integer currentScore;
-    private String status;        // New, Nurturing, Qualified, Assigned, Junk
+    private String potentialStatus;  // Hot, Cool
+    private String status;           // New, Nurturing, Qualified, Assigned, Junk
     private Boolean isConverted;
 
     private Integer assignedTo;      // sale_id
@@ -33,14 +33,14 @@ public class Lead {
     public Lead() {
     }
 
-    public Lead(Integer id, Integer campaignId, Integer sourceId, String fullName, String email, String phone, Integer currentScore, String status, Boolean isConverted, Integer assignedTo, LocalDateTime createdAt, User assignedSale) {
+    public Lead(Integer id, Integer campaignId, Integer sourceId, String fullName, String email, String phone, String potentialStatus, String status, Boolean isConverted, Integer assignedTo, LocalDateTime createdAt, User assignedSale) {
         this.id = id;
         this.campaignId = campaignId;
         this.sourceId = sourceId;
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
-        this.currentScore = currentScore;
+        this.potentialStatus = potentialStatus;
         this.status = status;
         this.isConverted = isConverted;
         this.assignedTo = assignedTo;
@@ -96,12 +96,12 @@ public class Lead {
         this.phone = phone;
     }
 
-    public Integer getCurrentScore() {
-        return currentScore;
+    public String getPotentialStatus() {
+        return potentialStatus;
     }
-
-    public void setCurrentScore(Integer currentScore) {
-        this.currentScore = currentScore;
+    
+    public void setPotentialStatus(String potentialStatus) {
+        this.potentialStatus = potentialStatus;
     }
 
     public String getStatus() {
@@ -154,7 +154,7 @@ public class Lead {
 
     @Override
     public String toString() {
-        return "Lead{" + "id=" + id + ", campaignId=" + campaignId + ", sourceId=" + sourceId + ", fullName=" + fullName + ", email=" + email + ", phone=" + phone + ", currentScore=" + currentScore + ", status=" + status + ", isConverted=" + isConverted + ", assignedTo=" + assignedTo + ", createdAt=" + createdAt + ", assignedSale=" + assignedSale + ", campaign=" + campaign + '}';
+        return "Lead{" + "id=" + id + ", campaignId=" + campaignId + ", sourceId=" + sourceId + ", fullName=" + fullName + ", email=" + email + ", phone=" + phone + ", potentialStatus=" + potentialStatus + ", status=" + status + ", isConverted=" + isConverted + ", assignedTo=" + assignedTo + ", createdAt=" + createdAt + ", assignedSale=" + assignedSale + ", campaign=" + campaign + '}';
     }
 
     

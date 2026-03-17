@@ -8,7 +8,7 @@
                     <html lang="vi">
 
                     <head>
-                        <title>Danh sách Đăng ký - CRM System</title>
+                        <title>List Submissions - CRM System</title>
                         <%@ include file="/includes/head.jsp" %>
                             <style>
                                 .stat-card {
@@ -115,8 +115,8 @@
                                                             <div
                                                                 class="d-flex justify-content-between align-items-center">
                                                                 <h3 class="mb-0"><i
-                                                                        class="fa fa-clipboard-list me-2"></i>Danh sách
-                                                                    Đăng ký</h3>
+                                                                        class="fa fa-clipboard-list me-2"></i>List
+                                                                    Submissions</h3>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -267,7 +267,7 @@
                                                                                                             <span
                                                                                                                 class="fw-bold text-primary">${sub.campaignName}</span>
                                                                                                         </c:when>
-                                                                                                       
+
                                                                                                     </c:choose>
                                                                                                 </td>
                                                                                                 <td>
@@ -543,16 +543,7 @@
                                                     .then(function (res) { return res.json(); })
                                                     .then(function (data) {
                                                         if (data.success) {
-                                                            var row = document.getElementById('submission-row-' + id);
-                                                            if (row) {
-                                                                var badgeCell = row.cells[4];
-                                                                badgeCell.innerHTML = '<span class="badge badge-processed">Đã xử lý</span>';
-                                                                var actionCell = row.cells[5];
-                                                                actionCell.innerHTML =
-                                                                    '<button class="btn btn-sm btn-danger" onclick="handleDelete(' + id + ')" title="Xóa">' +
-                                                                    '<i class="fa fa-trash"></i></button>';
-                                                            }
-                                                            showToast('success', data.message);
+                                                            window.location.reload();
                                                         } else {
                                                             showToast('error', data.message);
                                                         }

@@ -45,25 +45,46 @@ public class CampaignPerformanceServlet extends HttpServlet {
         // Get current user ID
         Integer marketingId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
 
-        // Get performance data
-        List<CampaignPerformanceVM> performanceList = campaignService.getMarketingPerformance(marketingId);
+        // Get pagination parameters
+        int page = 1;
+        int pageSize = 10;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
 
-        // Calculate summary KPIs
+        // Get total summaries (KPIs) - still need all data for this
+        // In a real high-scale app, we'd use a specific summary query
+        List<CampaignPerformanceVM> allPerformance = campaignService.getMarketingPerformance(marketingId);
+        
         int totalLeads = 0;
         int totalOpportunities = 0;
         int totalCustomers = 0;
-        for (CampaignPerformanceVM vm : performanceList) {
+        for (CampaignPerformanceVM vm : allPerformance) {
             totalLeads += vm.getTotalLeads();
             totalOpportunities += vm.getConvertedToOpportunity();
             totalCustomers += vm.getConvertedToCustomer();
         }
 
+        // Get paged performance data for the table
+        List<CampaignPerformanceVM> performanceList = campaignService.getMarketingPerformancePaged(marketingId, page, pageSize);
+        int totalRecords = campaignService.countMarketingPerformance(marketingId);
+        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+
         // Set attributes
         request.setAttribute("performanceList", performanceList);
+        request.setAttribute("allPerformance", allPerformance);
         request.setAttribute("totalLeads", totalLeads);
         request.setAttribute("totalOpportunities", totalOpportunities);
         request.setAttribute("totalCustomers", totalCustomers);
-        request.setAttribute("campaignCount", performanceList.size());
+        request.setAttribute("campaignCount", totalRecords);
+        request.setAttribute("currentPageNum", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalRecords", totalRecords);
         request.setAttribute("currentPage", "marketing-performance");
         request.setAttribute("pageTitle", "Thành quả Chiến dịch");
 
