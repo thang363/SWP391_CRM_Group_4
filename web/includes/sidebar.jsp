@@ -63,12 +63,11 @@
                                                 <i class="fa fa-bullhorn me-2"></i>Marketing
                                             </a>
                                             <div class="dropdown-menu bg-transparent border-0">
-                                                <a href="${pageContext.request.contextPath}/marketing/monitor-leads"
-                                                    class="dropdown-item ${currentPage == 'monitor-leads' ? 'active' : ''}">Monitor
-                                                    Leads
-                                                </a>
-
                                                 <c:if test="${sessionScope.userRole == 'MANAGER'}">
+                                                    <a href="${pageContext.request.contextPath}/marketing/monitor-leads"
+                                                        class="dropdown-item ${currentPage == 'monitor-leads' ? 'active' : ''}">Monitor
+                                                        Leads
+                                                    </a>
                                                     <a href="${pageContext.request.contextPath}/campaigns"
                                                         class="dropdown-item ${currentPage == 'campaigns' ? 'active' : ''}">Campaigns
                                                     </a>
