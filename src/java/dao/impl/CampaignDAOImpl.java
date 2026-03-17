@@ -2,7 +2,7 @@ package dao.impl;
 
 import dao.CampaignDAO;
 import model.entity.Campaign;
-import model.viewmodel.CampaignPerformanceVM;
+import model.entity.Role;
 import util.DatabaseUtil;
 
 import java.math.BigDecimal;
@@ -508,82 +508,5 @@ public class CampaignDAOImpl implements CampaignDAO {
         }
     }
 
-    @Override
-    public List<CampaignPerformanceVM> getMarketingPerformance(Integer marketingId) {
-        return getMarketingPerformancePaged(marketingId, 0, Integer.MAX_VALUE);
-    }
 
-    @Override
-    public List<CampaignPerformanceVM> getMarketingPerformancePaged(Integer marketingId, int offset, int limit) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        List<CampaignPerformanceVM> result = new ArrayList<>();
-
-        try {
-            conn = dbUtil.getConnection();
-            String sql = "SELECT c.id, c.name, c.status, " +
-                    "(SELECT COUNT(*) FROM Leads l WHERE l.campaign_id = c.id) AS totalLeads, " +
-                    "(SELECT COUNT(DISTINCT o.lead_id) FROM Opportunities o " +
-                    "  INNER JOIN Leads l2 ON o.lead_id = l2.id WHERE l2.campaign_id = c.id) AS convertedToOpportunity, " +
-                    "(SELECT COUNT(DISTINCT cu.lead_id) FROM Customers cu " +
-                    "  INNER JOIN Leads l3 ON cu.lead_id = l3.id WHERE l3.campaign_id = c.id) AS convertedToCustomer " +
-                    "FROM Campaigns c " +
-                    "WHERE c.id IN (SELECT DISTINCT lp.campaign_id FROM LandingPages lp WHERE lp.created_by = ?) " +
-                    "ORDER BY c.id DESC " +
-                    "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, marketingId);
-            stmt.setInt(2, offset);
-            stmt.setInt(3, limit);
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                CampaignPerformanceVM vm = new CampaignPerformanceVM();
-                vm.setCampaignId(rs.getInt("id"));
-                vm.setCampaignName(rs.getString("name"));
-                vm.setCampaignStatus(rs.getString("status"));
-                vm.setTotalLeads(rs.getInt("totalLeads"));
-                vm.setConvertedToOpportunity(rs.getInt("convertedToOpportunity"));
-                vm.setConvertedToCustomer(rs.getInt("convertedToCustomer"));
-                result.add(vm);
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error getting marketing performance paged: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            closeResources(rs, stmt, conn);
-        }
-
-        return result;
-    }
-
-    @Override
-    public int countMarketingPerformance(Integer marketingId) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = dbUtil.getConnection();
-            String sql = "SELECT COUNT(*) FROM Campaigns c " +
-                    "WHERE c.id IN (SELECT DISTINCT lp.campaign_id FROM LandingPages lp WHERE lp.created_by = ?)";
-
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, marketingId);
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error counting marketing performance: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            closeResources(rs, stmt, conn);
-        }
-        return 0;
-    }
 }

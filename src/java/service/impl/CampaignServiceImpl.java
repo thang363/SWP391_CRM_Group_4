@@ -3,7 +3,7 @@ package service.impl;
 import dao.CampaignDAO;
 import dao.impl.CampaignDAOImpl;
 import model.entity.Campaign;
-import model.viewmodel.CampaignPerformanceVM;
+import model.entity.Role;
 import service.CampaignService;
 
 import java.math.BigDecimal;
@@ -179,28 +179,5 @@ public class CampaignServiceImpl implements CampaignService {
         return campaignDAO.countByStatus(status);
     }
 
-    @Override
-    public List<CampaignPerformanceVM> getMarketingPerformance(Integer marketingId) {
-        return campaignDAO.getMarketingPerformance(marketingId);
-    }
 
-    @Override
-    public List<CampaignPerformanceVM> getMarketingPerformancePaged(Integer marketingId, int page, int pageSize) {
-        if (marketingId == null || marketingId <= 0) {
-            return new java.util.ArrayList<>();
-        }
-        if (page < 1) page = 1;
-        if (pageSize <= 0) pageSize = 10;
-        
-        int offset = (page - 1) * pageSize;
-        return campaignDAO.getMarketingPerformancePaged(marketingId, offset, pageSize);
-    }
-
-    @Override
-    public int countMarketingPerformance(Integer marketingId) {
-        if (marketingId == null || marketingId <= 0) {
-            return 0;
-        }
-        return campaignDAO.countMarketingPerformance(marketingId);
-    }
 }

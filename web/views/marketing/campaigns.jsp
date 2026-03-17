@@ -98,6 +98,19 @@
                                                         <form id="filterForm" method="get"
                                                             action="${pageContext.request.contextPath}/campaigns">
                                                             <input type="hidden" name="page" id="pageInput" value="1">
+                                                            <input type="hidden" name="ownerFilter" id="ownerFilterInput" value="${ownerFilter}">
+                                                            
+                                                            <!-- Toggle All / Mine -->
+                                                            <div class="row mb-3">
+                                                                <div class="col-12">
+                                                                    <div class="btn-group" role="group">
+                                                                        <button type="button" class="btn btn-outline-primary ${ownerFilter == 'all' ? 'active' : ''}" 
+                                                                                onclick="setOwnerFilter('all')">Tất cả</button>
+                                                                        <button type="button" class="btn btn-outline-primary ${ownerFilter == 'mine' ? 'active' : ''}" 
+                                                                                onclick="setOwnerFilter('mine')">Của tôi</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                             <div class="row g-3">
                                                                 <div class="col-md-3">
                                                                     <label class="form-label">Tên chiến dịch</label>
@@ -187,6 +200,9 @@
                                                                                             <td>${campaign.id}</td>
                                                                                             <td>
                                                                                                 <strong>${campaign.name}</strong>
+                                                                                                <c:if test="${campaign.isOwner}">
+                                                                                                    <span class="badge bg-primary ms-1" style="font-size: 0.7rem;">Của tôi</span>
+                                                                                                </c:if>
                                                                                                 <c:if
                                                                                                     test="${not empty campaign.description}">
                                                                                                     <br><small
@@ -498,6 +514,12 @@
                                     <script>
                                         // Initialize campaigns.js with context path
                                         initCampaignsJS('${pageContext.request.contextPath}');
+                                        
+                                        function setOwnerFilter(value) {
+                                            document.getElementById('ownerFilterInput').value = value;
+                                            document.getElementById('pageInput').value = 1; // Reset to page 1
+                                            document.getElementById('filterForm').submit();
+                                        }
                                     </script>
 
                     </body>
