@@ -1,7 +1,7 @@
 package dao;
 
 import model.entity.Campaign;
-import model.viewmodel.CampaignPerformanceVM;
+import model.entity.Role;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -81,26 +81,5 @@ public interface CampaignDAO {
      */
     int countByStatus(String status);
 
-    /**
-     * Get marketing performance stats for all campaigns.
-     * @param marketingId ID of the marketing user
-     * @return List of campaign performance stats
-     */
-    List<CampaignPerformanceVM> getMarketingPerformance(Integer marketingId);
 
-    /**
-     * Get marketing performance stats with pagination.
-     * @param marketingId ID of the marketing user
-     * @param offset Number of records to skip
-     * @param limit Maximum number of records to return
-     * @return List of campaign performance stats
-     */
-    List<CampaignPerformanceVM> getMarketingPerformancePaged(Integer marketingId, int offset, int limit);
-
-    /**
-     * Count total campaigns for marketing performance.
-     * @param marketingId ID of the marketing user
-     * @return Total count of campaigns for this marketing user
-     */
-    int countMarketingPerformance(Integer marketingId);
 }

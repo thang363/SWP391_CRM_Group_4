@@ -63,12 +63,11 @@
                                                 <i class="fa fa-bullhorn me-2"></i>Marketing
                                             </a>
                                             <div class="dropdown-menu bg-transparent border-0">
-                                                <a href="${pageContext.request.contextPath}/marketing/monitor-leads"
-                                                    class="dropdown-item ${currentPage == 'monitor-leads' ? 'active' : ''}">Monitor
-                                                    Leads
-                                                </a>
-
                                                 <c:if test="${sessionScope.userRole == 'MANAGER'}">
+                                                    <a href="${pageContext.request.contextPath}/marketing/monitor-leads"
+                                                        class="dropdown-item ${currentPage == 'monitor-leads' ? 'active' : ''}">Monitor
+                                                        Leads
+                                                    </a>
                                                     <a href="${pageContext.request.contextPath}/campaigns"
                                                         class="dropdown-item ${currentPage == 'campaigns' ? 'active' : ''}">Campaigns
                                                     </a>
@@ -97,8 +96,7 @@
                                     </c:if>
 
                                     <%-- Customers Module --%>
-                                        <c:if
-                                            test="${sessionScope.userRole == 'MANAGER' }">
+                                        <c:if test="${sessionScope.userRole == 'MANAGER'}">
                                             <div class="nav-item dropdown">
                                                 <a href="#"
                                                     class="nav-link dropdown-toggle ${currentPage == 'customers' ? 'active' : ''}"
@@ -106,7 +104,7 @@
                                                     <i class="fa fa-users me-2"></i>Customers
                                                 </a>
                                                 <div class="dropdown-menu bg-transparent border-0">
-                                                    <a href="${pageContext.request.contextPath}${sessionScope.userRole == 'SALE' ? '/sales/customers' : '/customers'}"
+                                                    <a href="${pageContext.request.contextPath}/customers"
                                                         class="dropdown-item">Danh sách KH</a>
                                                     <a href="${pageContext.request.contextPath}/customers-vip"
                                                         class="dropdown-item">Phân loại VIP</a>
@@ -115,8 +113,7 @@
                                                 </div>
                                             </div>
                                         </c:if>
-                                        <c:if
-                                            test="${ sessionScope.userRole == 'SALE'}">
+                                        <c:if test="${sessionScope.userRole == 'SALE'}">
                                             <div class="nav-item dropdown">
                                                 <a href="#"
                                                     class="nav-link dropdown-toggle ${currentPage == 'customers' ? 'active' : ''}"
@@ -124,12 +121,12 @@
                                                     <i class="fa fa-users me-2"></i>Customers
                                                 </a>
                                                 <div class="dropdown-menu bg-transparent border-0">
-                                                    <a href="${pageContext.request.contextPath}${sessionScope.userRole == 'SALE' ? '/sales/customers' : '/customers'}"
+                                                    <a href="${pageContext.request.contextPath}/sales/customers"
                                                         class="dropdown-item">Danh sách KH</a>
                                                 </div>
                                             </div>
                                         </c:if>
-                                        
+
                                         <%-- Activities --%>
                                             <c:if
                                                 test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SALE'}">
