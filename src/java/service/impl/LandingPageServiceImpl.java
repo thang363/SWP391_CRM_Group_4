@@ -11,12 +11,6 @@ import com.google.gson.JsonObject;
 public class LandingPageServiceImpl implements LandingPageService {
 
     private final LandingPageDAO lpDAO;
-    
-    // Default Template (Hardcoded for prototype phase)
-    // In real app, this should be loaded from a file or DB template table
-    // Default Template Path
-    private static final String TEMPLATE_PATH = "g:/CRM/web/templates/standout/index.html";
-    private static final String DEFAULT_HTML_TEMPLATE = "<h1>Error loading template</h1>";
 
     private static final String DEFAULT_DATA_CONFIG = 
             "{ \"HERO_TITLE\": \"Standout App\", \"HERO_DESC\": \"An Amazing App That Does It All.\", \"HERO_ALIGN\": \"text-left\" }";
@@ -49,20 +43,6 @@ public class LandingPageServiceImpl implements LandingPageService {
         lp.setCampaignId(campaignId);
         lp.setCreatedBy(createdBy);
         lp.setBrief(brief);
-        
-        // Load Template from File
-        String htmlContent = DEFAULT_HTML_TEMPLATE;
-        try {
-            java.nio.file.Path path = java.nio.file.Paths.get(TEMPLATE_PATH);
-            if (java.nio.file.Files.exists(path)) {
-                htmlContent = java.nio.file.Files.readString(path);
-            }
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-            System.err.println("Failed to load template: " + e.getMessage());
-        }
-        
-        lp.setHtmlTemplate(htmlContent);
         lp.setDataConfig(DEFAULT_DATA_CONFIG);
         lp.setStatus("Draft");
         lp.setName("LP #" + System.currentTimeMillis() % 10000 + " - Campaign " + campaignId);
@@ -90,40 +70,12 @@ public class LandingPageServiceImpl implements LandingPageService {
     }
 
     @Override
-    public boolean submitForApproval(Integer lpId) {
-        return lpDAO.updateStatus(lpId, "Pending");
-    }
-
-    @Override
-    public boolean approveLandingPage(Integer lpId, Integer managerId, String comment) {
-        LandingPage lp = lpDAO.findById(lpId);
-        if (lp == null) return false;
-        
-        lp.setStatus("Approved");
-        lp.setApprovedBy(managerId);
-        lp.setManagerComment(comment);
-        
-        return lpDAO.update(lp);
-    }
-
-    @Override
-    public boolean rejectLandingPage(Integer lpId, String managerId, String reason) {
-        LandingPage lp = lpDAO.findById(lpId);
-        if (lp == null) return false;
-        
-        lp.setStatus("Rejected");
-        lp.setManagerComment(reason); // Store rejection reason
-        
-        return lpDAO.update(lp);
-    }
-
-    @Override
     public boolean updateLandingPage(Integer lpId, String name, String brief, java.util.Map<String, String> contentFields, boolean isManager) {
         LandingPage lp = lpDAO.findById(lpId);
         if (lp == null) return false;
 
-        // Check Logic: Approved -> Revert to Draft (Manager Only)
-        // Marketing cannot edit Approved (handled by Servlet check, but good to safeguard here)
+        // Check Logic: Approved -> Revert to Draft (Manager Only) - DEPRECATED FOR SIMPLIFIED FLOW
+        /*
         if ("Approved".equals(lp.getStatus())) {
             if (isManager) {
                 lp.setStatus("Draft"); // Revert status
@@ -131,6 +83,7 @@ public class LandingPageServiceImpl implements LandingPageService {
                 return false; // Marketing cannot edit Approved
             }
         }
+        */
         
         // Update Content
         lp.setName(name);
@@ -179,36 +132,8 @@ public class LandingPageServiceImpl implements LandingPageService {
         return input.replace("\"", "\\\"").replace("\n", " ").replace("\r", "");
     }
 
-    @Override
     public String getRenderedHtml(Integer lpId) {
-        LandingPage lp = lpDAO.findById(lpId);
-        if (lp == null) return "Page Not Found";
-        
-        String html = lp.getHtmlTemplate();
-        String data = lp.getDataConfig(); // JSON String
-        
-        // Simple manual parsing/replacement for prototype
-        // In production, use Gson/Jackson
-        if (data != null) {
-            String title = "Standout App";
-            String desc = "An Amazing App That Does It All.";
-            
-            // Very basic json parsing (vulnerable, just for demo)
-            if (data.contains("\"HERO_TITLE\":")) {
-                int start = data.indexOf("\"HERO_TITLE\":") + 14;
-                int end = data.indexOf("\"", start + 1);
-                if (start > 0 && end > start) title = data.substring(start + 1, end);
-            }
-            if (data.contains("\"HERO_DESC\":")) {
-                int start = data.indexOf("\"HERO_DESC\":") + 13;
-                int end = data.indexOf("\"", start + 1);
-                if (start > 0 && end > start) desc = data.substring(start + 1, end);
-            }
-            
-            html = html.replace("{{HERO_TITLE}}", title);
-            html = html.replace("{{HERO_DESC}}", desc);
-        }
-        
-        return html;
+        return "This legacy method is no longer supported. Please use the unified JSP template.";
     }
 }
+

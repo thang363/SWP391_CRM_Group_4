@@ -15,12 +15,17 @@ public class Quote {
     private BigDecimal taxAmount;
     private BigDecimal grandTotal;
     private String status; // Draft | Sent | Accepted | Rejected | Expired
+    private String rejectionReason;
     private LocalDate validUntil;
     private Integer createdBy;
     private LocalDateTime createdAt;
 
     // Transient — dùng để hiển thị tên opportunity trong danh sách
     private String opportunityName;
+    private String creatorName;
+
+    // Transient — dùng để chứa chi tiết các sản phẩm trong báo giá để show modal
+    private java.util.List<QuoteDetail> details;
 
     public Quote() {
     }
@@ -72,6 +77,9 @@ public class Quote {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
     public LocalDate getValidUntil() { return validUntil; }
     public void setValidUntil(LocalDate validUntil) { this.validUntil = validUntil; }
 
@@ -83,4 +91,10 @@ public class Quote {
 
     public String getOpportunityName() { return opportunityName; }
     public void setOpportunityName(String opportunityName) { this.opportunityName = opportunityName; }
+
+    public String getCreatorName() { return creatorName; }
+    public void setCreatorName(String creatorName) { this.creatorName = creatorName; }
+
+    public java.util.List<QuoteDetail> getDetails() { return details; }
+    public void setDetails(java.util.List<QuoteDetail> details) { this.details = details; }
 }

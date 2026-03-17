@@ -1079,35 +1079,33 @@ ALTER TABLE [dbo].[Users]  WITH CHECK ADD CHECK  (([role]='Sale' OR [role]='Supp
 GO
 ALTER TABLE [dbo].[Users]  WITH CHECK ADD CHECK  (([status]='Locked' OR [status]='Inactive' OR [status]='Active'))
 GO
-USE [master]
-GO
 ALTER DATABASE [CRM] SET  READ_WRITE 
 GO
-CREATE TABLE AutomationRules (
-id INT IDENTITY(1,1) PRIMARY KEY,
-rule_name NVARCHAR(255) NOT NULL,
-target_type VARCHAR(50) NOT NULL, -- 'Expiring' | 'HighPotential'
-conditions_json NVARCHAR(MAX) NOT NULL, -- JSON string lưu điều kiện
-action_type VARCHAR(50) NOT NULL, -- 'CreateTask' | 'SendEmail'
-assign_strategy VARCHAR(50) NOT NULL DEFAULT 'CurrentOwner', -- 'CurrentOwner' | 'SpecificUser'
-assign_to_user INT NULL, -- FK -> Users.id (nếu strategy = SpecificUser)
-status VARCHAR(20) NOT NULL DEFAULT 'Active', -- 'Active' | 'Inactive'
-created_by INT NULL,
-created_at DATETIME DEFAULT GETDATE(),
-updated_at DATETIME DEFAULT GETDATE(),
-FOREIGN KEY (assign_to_user) REFERENCES Users(id),
-FOREIGN KEY (created_by) REFERENCES Users(id)
+CREATE TABLE [dbo].[AutomationRules] (
+[id] INT IDENTITY(1,1) PRIMARY KEY,
+[rule_name] NVARCHAR(255) NOT NULL,
+[target_type] VARCHAR(50) NOT NULL, -- 'Expiring' | 'HighPotential'
+[conditions_json] NVARCHAR(MAX) NOT NULL, -- JSON string lưu điều kiện
+[action_type] VARCHAR(50) NOT NULL, -- 'CreateTask' | 'SendEmail'
+[assign_strategy] VARCHAR(50) NOT NULL DEFAULT 'CurrentOwner', -- 'CurrentOwner' | 'SpecificUser'
+[assign_to_user] INT NULL, -- FK -> Users.id (nếu strategy = SpecificUser)
+[status] VARCHAR(20) NOT NULL DEFAULT 'Active', -- 'Active' | 'Inactive'
+[created_by] INT NULL,
+[created_at] DATETIME DEFAULT GETDATE(),
+[updated_at] DATETIME DEFAULT GETDATE(),
+FOREIGN KEY ([assign_to_user]) REFERENCES [Users]([id]),
+FOREIGN KEY ([created_by]) REFERENCES [Users]([id])
 );
 
-CREATE TABLE SystemJobLogs (
-id INT IDENTITY(1,1) PRIMARY KEY,
-rule_id INT NOT NULL,
-execution_time DATETIME2 DEFAULT GETDATE(),
-status NVARCHAR(20) NOT NULL, -- 'Success' | 'Failed'
-records_created INT DEFAULT 0,
-error_message NVARCHAR(MAX) NULL,
-created_at DATETIME2 DEFAULT GETDATE(),
-FOREIGN KEY (rule_id) REFERENCES AutomationRules(id)
+CREATE TABLE [dbo].[SystemJobLogs] (
+[id] INT IDENTITY(1,1) PRIMARY KEY,
+[rule_id] INT NOT NULL,
+[execution_time] DATETIME2 DEFAULT GETDATE(),
+[status] NVARCHAR(20) NOT NULL, -- 'Success' | 'Failed'
+[records_created] INT DEFAULT 0,
+[error_message] NVARCHAR(MAX) NULL,
+[created_at] DATETIME2 DEFAULT GETDATE(),
+FOREIGN KEY ([rule_id]) REFERENCES [AutomationRules]([id])
 );
 
 CREATE TABLE [dbo].[TicketVerificationTokens](

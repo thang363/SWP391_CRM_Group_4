@@ -83,6 +83,25 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
+    public Customer findCustomerByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) return null;
+        
+        String sql = "SELECT * FROM Customers WHERE email = ?";
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapCustomer(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
     public void createFromOpportunity(int opportunityId) throws Exception {
         String getDataSql = "SELECT l.full_name, l.email, l.phone, l.assigned_to, l.id as lead_id " +
                 "FROM Opportunities o " +
@@ -270,6 +289,106 @@ public class CustomerDAOImpl implements CustomerDAO {
             closeResources(rs, stmt, conn);
         }
         return customers;
+    }
+
+    @Override
+    public List<Customer> getCustomersBySalesId(int salesId, int offset, int limit, String searchQuery,
+            String tierFilter, String statusFilter) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM Customers WHERE assigned_to = ? ");
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            sql.append("AND (company_name LIKE ? OR email LIKE ? OR phone LIKE ?) ");
+        }
+        if (tierFilter != null && !tierFilter.trim().isEmpty() && !tierFilter.equals("All")) {
+            sql.append("AND tier = ? ");
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("All")) {
+            sql.append("AND status = ? ");
+        }
+        sql.append("ORDER BY id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        List<Customer> customers = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
+            stmt.setInt(paramIndex++, salesId);
+
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+                String pattern = "%" + searchQuery.trim() + "%";
+                stmt.setString(paramIndex++, pattern);
+                stmt.setString(paramIndex++, pattern);
+                stmt.setString(paramIndex++, pattern);
+            }
+            if (tierFilter != null && !tierFilter.trim().isEmpty() && !tierFilter.equals("All")) {
+                stmt.setString(paramIndex++, tierFilter);
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("All")) {
+                stmt.setString(paramIndex++, statusFilter);
+            }
+            stmt.setInt(paramIndex++, offset);
+            stmt.setInt(paramIndex++, limit);
+
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                customers.add(mapCustomer(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return customers;
+    }
+
+    @Override
+    public int getTotalCustomersCountBySalesId(int salesId, String searchQuery, String tierFilter, String statusFilter) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Customers WHERE assigned_to = ? ");
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            sql.append("AND (company_name LIKE ? OR email LIKE ? OR phone LIKE ?) ");
+        }
+        if (tierFilter != null && !tierFilter.trim().isEmpty() && !tierFilter.equals("All")) {
+            sql.append("AND tier = ? ");
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("All")) {
+            sql.append("AND status = ? ");
+        }
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        int count = 0;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
+            stmt.setInt(paramIndex++, salesId);
+
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+                String pattern = "%" + searchQuery.trim() + "%";
+                stmt.setString(paramIndex++, pattern);
+                stmt.setString(paramIndex++, pattern);
+                stmt.setString(paramIndex++, pattern);
+            }
+            if (tierFilter != null && !tierFilter.trim().isEmpty() && !tierFilter.equals("All")) {
+                stmt.setString(paramIndex++, tierFilter);
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equals("All")) {
+                stmt.setString(paramIndex++, statusFilter);
+            }
+
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return count;
     }
 
     @Override
@@ -467,10 +586,16 @@ public class CustomerDAOImpl implements CustomerDAO {
             stmt3.setInt(2, duplicateId);
             stmt3.executeUpdate();
 
-            // Delete Duplicate Customer
-            stmt4 = conn.prepareStatement("DELETE FROM Customers WHERE id=?");
-            stmt4.setInt(1, duplicateId);
+            // Update CustomerReviews
+            stmt4 = conn.prepareStatement("UPDATE CustomerReviews SET customer_id=? WHERE customer_id=?");
+            stmt4.setInt(1, primaryId);
+            stmt4.setInt(2, duplicateId);
             stmt4.executeUpdate();
+
+            // Delete Duplicate Customer
+            PreparedStatement stmt5 = conn.prepareStatement("DELETE FROM Customers WHERE id=?");
+            stmt5.setInt(1, duplicateId);
+            stmt5.executeUpdate();
 
             conn.commit();
             return true;

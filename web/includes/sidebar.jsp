@@ -33,7 +33,7 @@
                                 <c:if test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SALE'}">
                                     <div class="nav-item dropdown">
                                         <a href="#"
-                                            class="nav-link dropdown-toggle ${currentPage == 'sales' || currentPage == 'sales-pipeline' ? 'active' : ''}"
+                                            class="nav-link dropdown-toggle ${currentPage == 'sales' || currentPage == 'sales-pipeline' || currentPage == 'manager-quotes' ? 'active' : ''}"
                                             data-bs-toggle="dropdown">
                                             <i class="fa fa-chart-line me-2"></i>CRM Sales
                                         </a>
@@ -46,6 +46,11 @@
                                                 class="dropdown-item">Opportunity</a>
                                             <a href="${pageContext.request.contextPath}/sales/quotes"
                                                 class="dropdown-item">Quotes</a>
+                                            <c:if test="${sessionScope.userRole == 'MANAGER'}">
+                                                <a href="${pageContext.request.contextPath}/manager/quotes"
+                                                    class="dropdown-item ${currentPage == 'manager-quotes' ? 'active' : ''} bg-warning text-dark">Duyệt
+                                                    Báo giá</a>
+                                            </c:if>
                                         </div>
                                     </div>
                                 </c:if>
@@ -109,7 +114,7 @@
                                                     <i class="fa fa-users me-2"></i>Customers
                                                 </a>
                                                 <div class="dropdown-menu bg-transparent border-0">
-                                                    <a href="${pageContext.request.contextPath}/customers"
+                                                    <a href="${pageContext.request.contextPath}${sessionScope.userRole == 'SALE' ? '/sales/customers' : '/customers'}"
                                                         class="dropdown-item">Danh sách KH</a>
                                                     <a href="${pageContext.request.contextPath}/customers-vip"
                                                         class="dropdown-item">Phân loại VIP</a>

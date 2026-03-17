@@ -7,6 +7,8 @@ public interface CustomerDAO {
     List<Customer> searchCustomers(String keyword);
 
     Customer getCustomerById(int id);
+    
+    Customer findCustomerByEmail(String email);
 
     void createFromOpportunity(int opportunityId) throws Exception;
 
@@ -17,6 +19,10 @@ public interface CustomerDAO {
     List<Customer> getCustomers(int offset, int limit, String searchQuery, String tierFilter, String statusFilter);
 
     int getTotalCustomersCount(String searchQuery, String tierFilter, String statusFilter);
+
+    List<Customer> getCustomersBySalesId(int salesId, int offset, int limit, String searchQuery, String tierFilter, String statusFilter);
+
+    int getTotalCustomersCountBySalesId(int salesId, String searchQuery, String tierFilter, String statusFilter);
 
     boolean createCustomer(Customer customer);
 

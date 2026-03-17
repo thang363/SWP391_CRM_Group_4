@@ -354,14 +354,8 @@ public class LeadDAOImpl implements LeadDAO {
             }
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Lead lead = mapResultSetToLead(rs);
-                if (rs.getString("campaign_name") != null) {
-                    Campaign campaign = new Campaign();
-                    campaign.setId(lead.getCampaignId());
-                    campaign.setName(rs.getString("campaign_name"));
-                    lead.setCampaign(campaign);
-                }
-                list.add(lead);
+                    
+                list.add(mapResultSetToLead(rs));
                 }
             }
         } catch (SQLException e) {
@@ -688,7 +682,72 @@ public class LeadDAOImpl implements LeadDAO {
             conn = dbUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Update Leads table
+            // Kiểm tra xem Lead đã là Customer chưa
+            String leadEmail = null;
+            String leadName = null;
+            String sqlGetLead = "SELECT email, full_name FROM Leads WHERE id = ?";
+            try (PreparedStatement psGet = conn.prepareStatement(sqlGetLead)) {
+                psGet.setInt(1, leadId);
+                try (ResultSet rsGet = psGet.executeQuery()) {
+                    if (rsGet.next()) {
+                        leadEmail = rsGet.getString("email");
+                        leadName = rsGet.getString("full_name");
+                    }
+                }
+            }
+
+            Integer existingCustomerId = null;
+            if (leadEmail != null && !leadEmail.trim().isEmpty()) {
+                String sqlGetCustomer = "SELECT id FROM Customers WHERE email = ?";
+                try (PreparedStatement psCus = conn.prepareStatement(sqlGetCustomer)) {
+                    psCus.setString(1, leadEmail.trim());
+                    try (ResultSet rsCus = psCus.executeQuery()) {
+                        if (rsCus.next()) {
+                            existingCustomerId = rsCus.getInt("id");
+                        }
+                    }
+                }
+            }
+
+            if (existingCustomerId != null) {
+                // Đã là Customer -> Tạo Opportunity
+                String sqlOpp = "INSERT INTO Opportunities (lead_id, customer_id, name, stage, expected_value, sales_id, created_at) VALUES (?, ?, ?, 'Prospecting', 0, ?, GETDATE())";
+                try (PreparedStatement psOpp = conn.prepareStatement(sqlOpp)) {
+                    psOpp.setInt(1, leadId);
+                    psOpp.setInt(2, existingCustomerId);
+                    psOpp.setString(3, "Opportunity - " + leadName);
+                    psOpp.setInt(4, salesId);
+                    psOpp.executeUpdate();
+                }
+
+                // Update Lead -> Assigned & Converted
+                String sqlUpdateLeadC = "UPDATE Leads SET assigned_to = ?, status = 'Assigned', is_converted = 1 WHERE id = ? AND assigned_to IS NULL";
+                int affectedC = 0;
+                try (PreparedStatement psUpdC = conn.prepareStatement(sqlUpdateLeadC)) {
+                    psUpdC.setInt(1, salesId);
+                    psUpdC.setInt(2, leadId);
+                    affectedC = psUpdC.executeUpdate();
+                }
+
+                if (affectedC == 0) {
+                    conn.rollback();
+                    return false;
+                }
+
+                // Insert Assignments
+                String sqlInsertC = "INSERT INTO LeadAssignments (lead_id, manager_id, sales_id, assigned_at) VALUES (?, ?, ?, GETDATE())";
+                try (PreparedStatement psInsertC = conn.prepareStatement(sqlInsertC)) {
+                    psInsertC.setInt(1, leadId);
+                    psInsertC.setInt(2, managerId);
+                    psInsertC.setInt(3, salesId);
+                    psInsertC.executeUpdate();
+                }
+
+                conn.commit();
+                return true;
+            }
+
+            // 1. Update Leads table (luồng bình thường cho Lead mới)
             String sqlUpdate = "UPDATE Leads SET assigned_to = ?, status = 'Assigned' WHERE id = ? AND assigned_to IS NULL";
             int affected = 0;
             try (PreparedStatement psUpdate = conn.prepareStatement(sqlUpdate)) {
