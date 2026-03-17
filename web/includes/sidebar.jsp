@@ -98,7 +98,7 @@
 
                                     <%-- Customers Module --%>
                                         <c:if
-                                            test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SALE'}">
+                                            test="${sessionScope.userRole == 'MANAGER' }">
                                             <div class="nav-item dropdown">
                                                 <a href="#"
                                                     class="nav-link dropdown-toggle ${currentPage == 'customers' ? 'active' : ''}"
@@ -115,6 +115,21 @@
                                                 </div>
                                             </div>
                                         </c:if>
+                                        <c:if
+                                            test="${ sessionScope.userRole == 'SALE'}">
+                                            <div class="nav-item dropdown">
+                                                <a href="#"
+                                                    class="nav-link dropdown-toggle ${currentPage == 'customers' ? 'active' : ''}"
+                                                    data-bs-toggle="dropdown">
+                                                    <i class="fa fa-users me-2"></i>Customers
+                                                </a>
+                                                <div class="dropdown-menu bg-transparent border-0">
+                                                    <a href="${pageContext.request.contextPath}${sessionScope.userRole == 'SALE' ? '/sales/customers' : '/customers'}"
+                                                        class="dropdown-item">Danh sách KH</a>
+                                                </div>
+                                            </div>
+                                        </c:if>
+                                        
                                         <%-- Activities --%>
                                             <c:if
                                                 test="${sessionScope.userRole == 'MANAGER' || sessionScope.userRole == 'SALE'}">
