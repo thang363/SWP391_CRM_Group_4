@@ -64,6 +64,19 @@ public class DashboardServlet extends HttpServlet {
                 int userId = ((Number) session.getAttribute(Constants.SESSION_USER_ID)).intValue();
                 MarketingDashboardVM stats = marketingDashboardService.getDashboardData(userId);
                 request.setAttribute("stats", stats);
+                
+                // Thêm Sales Stats cho Manager
+                if (Role.MANAGER.equals(role)) {
+                    service.SalesDashboardService salesService = new service.impl.SalesDashboardServiceImpl();
+                    model.viewmodel.SalesDashboardVM salesStats = salesService.getGlobalSalesDashboardData();
+                    request.setAttribute("salesStats", salesStats);
+                }
+            } else if (Role.SALE.equals(role)) {
+                int userId = ((Number) session.getAttribute(Constants.SESSION_USER_ID)).intValue();
+                // Sử dụng Service mới để lấy dữ liệu cho Sale
+                service.SalesDashboardService salesService = new service.impl.SalesDashboardServiceImpl();
+                model.viewmodel.SalesDashboardVM salesStats = salesService.getSalesDashboardData(userId);
+                request.setAttribute("salesStats", salesStats);
             }
         }
 
