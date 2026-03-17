@@ -170,6 +170,14 @@
                                                         </a>
                                                     </c:if>
 
+                                                    <%-- User Management (Manager only) --%>
+                                                    <c:if test="${sessionScope.userRole == 'MANAGER'}">
+                                                        <a href="${pageContext.request.contextPath}/users"
+                                                            class="nav-item nav-link ${currentPage == 'user-management' ? 'active' : ''}">
+                                                            <i class="fa fa-user-cog me-2"></i>Quản lý User
+                                                        </a>
+                                                    </c:if>
+
                                                     <hr class="my-2">
 
                                                     <%-- Profile --%>
