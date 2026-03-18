@@ -346,6 +346,56 @@ public class UserDAOImpl implements UserDAO {
         }
     }
     
+    @Override
+    public List<User> searchUsers(String query, String roleStr, String status) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT id, username, password_hash, email, full_name, phone, role, status, created_at FROM users WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (query != null && !query.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR username LIKE ? OR email LIKE ?)");
+            String likeQuery = "%" + query.trim() + "%";
+            params.add(likeQuery);
+            params.add(likeQuery);
+            params.add(likeQuery);
+        }
+
+        if (roleStr != null && !roleStr.trim().isEmpty()) {
+            sql.append(" AND role = ?");
+            params.add(roleStr);
+        }
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+
+        sql.append(" ORDER BY created_at DESC");
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<User> users = new ArrayList<>();
+
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql.toString());
+
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                users.add(mapResultSetToUser(rs));
+            }
+            return users;
+
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+    }
+    
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));

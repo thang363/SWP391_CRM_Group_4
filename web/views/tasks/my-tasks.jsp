@@ -322,25 +322,7 @@
                                                                                         pattern="dd/MM/yyyy HH:mm" />
                                                                                 </td>
                                                                                 <td>
-                                                                                    <c:if
-                                                                                        test="${task.status == 'Pending'}">
-                                                                                        <form method="post"
-                                                                                            action="${pageContext.request.contextPath}/my-tasks"
-                                                                                            style="display:inline">
-                                                                                            <input type="hidden"
-                                                                                                name="action"
-                                                                                                value="start">
-                                                                                            <input type="hidden"
-                                                                                                name="taskId"
-                                                                                                value="${task.id}">
-                                                                                            <button type="submit"
-                                                                                                class="btn btn-primary btn-action">
-                                                                                                <i
-                                                                                                    class="fa fa-play me-1"></i>Bắt
-                                                                                                đầu
-                                                                                            </button>
-                                                                                        </form>
-                                                                                    </c:if>
+                                                                                    <%-- Nút Bắt đầu đã được xóa theo yêu cầu --%>
                                                                                     <c:if
                                                                                         test="${task.status == 'Overdue'}">
                                                                                         <form method="post"
@@ -379,8 +361,12 @@
                                                                                             </button>
                                                                                         </form>
                                                                                     </c:if>
-                                                                                    <%-- Icon mắt đã được xóa theo yêu
-                                                                                        cầu --%>
+                                                                                    <c:if test="${task.status != 'Completed'}">
+                                                                                        <button type="button" class="btn btn-outline-info btn-action ms-1"
+                                                                                            onclick="showTaskDetail('${task.id}', '${task.title}', '${task.description}', '${task.customerName}', '${task.taskType}', '${task.status}', '${task.relatedRecordId}')">
+                                                                                            <i class="fa fa-eye me-1"></i>Chi tiết
+                                                                                        </button>
+                                                                                    </c:if>
                                                                                 </td>
                                                                             </tr>
                                                                         </c:forEach>
@@ -468,7 +454,106 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Task Detail Modal -->
+                            <div class="modal fade" id="taskDetailModal" tabindex="-1"
+                                aria-labelledby="taskDetailModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-info text-white">
+                                            <h5 class="modal-title" id="taskDetailModalLabel">
+                                                <i class="fa fa-clipboard-list me-2"></i>Chi tiết công việc
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-sm-8">
+                                                    <label class="text-muted small d-block">Tên công việc</label>
+                                                    <strong id="detailTitle"></strong>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <label class="text-muted small d-block">Loại</label>
+                                                    <span id="detailType" class="badge"></span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <label class="text-muted small d-block">Khách hàng</label>
+                                                    <strong id="detailCustomer"></strong>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <label class="text-muted small d-block">Trạng thái</label>
+                                                    <span id="detailStatus" class="badge"></span>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="text-muted small d-block">Mô tả</label>
+                                                    <p id="detailDescription" class="mb-0"></p>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <h6 class="mb-3"><i class="fa fa-tasks me-1"></i>Hành động</h6>
+
+                                            <!-- Renewal Actions -->
+                                            <div id="renewalActions" style="display:none;">
+                                                <div class="d-flex gap-2 flex-wrap">
+                                                    <form method="post" action="${pageContext.request.contextPath}/my-tasks" style="display:inline">
+                                                        <input type="hidden" name="action" value="complete_renewal">
+                                                        <input type="hidden" name="taskId" id="renewalTaskId">
+                                                        <button type="submit" class="btn btn-success">
+                                                            <i class="fa fa-check-circle me-1"></i>Hoàn thành gia hạn
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" action="${pageContext.request.contextPath}/my-tasks" style="display:inline"
+                                                        onsubmit="return submitWithToast(this, 'Đã ghi nhận khách hàng hủy dịch vụ. Trạng thái cập nhật thành Inactive.');">
+                                                        <input type="hidden" name="action" value="cancel_service">
+                                                        <input type="hidden" name="taskId" id="cancelTaskId">
+                                                        <button type="submit" class="btn btn-danger">
+                                                            <i class="fa fa-times-circle me-1"></i>Khách hủy dịch vụ
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+
+                                            <!-- Upsell Actions -->
+                                            <div id="upsellActions" style="display:none;">
+                                                <div class="d-flex gap-2 flex-wrap">
+                                                    <form method="post" action="${pageContext.request.contextPath}/my-tasks" style="display:inline">
+                                                        <input type="hidden" name="action" value="mark_called">
+                                                        <input type="hidden" name="taskId" id="calledTaskId">
+                                                        <button type="submit" class="btn btn-success">
+                                                            <i class="fa fa-phone-alt me-1"></i>Đã gọi chăm sóc
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" action="${pageContext.request.contextPath}/my-tasks" style="display:inline"
+                                                        onsubmit="return submitWithToast(this, 'Hệ thống đang tạo Opportunity mới và chuyển cho Sales phụ trách.');">
+                                                        <input type="hidden" name="action" value="transfer_to_sales">
+                                                        <input type="hidden" name="taskId" id="transferTaskId">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <i class="fa fa-share me-1"></i>Chuyển cho Sales
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
+
+                            <!-- Toast Notification Container -->
+                            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+                                <div id="actionToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="d-flex">
+                                        <div class="toast-body" id="toastMessage">
+                                            <!-- Message here -->
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                </div>
+                            </div>
 
                     <!-- JavaScript Libraries -->
                     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -480,6 +565,22 @@
                     <script src="${pageContext.request.contextPath}/js/main.js"></script>
 
                     <script>
+                        function submitWithToast(formEl, message) {
+                            var toastEl = document.getElementById('actionToast');
+                            document.getElementById('toastMessage').innerText = message;
+                            var toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+                            toast.show();
+                            
+                            var btn = formEl.querySelector('button[type="submit"]');
+                            if (btn) btn.disabled = true;
+
+                            setTimeout(function() {
+                                formEl.submit();
+                            }, 1200);
+
+                            return false;
+                        }
+
                         function filterTasks(status) {
                             var rows = document.querySelectorAll('.task-row');
                             var buttons = document.querySelectorAll('.filter-btn');
@@ -550,6 +651,59 @@
                                     modal.hide();
                                 }
                             });
+                        }
+
+                        function showTaskDetail(taskId, title, description, customerName, taskType, status, relatedRecordId) {
+                            // Populate modal fields
+                            document.getElementById('detailTitle').textContent = title || '—';
+                            document.getElementById('detailDescription').textContent = description || 'Không có mô tả';
+                            document.getElementById('detailCustomer').textContent = customerName || '—';
+
+                            // Type badge
+                            var typeEl = document.getElementById('detailType');
+                            if (taskType === 'Renewal') {
+                                typeEl.textContent = 'Renewal (Gia hạn)';
+                                typeEl.className = 'badge badge-renewal';
+                            } else if (taskType === 'Upsell') {
+                                typeEl.textContent = 'Upsell (Tư vấn)';
+                                typeEl.className = 'badge badge-upsell';
+                            } else {
+                                typeEl.textContent = taskType || '—';
+                                typeEl.className = 'badge bg-secondary';
+                            }
+
+                            // Status badge
+                            var statusEl = document.getElementById('detailStatus');
+                            if (status === 'Pending') {
+                                statusEl.textContent = 'Chờ xử lý';
+                                statusEl.className = 'badge badge-open';
+                            } else if (status === 'Overdue') {
+                                statusEl.textContent = 'Đang làm';
+                                statusEl.className = 'badge badge-inprogress';
+                            } else {
+                                statusEl.textContent = status;
+                                statusEl.className = 'badge bg-secondary';
+                            }
+
+                            // Toggle action sections
+                            var renewalActions = document.getElementById('renewalActions');
+                            var upsellActions = document.getElementById('upsellActions');
+                            renewalActions.style.display = 'none';
+                            upsellActions.style.display = 'none';
+
+                            if (taskType === 'Renewal') {
+                                renewalActions.style.display = 'block';
+                                document.getElementById('renewalTaskId').value = taskId;
+                                document.getElementById('cancelTaskId').value = taskId;
+                            } else if (taskType === 'Upsell') {
+                                upsellActions.style.display = 'block';
+                                document.getElementById('calledTaskId').value = taskId;
+                                document.getElementById('transferTaskId').value = taskId;
+                            }
+
+                            // Show modal
+                            var modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
+                            modal.show();
                         }
                     </script>
                 </body>

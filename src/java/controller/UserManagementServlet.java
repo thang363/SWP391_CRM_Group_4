@@ -36,7 +36,19 @@ public class UserManagementServlet extends HttpServlet {
             return;
         }
 
-        List<UserViewModel> users = userService.getAllUsers();
+        String searchQuery = request.getParameter("searchQuery");
+        String roleParam = request.getParameter("role");
+        String statusParam = request.getParameter("status");
+
+        List<UserViewModel> users;
+        if ((searchQuery != null && !searchQuery.trim().isEmpty()) || 
+            (roleParam != null && !roleParam.trim().isEmpty()) || 
+            (statusParam != null && !statusParam.trim().isEmpty())) {
+            users = userService.searchUsers(searchQuery, roleParam, statusParam);
+        } else {
+            users = userService.getAllUsers();
+        }
+        
         request.setAttribute(Constants.ATTR_USERS, users);
         request.setAttribute("roles", Role.values());
         request.setAttribute("currentPage", "user-management");
