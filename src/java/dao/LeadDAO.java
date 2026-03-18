@@ -116,12 +116,12 @@ public interface LeadDAO {
      */
     List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Integer campaignId, int limit);
     
-    /**
-     * Assign a lead to a sales staff.
-     * @param leadId The ID of the lead
-     * @param salesId The ID of the sales staff
-     * @param managerId The ID of the manager assigning the lead
-     * @return true if assignment is successful
-     */
     boolean assignLeadToSales(int leadId, int salesId, int managerId);
+
+    /**
+     * Delete a lead and its related information if it hasn't been assigned yet.
+     * @param leadId The ID of the lead to delete
+     * @return true if deletion is successful
+     */
+    boolean delete(int leadId);
 }

@@ -94,12 +94,23 @@ public class CampaignServlet extends HttpServlet {
 
         int offset = (page - 1) * pageSize;
 
+        // Owner filtering (Default to 'mine' for Managers)
+        String ownerFilter = request.getParameter("ownerFilter");
+        if (ownerFilter == null || ownerFilter.trim().isEmpty()) {
+            ownerFilter = "mine";
+        }
+
         // Manager-level access control: filter by managerId unless Admin
         Integer managerIdFilter = null;
         if (Role.MANAGER.equals(currentUserRole)) {
-            managerIdFilter = currentUserId; // Only show campaigns managed by this user
+            if ("mine".equals(ownerFilter)) {
+                managerIdFilter = currentUserId;
+            }
+            // If "all", managerIdFilter stays null
         }
         // If Admin, managerIdFilter stays null = see all campaigns
+        
+        request.setAttribute("ownerFilter", ownerFilter);
 
         // Get total items and calculate pages
         int totalItems = campaignService.countCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter);
@@ -169,7 +180,7 @@ public class CampaignServlet extends HttpServlet {
             }
             
             // Create ViewModel
-            viewModels.add(CampaignViewModel.fromEntity(c, managerName, hasPending, lpStatus, assigneeId, assigneeName));
+            viewModels.add(CampaignViewModel.fromEntity(c, managerName, hasPending, lpStatus, assigneeId, assigneeName, currentUserId));
         }
 
         // Get all managers for Transfer dropdown

@@ -30,4 +30,12 @@ public class EmailService {
             }
         });
     }
+
+    public static void sendThankYouEmailAsync(String toEmail, String customerName) {
+        CompletableFuture.runAsync(() -> {
+            service.EmailService mailer = new service.EmailService();
+            mailer.sendThankYouEmail(toEmail, customerName);
+            System.out.println("[Thank You Email] Successfully sent thank you email to: " + toEmail);
+        });
+    }
 }

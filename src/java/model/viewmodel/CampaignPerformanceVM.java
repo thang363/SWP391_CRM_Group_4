@@ -2,26 +2,22 @@ package model.viewmodel;
 
 /**
  * ViewModel for Marketing Performance report.
- * Contains funnel conversion stats per Campaign.
+ * Contains basic funnel stats per Campaign.
  */
 public class CampaignPerformanceVM {
     private int campaignId;
     private String campaignName;
     private String campaignStatus;
     private int totalLeads;
-    private int convertedToOpportunity;
-    private int convertedToCustomer;
 
     public CampaignPerformanceVM() {}
 
     public CampaignPerformanceVM(int campaignId, String campaignName, String campaignStatus,
-                                  int totalLeads, int convertedToOpportunity, int convertedToCustomer) {
+                                  int totalLeads) {
         this.campaignId = campaignId;
         this.campaignName = campaignName;
         this.campaignStatus = campaignStatus;
         this.totalLeads = totalLeads;
-        this.convertedToOpportunity = convertedToOpportunity;
-        this.convertedToCustomer = convertedToCustomer;
     }
 
     // Getters & Setters
@@ -36,12 +32,6 @@ public class CampaignPerformanceVM {
 
     public int getTotalLeads() { return totalLeads; }
     public void setTotalLeads(int totalLeads) { this.totalLeads = totalLeads; }
-
-    public int getConvertedToOpportunity() { return convertedToOpportunity; }
-    public void setConvertedToOpportunity(int convertedToOpportunity) { this.convertedToOpportunity = convertedToOpportunity; }
-
-    public int getConvertedToCustomer() { return convertedToCustomer; }
-    public void setConvertedToCustomer(int convertedToCustomer) { this.convertedToCustomer = convertedToCustomer; }
 
     // Helper methods for JSP display
     public String getStatusBadgeClass() {
@@ -64,19 +54,5 @@ public class CampaignPerformanceVM {
             case "Finished": return "Đã kết thúc";
             default: return campaignStatus;
         }
-    }
-
-    /**
-     * Conversion rate from Lead to Opportunity (%).
-     */
-    public double getLeadToOpportunityRate() {
-        return totalLeads > 0 ? (convertedToOpportunity * 100.0 / totalLeads) : 0;
-    }
-
-    /**
-     * Conversion rate from Lead to Customer (%).
-     */
-    public double getLeadToCustomerRate() {
-        return totalLeads > 0 ? (convertedToCustomer * 100.0 / totalLeads) : 0;
     }
 }

@@ -101,83 +101,29 @@
                                                     </div>
                                                     <!-- Support Dashboard End -->
                                                 </c:when>
-                                                
+
                                                 <c:when test="${sessionScope.userRole == 'MANAGER'}">
-                                                    <!-- Marketing Dashboard for Manager -->
-                                                    <jsp:include page="/views/marketing/marketing-dashboard-fragment.jsp" />
+                                                    <!-- Marketing Overview for Manager -->
+                                                    <jsp:include page="/views/dashboard/manager-marketing-stats.jsp" />
+                                                    <!-- Sales Overview for Manager -->
+                                                    <jsp:include page="/views/dashboard/sale_dashboard.jsp" />
+                                                </c:when>
+
+                                                <c:when test="${sessionScope.userRole == 'MARKETING'}">
+                                                    <!-- Dedicated Dashboard for Marketing -->
+                                                    <jsp:include page="/views/dashboard/marketing-dashboard.jsp" />
+                                                </c:when>
+
+                                                <c:when test="${sessionScope.userRole == 'SALE'}">
+                                                    <!-- Dedicated Dashboard for Sale -->
+                                                    <jsp:include page="/views/dashboard/sale_dashboard.jsp" />
                                                 </c:when>
 
                                                 <c:otherwise>
-                                                    <!-- Sale & Revenue Start -->
-                                                    <div class="container-fluid pt-4 px-4">
-                                                        <div class="row g-4">
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div
-                                                                    class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                                                                    <i class="fa fa-chart-line fa-3x text-primary"></i>
-                                                                    <div class="ms-3">
-                                                                        <p class="mb-2">Doanh số hôm nay</p>
-                                                                        <h6 class="mb-0">$1234</h6>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div
-                                                                    class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                                                                    <i class="fa fa-chart-bar fa-3x text-primary"></i>
-                                                                    <div class="ms-3">
-                                                                        <p class="mb-2">Tổng doanh số</p>
-                                                                        <h6 class="mb-0">$1234</h6>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div
-                                                                    class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                                                                    <i class="fa fa-users fa-3x text-primary"></i>
-                                                                    <div class="ms-3">
-                                                                        <p class="mb-2">Khách hàng mới</p>
-                                                                        <h6 class="mb-0">45</h6>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div
-                                                                    class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                                                                    <i class="fa fa-handshake fa-3x text-primary"></i>
-                                                                    <div class="ms-3">
-                                                                        <p class="mb-2">Deals đang mở</p>
-                                                                        <h6 class="mb-0">12</h6>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- Sale & Revenue End -->
-
-                                                    <!-- Charts Section -->
-                                                    <div class="container-fluid pt-4 px-4">
-                                                        <div class="row g-4">
-                                                            <div class="col-sm-12 col-xl-6">
-                                                                <div class="bg-light text-center rounded p-4">
-                                                                    <div
-                                                                        class="d-flex align-items-center justify-content-between mb-4">
-                                                                        <h6 class="mb-0">Doanh số theo tháng</h6>
-                                                                        <a href="">Xem tất cả</a>
-                                                                    </div>
-                                                                    <canvas id="worldwide-sales"></canvas>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-12 col-xl-6">
-                                                                <div class="bg-light text-center rounded p-4">
-                                                                    <div
-                                                                        class="d-flex align-items-center justify-content-between mb-4">
-                                                                        <h6 class="mb-0">Leads theo nguồn</h6>
-                                                                        <a href="">Xem tất cả</a>
-                                                                    </div>
-                                                                    <canvas id="salse-revenue"></canvas>
-                                                                </div>
-                                                            </div>
+                                                    <div class="container-fluid pt-4 px-4 text-center">
+                                                        <div class="alert alert-info">
+                                                            Chào mừng bạn, <strong>${sessionScope.fullName}</strong>.
+                                                            Vui lòng chọn một chức năng từ menu bên trái để bắt đầu.
                                                         </div>
                                                     </div>
                                                 </c:otherwise>

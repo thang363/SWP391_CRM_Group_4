@@ -6,6 +6,10 @@ import util.DatabaseUtil;
 
 import java.sql.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import model.entity.LeadSubmission;
+
 
 /**
  * Implementation of MarketingDashboardDAO.
@@ -21,114 +25,113 @@ public class MarketingDashboardDAOImpl implements MarketingDashboardDAO {
     @Override
     public MarketingDashboardVM getDashboardStats(Integer managerId) {
         MarketingDashboardVM vm = new MarketingDashboardVM();
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = dbUtil.getConnection();
-
-            // 1. Global Total Campaigns
-            String globalSql = "SELECT COUNT(*) FROM Campaigns";
-            stmt = conn.prepareStatement(globalSql);
-            rs = stmt.executeQuery();
-            if (rs.next()) vm.setGlobalTotalCampaigns(rs.getInt(1));
-            rs.close();
-            stmt.close();
-
-            // 2. Personal Campaign Stats
-            String personalSql = "SELECT " +
-                    "COUNT(*) as total, " +
-                    "SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) as active, " +
-                    "SUM(CASE WHEN status = 'Paused' THEN 1 ELSE 0 END) as paused, " +
-                    "SUM(CASE WHEN status = 'Finished' THEN 1 ELSE 0 END) as finished, " +
-                    "SUM(CASE WHEN status = 'Draft' THEN 1 ELSE 0 END) as draft, " +
-                    "SUM(budget) as budget " +
-                    "FROM Campaigns WHERE manager_id = ?";
-            stmt = conn.prepareStatement(personalSql);
-            stmt.setInt(1, managerId);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                vm.setPersonalTotalCampaigns(rs.getInt("total"));
-                vm.setPersonalActiveCampaigns(rs.getInt("active"));
-                vm.setPersonalPausedCampaigns(rs.getInt("paused"));
-                vm.setPersonalFinishedCampaigns(rs.getInt("finished"));
-                vm.setPersonalDraftCampaigns(rs.getInt("draft"));
-                BigDecimal budget = rs.getBigDecimal("budget");
-                vm.setTotalBudget(budget != null ? budget : BigDecimal.ZERO);
+        try (Connection conn = dbUtil.getConnection()) {
+            // 1. Campaign Stats (Active)
+            String cSql = "SELECT COUNT(*), SUM(CASE WHEN status='Active' THEN 1 ELSE 0 END) FROM Campaigns WHERE manager_id=?";
+            try (PreparedStatement ps = conn.prepareStatement(cSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        vm.setPersonalTotalCampaigns(rs.getInt(1));
+                        vm.setPersonalActiveCampaigns(rs.getInt(2));
+                    }
+                }
             }
-            rs.close();
-            stmt.close();
 
-            // 3. Landing Page Stats (linked to manager's campaigns)
-            String lpSql = "SELECT " +
-                    "SUM(CASE WHEN lp.status IN ('Draft', 'Pending') THEN 1 ELSE 0 END) as pending, " +
-                    "SUM(CASE WHEN lp.status = 'Public' THEN 1 ELSE 0 END) as approved " +
-                    "FROM LandingPages lp " +
-                    "INNER JOIN Campaigns c ON lp.campaign_id = c.id " +
-                    "WHERE c.manager_id = ?";
-            stmt = conn.prepareStatement(lpSql);
-            stmt.setInt(1, managerId);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                vm.setPendingLandingPages(rs.getInt("pending"));
-                vm.setApprovedLandingPages(rs.getInt("approved"));
+            // 2. Lead Stats (Total, Hot, Unassigned Hot)
+            String lSql = "SELECT COUNT(l.id), " +
+                         "SUM(CASE WHEN l.potential_status='Hot' THEN 1 ELSE 0 END), " +
+                         "SUM(CASE WHEN l.assigned_to IS NULL AND l.potential_status='Hot' THEN 1 ELSE 0 END) " +
+                         "FROM Leads l JOIN Campaigns c ON l.campaign_id = c.id WHERE c.manager_id=?";
+            try (PreparedStatement ps = conn.prepareStatement(lSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        vm.setTotalLeads(rs.getInt(1));
+                        vm.setHotLeads(rs.getInt(2));
+                        vm.setUnassignedHotLeads(rs.getInt(3));
+                    }
+                }
             }
-            rs.close();
-            stmt.close();
 
-            // 4. Lead & Conversion Stats
-            String leadSql = "SELECT " +
-                    "COUNT(l.id) as totalLeads, " +
-                    "SUM(CASE WHEN l.score >= 50 THEN 1 ELSE 0 END) as hotLeads, " +
-                    "SUM(CASE WHEN l.sale_id IS NOT NULL THEN 1 ELSE 0 END) as assignedLeads " +
-                    "FROM Leads l " +
-                    "INNER JOIN Campaigns c ON l.campaign_id = c.id " +
-                    "WHERE c.manager_id = ?";
-            stmt = conn.prepareStatement(leadSql);
-            stmt.setInt(1, managerId);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                vm.setTotalLeads(rs.getInt("totalLeads"));
-                vm.setHotLeads(rs.getInt("hotLeads"));
-                vm.setAssignedLeads(rs.getInt("assignedLeads"));
+            // 3. Opportunity Stats
+            String oSql = "SELECT COUNT(DISTINCT o.lead_id) FROM Opportunities o " +
+                         "JOIN Leads l ON o.lead_id = l.id JOIN Campaigns c ON l.campaign_id = c.id WHERE c.manager_id=?";
+            try (PreparedStatement ps = conn.prepareStatement(oSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) vm.setTotalOpportunities(rs.getInt(1));
+                }
             }
-            rs.close();
-            stmt.close();
 
-            // 5. Opportunity Stats
-            String oppSql = "SELECT COUNT(DISTINCT o.lead_id) " +
-                    "FROM Opportunities o " +
-                    "INNER JOIN Leads l ON o.lead_id = l.id " +
-                    "INNER JOIN Campaigns c ON l.campaign_id = c.id " +
-                    "WHERE c.manager_id = ?";
-            stmt = conn.prepareStatement(oppSql);
-            stmt.setInt(1, managerId);
-            rs = stmt.executeQuery();
-            if (rs.next()) vm.setTotalOpportunities(rs.getInt(1));
-            rs.close();
-            stmt.close();
+            // 4. Customer Stats
+            String cuSql = "SELECT COUNT(DISTINCT cu.lead_id) FROM Customers cu " +
+                          "JOIN Leads l ON cu.lead_id = l.id JOIN Campaigns c ON l.campaign_id = c.id WHERE c.manager_id=?";
+            try (PreparedStatement ps = conn.prepareStatement(cuSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) vm.setTotalCustomers(rs.getInt(1));
+                }
+            }
 
-            // 6. Customer Stats
-            String custSql = "SELECT COUNT(DISTINCT cu.lead_id) " +
-                    "FROM Customers cu " +
-                    "INNER JOIN Leads l ON cu.lead_id = l.id " +
-                    "INNER JOIN Campaigns c ON l.campaign_id = c.id " +
-                    "WHERE c.manager_id = ?";
-            stmt = conn.prepareStatement(custSql);
-            stmt.setInt(1, managerId);
-            rs = stmt.executeQuery();
-            if (rs.next()) vm.setTotalCustomers(rs.getInt(1));
+            // 5. Marketing Specific: Landing Pages
+            String lpSql = "SELECT COUNT(*) FROM LandingPages WHERE created_by=? AND status='Public'";
+            try (PreparedStatement ps = conn.prepareStatement(lpSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) vm.setApprovedLandingPages(rs.getInt(1));
+                }
+            }
+
+            // 6. Marketing Specific: Submissions Today
+            String subTodaySql = "SELECT COUNT(*) FROM LeadSubmissions ls " +
+                    "LEFT JOIN Campaigns c ON ls.campaign_id = c.id " +
+                    "LEFT JOIN LandingPages lp ON ls.landing_page_id = lp.id " +
+                    "WHERE (lp.created_by = ? OR c.manager_id = ?) AND CAST(ls.submitted_at AS DATE) = CAST(GETDATE() AS DATE)";
+            try (PreparedStatement ps = conn.prepareStatement(subTodaySql)) {
+                ps.setInt(1, managerId);
+                ps.setInt(2, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) vm.setSubmissionsToday(rs.getInt(1));
+                }
+            }
+
+            // 7. Marketing Specific: Pending Submissions
+            String pendSubSql = "SELECT COUNT(*) FROM LeadSubmissions ls " +
+                    "LEFT JOIN Campaigns c ON ls.campaign_id = c.id " +
+                    "LEFT JOIN LandingPages lp ON ls.landing_page_id = lp.id " +
+                    "WHERE (lp.created_by = ? OR c.manager_id = ?) AND ls.is_processed = 0";
+            try (PreparedStatement ps = conn.prepareStatement(pendSubSql)) {
+                ps.setInt(1, managerId);
+                ps.setInt(2, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) vm.setPendingSubmissions(rs.getInt(1));
+                }
+            }
+
+            // 8. Financial: Total Budget (Manager's campaigns)
+            String budgetSql = "SELECT SUM(budget) FROM Campaigns WHERE manager_id=?";
+            try (PreparedStatement ps = conn.prepareStatement(budgetSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) vm.setTotalBudget(rs.getDouble(1));
+                }
+            }
+
+            // 9. Financial: Pipeline Value (Expected Value from Opportunities)
+            String pipelineSql = "SELECT SUM(o.expected_value) FROM Opportunities o " +
+                                "JOIN Leads l ON o.lead_id = l.id " +
+                                "JOIN Campaigns c ON l.campaign_id = c.id WHERE c.manager_id=?";
+            try (PreparedStatement ps = conn.prepareStatement(pipelineSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) vm.setPersonalPipelineValue(rs.getDouble(1));
+                }
+            }
 
         } catch (SQLException e) {
-            System.err.println("Error fetching dashboard stats: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            if (rs != null) try { rs.close(); } catch (SQLException e) {}
-            if (stmt != null) try { stmt.close(); } catch (SQLException e) {}
-            if (conn != null) dbUtil.closeConnection(conn);
         }
-
         return vm;
     }
 }

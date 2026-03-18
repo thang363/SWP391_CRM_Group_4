@@ -134,15 +134,15 @@ public class LeadDAOImpl implements LeadDAO {
     @Override
     public boolean insert(Lead lead) {
         // Note: Assuming 'Leads' table has columns: 
-        // full_name, email, phone, campaign_id, source_id, status, is_converted, created_at, current_score
-        String sql = "INSERT INTO Leads (full_name, email, phone, campaign_id, source_id, status, is_converted, created_at, current_score) "
+        // full_name, email, phone, campaign_id, source_id, status, is_converted, created_at, potential_status
+        String sql = "INSERT INTO Leads (full_name, email, phone, campaign_id, source_id, status, is_converted, created_at, potential_status) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement stmt = null;
         try {
             conn = dbUtil.getConnection();
-            stmt = conn.prepareStatement(sql);
+            stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             stmt.setString(1, lead.getFullName());
             stmt.setString(2, lead.getEmail());
@@ -171,14 +171,22 @@ public class LeadDAOImpl implements LeadDAO {
                 stmt.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
             }
 
-            stmt.setInt(9, lead.getCurrentScore() != null ? lead.getCurrentScore() : 0);
+            stmt.setString(9, lead.getPotentialStatus() != null ? lead.getPotentialStatus() : "Cool");
 
             int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
+            if (affectedRows > 0) {
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        lead.setId(rs.getInt(1));
+                        return true;
+                    }
+                }
+            }
+            return false;
 
         } catch (SQLException e) {
             System.err.println("Error inserting lead: " + e.getMessage());
-            e.printStackTrace(); // For debugging schema mismatches
+            e.printStackTrace(); 
             return false;
         } finally {
             closeResources(null, stmt, conn);
@@ -209,7 +217,7 @@ public class LeadDAOImpl implements LeadDAO {
 
     @Override
     public List<Lead> findByCampaignIdWithEmail(int campaignId) {
-        String sql = "SELECT * FROM Leads WHERE campaign_id = ? AND email IS NOT NULL AND email != '' ORDER BY created_at DESC";
+        String sql = "SELECT l.*, c.name as campaign_name FROM Leads l LEFT JOIN Campaigns c ON l.campaign_id = c.id WHERE l.campaign_id = ? AND l.email IS NOT NULL AND l.email != '' ORDER BY l.created_at DESC";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -240,7 +248,7 @@ public class LeadDAOImpl implements LeadDAO {
 
     @Override
     public List<Lead> findAllWithEmail() {
-        String sql = "SELECT * FROM Leads WHERE email IS NOT NULL AND email != '' ORDER BY created_at DESC";
+        String sql = "SELECT l.*, c.name as campaign_name FROM Leads l LEFT JOIN Campaigns c ON l.campaign_id = c.id WHERE l.email IS NOT NULL AND l.email != '' ORDER BY l.created_at DESC";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -276,7 +284,7 @@ public class LeadDAOImpl implements LeadDAO {
         lead.setEmail(rs.getString("email"));
         lead.setPhone(rs.getString("phone"));
         lead.setStatus(rs.getString("status"));
-        lead.setCurrentScore(rs.getInt("current_score"));
+        lead.setPotentialStatus(rs.getString("potential_status"));
         lead.setIsConverted(rs.getBoolean("is_converted"));
 
         // Handling potential null for campaign/source if they exist
@@ -388,31 +396,7 @@ public class LeadDAOImpl implements LeadDAO {
                 }
             }
 
-            // 3. Check if points were already awarded for this lead/campaign/activityType
-            boolean alreadyScored = false;
-            String sqlCheck = "SELECT COUNT(*) FROM LeadInteractions " +
-                             "WHERE lead_id = ? AND activity_type_id = ? AND score_change > 0 AND reference_url = ?";
-            if (campaignId != null) sqlCheck += " AND campaign_id = ?";
-            
-            try (PreparedStatement ps = conn.prepareStatement(sqlCheck)) {
-                ps.setInt(1, leadId);
-                ps.setInt(2, activityTypeId);
-                ps.setString(3, details);
-                if (campaignId != null) ps.setInt(4, campaignId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next() && rs.getInt(1) > 0) {
-                        alreadyScored = true;
-                    }
-                }
-            }
-            
-            // If already scored, we exit early to avoid duplicate data in LeadInteractions
-            if (alreadyScored) {
-                conn.commit(); // Just in case, though we only did reads
-                return true;
-            }
-
-            // 4. Insert into LeadInteractions
+            // 3. Insert into LeadInteractions
             String sqlInteraction = "INSERT INTO LeadInteractions (lead_id, campaign_id, activity_type_id, reference_url, score_change, created_at) " +
                                   "VALUES (?, ?, ?, ?, ?, GETDATE())";
             try (PreparedStatement ps = conn.prepareStatement(sqlInteraction)) {
@@ -424,24 +408,11 @@ public class LeadDAOImpl implements LeadDAO {
                 ps.executeUpdate();
             }
 
-            // 5. Only update history and total score if there's a real change
-            if (scoreChange != 0) {
-                // Insert into LeadScoreHistory
-                String sqlHistory = "INSERT INTO LeadScoreHistory (lead_id, score_change, total_score, created_at) " +
-                                   "VALUES (?, ?, (SELECT current_score + ? FROM Leads WHERE id = ?), GETDATE())";
-                try (PreparedStatement ps = conn.prepareStatement(sqlHistory)) {
-                    ps.setInt(1, leadId);
-                    ps.setInt(2, scoreChange);
-                    ps.setInt(3, scoreChange);
-                    ps.setInt(4, leadId);
-                    ps.executeUpdate();
-                }
-
-                // Update Leads.current_score
-                String sqlUpdateLead = "UPDATE Leads SET current_score = current_score + ? WHERE id = ?";
+            // 4. Update potential_status to 'Hot' if scoreChange > 0 (significant interaction)
+            if (scoreChange > 0) {
+                String sqlUpdateLead = "UPDATE Leads SET potential_status = 'Hot' WHERE id = ?";
                 try (PreparedStatement ps = conn.prepareStatement(sqlUpdateLead)) {
-                    ps.setInt(1, scoreChange);
-                    ps.setInt(2, leadId);
+                    ps.setInt(1, leadId);
                     ps.executeUpdate();
                 }
             }
@@ -485,15 +456,7 @@ public class LeadDAOImpl implements LeadDAO {
 
     @Override
     public void updateScore(int leadId, int newScore) {
-        String sql = "UPDATE Leads SET current_score = ? WHERE id = ?";
-        try (Connection conn = dbUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, newScore);
-            ps.setInt(2, leadId);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("Error updating lead score: " + e.getMessage());
-        }
+        // Scoring removed, operation ignored or can be repurposed to set status
     }
 
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
@@ -514,11 +477,10 @@ public class LeadDAOImpl implements LeadDAO {
     
     @Override
     public model.viewmodel.MonitorKPIsViewModel getMonitorKPIs(Integer campaignId) {
-        model.viewmodel.MonitorKPIsViewModel kpi = new model.viewmodel.MonitorKPIsViewModel(0, 0, 0, 0.0);
-        String sql = "SELECT COUNT(*) as total_leads, " +
-                     "SUM(CASE WHEN current_score >= 50 THEN 1 ELSE 0 END) as hot_leads, " +
-                     "SUM(CASE WHEN assigned_to IS NULL THEN 1 ELSE 0 END) as unassigned_leads, " +
-                     "AVG(CAST(current_score AS FLOAT)) as avg_score " +
+        model.viewmodel.MonitorKPIsViewModel kpi = new model.viewmodel.MonitorKPIsViewModel(0, 0);
+        String sql = "SELECT " +
+                     "SUM(CASE WHEN potential_status = 'Hot' THEN 1 ELSE 0 END) as hot_leads, " +
+                     "SUM(CASE WHEN assigned_to IS NULL AND potential_status = 'Hot' THEN 1 ELSE 0 END) as unassigned_leads " +
                      "FROM Leads";
         if (campaignId != null) {
             sql += " WHERE campaign_id = ?";
@@ -536,10 +498,8 @@ public class LeadDAOImpl implements LeadDAO {
             }
             rs = stmt.executeQuery();
             if (rs.next()) {
-                kpi.setTotalLeads(rs.getInt("total_leads"));
                 kpi.setHotLeads(rs.getInt("hot_leads"));
                 kpi.setUnassignedLeads(rs.getInt("unassigned_leads"));
-                kpi.setAvgScore(rs.getDouble("avg_score"));
             }
         } catch (SQLException e) {
             System.err.println("Error getting monitor KPIs: " + e.getMessage());
@@ -555,7 +515,7 @@ public class LeadDAOImpl implements LeadDAO {
         StringBuilder sql = new StringBuilder(
             "SELECT l.*, c.name as campaign_name FROM Leads l " +
             "LEFT JOIN Campaigns c ON l.campaign_id = c.id " +
-            "WHERE l.assigned_to IS NULL AND l.status = 'New'"
+            "WHERE l.assigned_to IS NULL AND l.status = 'New' AND l.potential_status = 'Hot'"
         );
         
         if (campaignId != null) {
@@ -581,7 +541,7 @@ public class LeadDAOImpl implements LeadDAO {
             }
         }
         
-        sql.append(" ORDER BY l.current_score DESC");
+        sql.append(" ORDER BY l.created_at DESC");
         
         String finalSql = sql.toString();
         if (limit > 0) {
@@ -784,14 +744,76 @@ public class LeadDAOImpl implements LeadDAO {
         } catch (SQLException e) {
             System.err.println("Error assigning lead: " + e.getMessage());
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) {}
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                }
             }
             return false;
         } finally {
             if (conn != null) {
-                try { conn.setAutoCommit(true); } catch (SQLException ex) {}
-                dbUtil.closeConnection(conn);
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException ex) {
+                }
             }
+            closeResources(null, null, conn);
+        }
+    }
+
+    @Override
+    public boolean delete(int leadId) {
+        Connection conn = null;
+        try {
+            conn = dbUtil.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. Delete from LeadInteractions
+            String sqlInteractions = "DELETE FROM LeadInteractions WHERE lead_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlInteractions)) {
+                ps.setInt(1, leadId);
+                ps.executeUpdate();
+            }
+
+            // 2. Delete from LeadStatusHistory 
+            String sqlHistory = "DELETE FROM LeadStatusHistory WHERE lead_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlHistory)) {
+                ps.setInt(1, leadId);
+                ps.executeUpdate();
+            }
+
+            // 3. Delete from Leads - only if NOT assigned
+            String sqlLead = "DELETE FROM Leads WHERE id = ? AND assigned_to IS NULL";
+            int affected = 0;
+            try (PreparedStatement ps = conn.prepareStatement(sqlLead)) {
+                ps.setInt(1, leadId);
+                affected = ps.executeUpdate();
+            }
+
+            if (affected > 0) {
+                conn.commit();
+                return true;
+            } else {
+                conn.rollback();
+                return false;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error deleting lead: " + e.getMessage());
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                }
+            }
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException ex) {
+                }
+            }
+            closeResources(null, null, conn);
         }
     }
 }
