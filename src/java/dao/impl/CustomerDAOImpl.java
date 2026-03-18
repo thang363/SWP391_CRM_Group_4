@@ -624,6 +624,25 @@ public class CustomerDAOImpl implements CustomerDAO {
         return false;
     }
 
+    @Override
+    public boolean updateCustomerStatus(int id, String status) {
+        String sql = "UPDATE Customers SET status = ?, updated_at = GETDATE() WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, status);
+            stmt.setInt(2, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+    }
+
     private Customer mapCustomer(ResultSet rs) throws SQLException {
         Customer c = new Customer();
         c.setId(rs.getInt("id"));

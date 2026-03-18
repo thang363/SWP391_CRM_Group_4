@@ -78,6 +78,18 @@ public class MyTasksServlet extends HttpServlet {
                 case "reopen":
                     taskService.updateTaskStatus(taskId, "Pending");
                     break;
+                case "complete_renewal":
+                    taskService.completeRenewal(taskId);
+                    break;
+                case "cancel_service":
+                    taskService.cancelService(taskId);
+                    break;
+                case "mark_called":
+                    taskService.markCalled(taskId);
+                    break;
+                case "transfer_to_sales":
+                    taskService.transferToSales(taskId);
+                    break;
             }
         }
 

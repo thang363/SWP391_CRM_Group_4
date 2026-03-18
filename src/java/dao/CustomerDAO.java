@@ -33,4 +33,6 @@ public interface CustomerDAO {
     boolean setCustomerTier(int id, String tier);
 
     boolean mergeCustomers(int primaryId, int duplicateId);
+
+    boolean updateCustomerStatus(int id, String status);
 }

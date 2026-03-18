@@ -13,4 +13,12 @@ public interface TaskService {
     int createTask(Task task);
 
     boolean updateTaskStatus(int taskId, String status);
+
+    boolean completeRenewal(int taskId);
+
+    boolean cancelService(int taskId);
+
+    boolean markCalled(int taskId);
+
+    boolean transferToSales(int taskId);
 }
