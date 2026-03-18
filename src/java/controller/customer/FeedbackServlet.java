@@ -10,6 +10,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Servlet Giao Diện Công Cộng điều hướng việc thu thập Phản Hồi Khách Hàng.
+ * Được ánh xạ vào đường dẫn '/feedback' và có thể truy cập mà không cần đăng nhập CRM.
+ */
 @WebServlet(name = "FeedbackServlet", urlPatterns = { "/feedback" })
 public class FeedbackServlet extends HttpServlet {
 
@@ -19,6 +23,10 @@ public class FeedbackServlet extends HttpServlet {
         this.reviewDAO = new ReviewDAOImpl();
     }
 
+    /**
+     * Xử lý yêu cầu GET: Truy cập vào đường dẫn đánh giá.
+     * Xác thực thông tin, tính khả dụng và trạng thái đã sử dụng của Token trước khi tải Form diện diện.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -53,6 +61,10 @@ public class FeedbackServlet extends HttpServlet {
         request.getRequestDispatcher("/views/feedbacks/feedback.jsp").forward(request, response);
     }
 
+    /**
+     * Xử lý yêu cầu POST: Bấm Nộp/Gửi Form Đánh Giá.
+     * Thu thập các ô đánh giá và bình luận, giao cho DAO thao tác, sau đó chuyển hướng tới thông báo Thành công / Thất bại.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
