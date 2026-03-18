@@ -2,8 +2,20 @@ package util;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Lớp tiện ích thực hiện gửi Email Bất Đồng Bộ (Asynchronously).
+ * Bao bọc các lời gọi JavaMail đồng bộ bên trong luồng CompletableFuture 
+ * nhằm tránh làm treo (hang) giao diện/luồng chính khi cấu hình kết nối SMTP.
+ */
 public class EmailService {
 
+    /**
+     * Gửi một email đính kèm đường link chứa mã xác thực đánh giá cho khách hàng.
+     * Chạy ngầm trong nền (Async).
+     * @param toEmail Email đích đến của khách hàng
+     * @param token Mã xác thực duy nhất vừa được tạo
+     * @param domainUrl URL thư mục gốc của hệ thống (VD: http://localhost:8080/crm)
+     */
     public static void sendFeedbackEmailAsync(String toEmail, String token, String domainUrl) {
         CompletableFuture.runAsync(() -> {
             String feedbackLink = domainUrl + "/feedback?token=" + token;
@@ -20,7 +32,9 @@ public class EmailService {
             content.append("<p>Trân trọng,<br>Đội ngũ Chăm sóc khách hàng CRM</p>");
             content.append("</body></html>");
 
+            // Khởi tạo dịch vụ gửi JavaMail Đồng Bộ
             service.EmailService mailer = new service.EmailService();
+            // Lệnh chặn (Blocking) này được xử lý an toàn nhờ có Async Pool
             boolean success = mailer.sendMarketingEmail(toEmail, subject, content.toString());
             
             if (success) {
@@ -31,6 +45,11 @@ public class EmailService {
         });
     }
 
+    /**
+     * Gửi email 'Cảm ơn' đơn giản tới khách hàng theo luồng bất đồng bộ.
+     * @param toEmail Email đích đến
+     * @param customerName Tên của khách hàng cá nhân / tên tập đoàn
+     */
     public static void sendThankYouEmailAsync(String toEmail, String customerName) {
         CompletableFuture.runAsync(() -> {
             service.EmailService mailer = new service.EmailService();
