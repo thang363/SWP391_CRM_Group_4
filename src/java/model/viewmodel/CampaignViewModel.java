@@ -25,6 +25,7 @@ public class CampaignViewModel {
     // View-specific fields
     private String managerName;
     private boolean hasPendingTransfer;
+    private boolean isOwner;
 
     // Landing Page specific fields
     private String landingPageStatus;
@@ -41,7 +42,7 @@ public class CampaignViewModel {
      * Convert from Entity to ViewModel
      */
     public static CampaignViewModel fromEntity(Campaign entity, String managerName, boolean hasPendingTransfer, 
-                                             String lpStatus, Integer assigneeId, String assigneeName) {
+                                             String lpStatus, Integer assigneeId, String assigneeName, Integer currentUserId) {
         CampaignViewModel vm = new CampaignViewModel();
         vm.setId(entity.getId());
         vm.setName(entity.getName());
@@ -61,6 +62,9 @@ public class CampaignViewModel {
         vm.setLandingPageStatus(lpStatus);
         vm.setAssigneeId(assigneeId);
         vm.setAssigneeName(assigneeName);
+
+        // Ownership logic
+        vm.setOwner(entity.getManagerId() != null && entity.getManagerId().equals(currentUserId));
         
         return vm;
     }
@@ -98,6 +102,10 @@ public class CampaignViewModel {
 
     public boolean isHasPendingTransfer() { return hasPendingTransfer; }
     public void setHasPendingTransfer(boolean hasPendingTransfer) { this.hasPendingTransfer = hasPendingTransfer; }
+
+    public boolean isOwner() { return isOwner; }
+    public boolean getIsOwner() { return isOwner; }  // JSTL EL alias: ${campaign.isOwner}
+    public void setOwner(boolean owner) { isOwner = owner; }
 
     public String getLandingPageStatus() { return landingPageStatus; }
     public void setLandingPageStatus(String landingPageStatus) { this.landingPageStatus = landingPageStatus; }

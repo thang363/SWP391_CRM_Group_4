@@ -100,63 +100,43 @@
                 </div>
             </div>
 
-            <!-- User Statistics -->
+            <!-- Search and Filter -->
             <div class="container-fluid px-4">
-                <div class="row g-4 mb-4">
-                    <div class="col-sm-6 col-xl-3">
-                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-start border-primary border-4">
-                            <i class="fa fa-users fa-3x text-primary"></i>
-                            <div class="ms-3 text-end">
-                                <p class="mb-2 text-muted fw-bold">Tổng người dùng</p>
-                                <h4 class="mb-0">${users.size()}</h4>
+                <div class="bg-light rounded p-4 mb-4 shadow-sm">
+                    <form method="GET" action="${pageContext.request.contextPath}/users" class="row g-3 align-items-center">
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa fa-search"></i></span>
+                                <input type="text" class="form-control" name="searchQuery" placeholder="Tìm kiếm theo tên/username/email" value="${param.searchQuery}">
                             </div>
                         </div>
-                    </div>
-                    <div class="col-sm-6 col-xl-3">
-                        <c:set var="activeCount" value="0" />
-                        <c:forEach var="u" items="${users}">
-                            <c:if test="${u.status == 'Active'}">
-                                <c:set var="activeCount" value="${activeCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-start border-success border-4">
-                            <i class="fa fa-user-check fa-3x text-success"></i>
-                            <div class="ms-3 text-end">
-                                <p class="mb-2 text-muted fw-bold">Đang hoạt động</p>
-                                <h4 class="mb-0">${activeCount}</h4>
-                            </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="role">
+                                <option value="">Tất cả vai trò</option>
+                                <option value="Manager" ${param.role == 'Manager' ? 'selected' : ''}>Quản lý</option>
+                                <option value="Sale" ${param.role == 'Sale' ? 'selected' : ''}>Kinh doanh</option>
+                                <option value="Marketing" ${param.role == 'Marketing' ? 'selected' : ''}>Tiếp thị</option>
+                                <option value="Support" ${param.role == 'Support' ? 'selected' : ''}>Hỗ trợ</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="col-sm-6 col-xl-3">
-                        <c:set var="inactiveCount" value="0" />
-                        <c:forEach var="u" items="${users}">
-                            <c:if test="${u.status != 'Active'}">
-                                <c:set var="inactiveCount" value="${inactiveCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-start border-danger border-4">
-                            <i class="fa fa-user-times fa-3x text-danger"></i>
-                            <div class="ms-3 text-end">
-                                <p class="mb-2 text-muted fw-bold">Ngừng hoạt động</p>
-                                <h4 class="mb-0">${inactiveCount}</h4>
-                            </div>
+                        <div class="col-md-2">
+                            <select class="form-select" name="status">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="Active" ${param.status == 'Active' ? 'selected' : ''}>Đang hoạt động</option>
+                                <option value="Inactive" ${param.status == 'Inactive' ? 'selected' : ''}>Ngừng hoạt động</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="col-sm-6 col-xl-3">
-                        <c:set var="managerCount" value="0" />
-                        <c:forEach var="u" items="${users}">
-                            <c:if test="${u.role == 'MANAGER'}">
-                                <c:set var="managerCount" value="${managerCount + 1}" />
-                            </c:if>
-                        </c:forEach>
-                        <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-start border-warning border-4">
-                            <i class="fa fa-user-shield fa-3x text-warning"></i>
-                            <div class="ms-3 text-end">
-                                <p class="mb-2 text-muted fw-bold">Quản lý</p>
-                                <h4 class="mb-0">${managerCount}</h4>
-                            </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1 border-0 fw-bold d-flex align-items-center justify-content-center" style="background-color: #0095ff; color: white;">
+                                <i class="fa fa-search me-2 fs-5"></i>
+                                Tìm kiếm
+                            </button>
+                            <a href="${pageContext.request.contextPath}/users" class="btn btn-secondary flex-grow-1 border-0 fw-bold d-flex align-items-center justify-content-center" style="background-color: #6c757d; color: white;">
+                                <i class="fa fa-redo me-2 fs-5"></i>
+                                Đặt lại
+                            </a>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
@@ -202,7 +182,7 @@
                                                     </div>
                                                 </td>
                                                 <td><code>${u.username}</code></td>
-                                                <td>${u.email}</td>
+                                                <td class="text-truncate" style="max-width: 150px;" title="${u.email}">${u.email}</td>
                                                 <td>${u.phone != null ? u.phone : '-'}</td>
                                                 <td class="text-center">
                                                     <c:choose>

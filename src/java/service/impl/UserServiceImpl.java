@@ -387,4 +387,20 @@ public class UserServiceImpl implements UserService {
             return null;
         }
     }
+    
+    @Override
+    public List<UserViewModel> searchUsers(String query, String roleStr, String status) {
+        try {
+            List<User> users = userDAO.searchUsers(query, roleStr, status);
+            List<UserViewModel> viewModels = new ArrayList<>();
+            for (User user : users) {
+                viewModels.add(convertToViewModel(user));
+            }
+            return viewModels;
+        } catch (SQLException e) {
+            System.err.println("Database error while searching users: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
 }

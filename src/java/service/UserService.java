@@ -42,4 +42,6 @@ public interface UserService {
     boolean resetPassword(Integer userId, String newPassword);
     
     User createUser(String username, String password, String email, String fullName, String phone, Role role);
+    
+    List<UserViewModel> searchUsers(String query, String roleStr, String status);
 }

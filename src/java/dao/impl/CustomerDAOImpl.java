@@ -14,7 +14,8 @@ import java.util.List;
 
 /**
  * Lớp triển khai của giao diện CustomerDAO.
- * Chủ yếu xử lý các thao tác CRUD phức tạp, thực hiện JOIN bảng, và kiểm tra ràng buộc 
+ * Chủ yếu xử lý các thao tác CRUD phức tạp, thực hiện JOIN bảng, và kiểm tra
+ * ràng buộc
  * đối với bảng 'Customers' trên SQL Server.
  */
 public class CustomerDAOImpl implements CustomerDAO {
@@ -89,11 +90,12 @@ public class CustomerDAOImpl implements CustomerDAO {
 
     @Override
     public Customer findCustomerByEmail(String email) {
-        if (email == null || email.trim().isEmpty()) return null;
-        
+        if (email == null || email.trim().isEmpty())
+            return null;
+
         String sql = "SELECT * FROM Customers WHERE email = ?";
         try (Connection conn = dbUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email.trim());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -107,8 +109,10 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     /**
-     * Phương thức đặc biệt: Tự động chuyển đổi và tạo hồ sơ Khách hàng (Customer) từ một Cơ Hội (Opportunity) đã chốt/thành công.
-     * Sử dụng cấu trúc Transaction nhiều bước nhằm bảo toàn vẹn dữ liệu và tránh trùng lặp.
+     * Phương thức đặc biệt: Tự động chuyển đổi và tạo hồ sơ Khách hàng (Customer)
+     * từ một Cơ Hội (Opportunity) đã chốt/thành công.
+     * Sử dụng cấu trúc Transaction nhiều bước nhằm bảo toàn vẹn dữ liệu và tránh
+     * trùng lặp.
      */
     @Override
     public void createFromOpportunity(int opportunityId) throws Exception {
@@ -354,7 +358,8 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public int getTotalCustomersCountBySalesId(int salesId, String searchQuery, String tierFilter, String statusFilter) {
+    public int getTotalCustomersCountBySalesId(int salesId, String searchQuery, String tierFilter,
+            String statusFilter) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Customers WHERE assigned_to = ? ");
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
             sql.append("AND (company_name LIKE ? OR email LIKE ? OR phone LIKE ?) ");
@@ -532,8 +537,10 @@ public class CustomerDAOImpl implements CustomerDAO {
 
     /**
      * Xóa một Khách Hàng khỏi hệ thống bằng ID.
-     * Chú ý: Thao tác này sẽ hiển nhiên dính lỗi SQLException nếu khách hàng này đã bị gán khóa ngoại như 
-     * Liên Hệ (Contacts), Hỗ trợ (Tickets) hoặc Đánh Giá (Reviews) trừ khi DB có bật CASCADE.
+     * Chú ý: Thao tác này sẽ hiển nhiên dính lỗi SQLException nếu khách hàng này đã
+     * bị gán khóa ngoại như
+     * Liên Hệ (Contacts), Hỗ trợ (Tickets) hoặc Đánh Giá (Reviews) trừ khi DB có
+     * bật CASCADE.
      */
     @Override
     public boolean deleteCustomer(int id) {
@@ -573,13 +580,16 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     /**
-     * Thực thi chuỗi logic phức tạp nhằm Trộn/Gộp một khách hàng trùng lặp vào một khách hàng chính thống.
-     * Kích hoạt một Transaction thủ công (AutoCommit = false) đảm bảo mọi Cập Nhật phải thành công cùng lúc.
+     * Thực thi chuỗi logic phức tạp nhằm Trộn/Gộp một khách hàng trùng lặp vào một
+     * khách hàng chính thống.
+     * Kích hoạt một Transaction thủ công (AutoCommit = false) đảm bảo mọi Cập Nhật
+     * phải thành công cùng lúc.
      * 1. Điều chuyển Cơ Hội (Opportunities)
      * 2. Điều chuyển Liên Hệ (Contacts)
      * 3. Điều chuyển Yêu cầu hỗ trợ (Tickets)
      * 4. Điều chuyển Phản hồi (CustomerReviews)
      * 5. Xóa bỏ khách hàng Trùng lặp
+     * 
      * @return true khi Transaction toàn vẹn, false nếu bị Hủy (rollback) gia chừng.
      */
     @Override
@@ -649,9 +659,29 @@ public class CustomerDAOImpl implements CustomerDAO {
         return false;
     }
 
+    @Override
+    public boolean updateCustomerStatus(int id, String status) {
+        String sql = "UPDATE Customers SET status = ?, updated_at = GETDATE() WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, status);
+            stmt.setInt(2, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeResources(null, stmt, conn);
+        }
+    }
+
     /**
      * Helper utility.
-     * Maps a single SQL ResultSet row directly into a comprehensive Customer entity object.
+     * Maps a single SQL ResultSet row directly into a comprehensive Customer entity
+     * object.
      * Handles null-checks for boxed primitives (Integer, Double).
      */
     private Customer mapCustomer(ResultSet rs) throws SQLException {

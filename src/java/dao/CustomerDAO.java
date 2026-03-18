@@ -115,4 +115,6 @@ public interface CustomerDAO {
      * @return true nếu toàn bộ quá trình Transaction cục bộ thành công, false nếu gặp lỗi giữa đường thao tác
      */
     boolean mergeCustomers(int primaryId, int duplicateId);
+
+    boolean updateCustomerStatus(int id, String status);
 }
