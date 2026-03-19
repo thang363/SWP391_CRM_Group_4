@@ -26,9 +26,9 @@ public class EmailService {
         content.append("<p>Vui lòng xác nhận kết quả xử lý:</p>");
         content.append("<ol>");
         content.append("<li><a href='").append(acceptLink).append(
-                "' style='color: #4CAF50; text-decoration: none; font-weight: bold;'>Chấp nhận (Đã xong)</a></li>");
+                "' style='display:inline-block; padding:10px 20px; background-color:#4CAF50; color:#ffffff; text-decoration:none; border-radius:5px; margin-bottom: 10px;'>Chấp nhận (Đã xong)</a></li>");
         content.append("<li><a href='").append(rejectLink).append(
-                "' style='color: #f44336; text-decoration: none; font-weight: bold;'>Từ chối (Vẫn còn lỗi)</a></li>");
+                "' style='display:inline-block; padding:10px 20px; background-color:#f44336; color:#ffffff; text-decoration:none; border-radius:5px;'>Từ chối (Vẫn còn lỗi)</a></li>");
         content.append("</ol>");
         content.append("<p><em>Nếu bạn không phản hồi trong vòng 3 ngày, ticket sẽ tự động đóng.</em></p>");
         content.append("</body></html>");
@@ -88,6 +88,12 @@ public class EmailService {
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
+        
+        // Cấu hình bổ sung khắc phục lỗi EHLO/HELO hostname khi chạy trên thiết bị mạng khác
+        props.put("mail.smtp.localhost", "127.0.0.1");
+        // Bảo vệ chứng chỉ SSL và giao thức bảo mật mặc định TLSv1.2
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
