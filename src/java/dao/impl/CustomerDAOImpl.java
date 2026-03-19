@@ -121,24 +121,42 @@ public class CustomerDAOImpl implements CustomerDAO {
             conn = dbUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Get lead data first
+            // 1. Get opportunity and lead data
             String fullName = "";
             String email = "";
             String phone = "";
             Integer assignedTo = null;
             Integer leadId = null;
+            Integer existingOppCustomerId = null;
 
-            try (PreparedStatement ps = conn.prepareStatement(getDataSql)) {
+            String getOppDataSql = "SELECT o.customer_id, o.lead_id, l.full_name, l.email, l.phone, l.assigned_to " +
+                                  "FROM Opportunities o " +
+                                  "LEFT JOIN Leads l ON o.lead_id = l.id " +
+                                  "WHERE o.id = ?";
+
+            try (PreparedStatement ps = conn.prepareStatement(getOppDataSql)) {
                 ps.setInt(1, opportunityId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
+                        existingOppCustomerId = rs.getObject("customer_id", Integer.class);
+                        leadId = rs.getObject("lead_id", Integer.class);
+                        
+                        // Nếu đã có customer_id, không cần làm gì thêm
+                        if (existingOppCustomerId != null && existingOppCustomerId > 0) {
+                            return; 
+                        }
+
+                        // Nếu chưa có customer_id nhưng cũng không có lead_id
+                        if (leadId == null) {
+                            throw new Exception("Opportunity is not linked to any Lead or Customer.");
+                        }
+
                         fullName = rs.getString("full_name");
                         email = rs.getString("email");
                         phone = rs.getString("phone");
                         assignedTo = rs.getObject("assigned_to", Integer.class);
-                        leadId = rs.getInt("lead_id");
                     } else {
-                        throw new Exception("Opportunity not found or Lead not linked.");
+                        throw new Exception("Opportunity not found.");
                     }
                 }
             }

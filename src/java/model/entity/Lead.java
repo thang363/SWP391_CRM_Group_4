@@ -29,11 +29,13 @@ public class Lead {
     private User assignedSale;    // dùng khi JOIN Users
     //private LeadSource source;    // dùng khi JOIN LeadSources
     private Campaign campaign;      // dùng khi JOIN Campaigns
+    
+    private LeadNote leadnote;
 
     public Lead() {
     }
 
-    public Lead(Integer id, Integer campaignId, Integer sourceId, String fullName, String email, String phone, String potentialStatus, String status, Boolean isConverted, Integer assignedTo, LocalDateTime createdAt, User assignedSale) {
+    public Lead(Integer id, Integer campaignId, Integer sourceId, String fullName, String email, String phone, String potentialStatus, String status, Boolean isConverted, Integer assignedTo, LocalDateTime createdAt, User assignedSale,LeadNote leadNote) {
         this.id = id;
         this.campaignId = campaignId;
         this.sourceId = sourceId;
@@ -46,7 +48,18 @@ public class Lead {
         this.assignedTo = assignedTo;
         this.createdAt = createdAt;
         this.assignedSale = assignedSale;
+        this.leadnote=leadNote;
     }
+
+    public LeadNote getLeadnote() {
+        return leadnote;
+    }
+
+    public void setLeadnote(LeadNote leadnote) {
+        this.leadnote = leadnote;
+    }
+    
+    
 
     public Integer getId() {
         return id;
