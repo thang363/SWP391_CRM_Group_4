@@ -21,6 +21,11 @@ import java.io.PrintWriter;
 import java.sql.Date;
 import java.util.List;
 
+/**
+ * Servlet Điều khiển trung tâm cho tính năng Quản lý Khách Hàng.
+ * Chịu trách nhiệm thực thi các thao tác CRUD, danh sách, bộ lọc tìm kiếm, xuất file Excel và Gộp hồ sơ.
+ * Phân quyền: Cấm truy cập nếu không phải là Quản Lý (MANAGER) hoặc Nhân biên Bán hàng (SALE).
+ */
 @WebServlet(name = "CustomerServlet", urlPatterns = { "/customers", "/customers-vip" })
 public class CustomerServlet extends HttpServlet {
 
@@ -120,6 +125,10 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Xác thực xem tài khoản ở Session hiện tại có đủ thẩm quyền (MANAGER hoặc SALE) để thao tác Khách hàng không.
+     * @return true nếu được phép, false nếu bị cấm
+     */
     private boolean hasAccess(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null)
@@ -284,6 +293,10 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Khởi tạo Quy trình Yêu Cầu Đánh Giá cho một khách hàng được chỉ định.
+     * Tự động sinh ra 1 Token duy nhất và kích hoạt Dịch Vụ Gửi Email Chạy Ngầm (Asynchronous).
+     */
     private void sendFeedbackRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         Customer c = customerDAO.getCustomerById(id);

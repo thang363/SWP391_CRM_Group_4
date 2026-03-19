@@ -13,6 +13,10 @@ import java.util.UUID;
 import model.entity.Review;
 import util.DatabaseUtil;
 
+/**
+ * Lớp triển khai của ReviewDAO.
+ * Đảm nhiệm trực tiếp việc kết nối CSDL và thực thi SQL cho tính năng Đánh Giá Khách Hàng.
+ */
 public class ReviewDAOImpl implements ReviewDAO {
 
     private final DatabaseUtil dbUtil;
@@ -65,14 +69,19 @@ public class ReviewDAOImpl implements ReviewDAO {
         return review;
     }
 
+    /**
+     * Tạo mới một mã yêu cầu đánh giá cho khách hàng.
+     * Thiết lập ngày hết hạn là 7 ngày kể từ hiện tại.
+     */
     @Override
     public String generateFeedbackRequest(int customerId, Integer userId) {
         String sql = "INSERT INTO CustomerReviews (customer_id, user_id, feedback_token, expires_at, is_used, sent_at) VALUES (?, ?, ?, ?, 0, GETDATE())";
         Connection conn = null;
         PreparedStatement stmt = null;
 
+        // Khởi tạo ngẫu nhiên một chuỗi dịnh danh bảo mật duy nhất - UUID
         String token = UUID.randomUUID().toString();
-        // Set Expiry to +7 days for security against stale feedback links
+        // Thiết lập Thời Hạn Thêm +7 Ngày nhằm quản lý rủi ro các URL Đánh Giá hết hạn
         Timestamp expiresAt = Timestamp.valueOf(LocalDateTime.now().plusDays(7));
 
         try {
@@ -99,6 +108,9 @@ public class ReviewDAOImpl implements ReviewDAO {
         return null;
     }
 
+    /**
+     * Lấy dữ liệu đánh giá tương ứng với một token cụ thể từ CSDL.
+     */
     @Override
     public Review getReviewByToken(String token) {
         String sql = "SELECT * FROM CustomerReviews WHERE feedback_token = ?";
@@ -123,11 +135,14 @@ public class ReviewDAOImpl implements ReviewDAO {
         return null;
     }
 
+    /**
+     * Đẩy bản lưu Đánh Giá của khách hàng vào CSDL.
+     * Ngăn chặn gửi nhiều lần (Submit lặp lại) trên cùng 1 token và từ chối nếu token hết hạn.
+     */
     @Override
     public boolean submitFeedback(String token, int serviceRating, int staffRating, String comment) {
-        // Condition: 'is_used = 0' ensures a token can only be successfully submitted
-        // once.
-        // Condition: 'expires_at >= GETDATE()' blocks expired tokens at POST.
+        // Điều kiện: 'is_used = 0' đảm bảo mỗi token chỉ có thể gọi Submit thành công duy nhất 1 lần.
+        // Điều kiện: 'expires_at >= GETDATE()' chặn các token hết hạn gọi request POST.
         String sql = "UPDATE CustomerReviews SET is_used = 1, service_rating = ?, staff_rating = ?, comment = ?, submitted_at = GETDATE() WHERE feedback_token = ? AND is_used = 0 AND expires_at >= GETDATE()";
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -149,6 +164,9 @@ public class ReviewDAOImpl implements ReviewDAO {
         }
     }
 
+    /**
+     * Lấy danh sách toàn bộ phản hồi dành cho một khách hàng, sắp xếp theo thứ tự mới nhất nằm trên cùng.
+     */
     @Override
     public List<Review> getReviewsByCustomer(int customerId) {
         String sql = "SELECT * FROM CustomerReviews WHERE customer_id = ? ORDER BY sent_at DESC";
@@ -174,6 +192,10 @@ public class ReviewDAOImpl implements ReviewDAO {
         return reviews;
     }
 
+    /**
+     * Kiểm tra xem khách hàng này có nhận yêu cầu đánh giá nào trong phạm vi 24 tiếng gần nhất hay không.
+     * Hoạt động như một cơ chế chống Spam và Spam-limit.
+     */
     @Override
     public boolean hasActiveFeedbackRequest(int customerId) {
         String sql = "SELECT COUNT(*) FROM CustomerReviews WHERE customer_id = ? AND is_used = 0 AND sent_at >= DATEADD(hour, -24, GETDATE())";
