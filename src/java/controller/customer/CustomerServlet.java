@@ -245,18 +245,34 @@ public class CustomerServlet extends HttpServlet {
         writer.flush();
     }
 
-    private void createCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void createCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Customer c = new Customer();
         populateCustomerFromRequest(c, request);
+        
+        if (c.getPhone() == null || !c.getPhone().matches("^0[0-9]{6,10}$")) {
+            request.setAttribute("customer", c);
+            request.setAttribute("error", "Số điện thoại không hợp lệ. Phải bắt đầu bằng số 0, chỉ chứa chữ số và có độ dài từ 7 đến 11 ký tự.");
+            request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+            return;
+        }
+        
         customerDAO.createCustomer(c);
         response.sendRedirect(request.getContextPath() + "/customers");
     }
 
-    private void updateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void updateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         int id = Integer.parseInt(request.getParameter("id"));
         Customer c = customerDAO.getCustomerById(id);
         if (c != null) {
             populateCustomerFromRequest(c, request);
+            
+            if (c.getPhone() == null || !c.getPhone().matches("^0[0-9]{6,10}$")) {
+                request.setAttribute("customer", c);
+                request.setAttribute("error", "Số điện thoại không hợp lệ. Phải bắt đầu bằng số 0, chỉ chứa chữ số và có độ dài từ 7 đến 11 ký tự.");
+                request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+                return;
+            }
+            
             customerDAO.updateCustomer(c);
         }
         response.sendRedirect(request.getContextPath() + "/customers");
