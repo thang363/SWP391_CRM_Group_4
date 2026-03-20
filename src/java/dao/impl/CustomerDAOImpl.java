@@ -726,4 +726,73 @@ public class CustomerDAOImpl implements CustomerDAO {
         if (conn != null)
             dbUtil.closeConnection(conn);
     }
+
+    @Override
+    public boolean checkTaxCodeExist(String taxCode, Integer excludeId) {
+        String sql = "SELECT COUNT(*) FROM Customers WHERE tax_code = ?";
+        if (excludeId != null) {
+            sql += " AND id != ?";
+        }
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, taxCode);
+            if (excludeId != null) {
+                stmt.setInt(2, excludeId);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkEmailExist(String email, Integer excludeId) {
+        String sql = "SELECT COUNT(*) FROM Customers WHERE email = ?";
+        if (excludeId != null) {
+            sql += " AND id != ?";
+        }
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            if (excludeId != null) {
+                stmt.setInt(2, excludeId);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkCompanyNameExist(String companyName, Integer excludeId) {
+        String sql = "SELECT COUNT(*) FROM Customers WHERE company_name = ?";
+        if (excludeId != null) {
+            sql += " AND id != ?";
+        }
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, companyName);
+            if (excludeId != null) {
+                stmt.setInt(2, excludeId);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

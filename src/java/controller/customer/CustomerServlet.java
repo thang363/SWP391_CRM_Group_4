@@ -262,6 +262,26 @@ public class CustomerServlet extends HttpServlet {
             request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
             return;
         }
+
+        // UNIQUE CHECKS
+        if (customerDAO.checkTaxCodeExist(c.getTaxCode(), null)) {
+            request.setAttribute("customer", c);
+            request.setAttribute("error", "Mã số thuế này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.");
+            request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+            return;
+        }
+        if (c.getEmail() != null && !c.getEmail().trim().isEmpty() && customerDAO.checkEmailExist(c.getEmail(), null)) {
+            request.setAttribute("customer", c);
+            request.setAttribute("error", "Email này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.");
+            request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+            return;
+        }
+        if (c.getCompanyName() != null && !c.getCompanyName().trim().isEmpty() && customerDAO.checkCompanyNameExist(c.getCompanyName(), null)) {
+            request.setAttribute("customer", c);
+            request.setAttribute("error", "Tên Khách Hàng này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.");
+            request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+            return;
+        }
         
         customerDAO.createCustomer(c);
         response.sendRedirect(request.getContextPath() + "/customers");
@@ -283,6 +303,26 @@ public class CustomerServlet extends HttpServlet {
             if (c.getPhone() == null || !c.getPhone().matches("^0[0-9]{6,10}$")) {
                 request.setAttribute("customer", c);
                 request.setAttribute("error", "Số điện thoại không hợp lệ. Phải bắt đầu bằng số 0, chỉ chứa chữ số và có độ dài từ 7 đến 11 ký tự.");
+                request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+                return;
+            }
+
+            // UNIQUE CHECKS
+            if (customerDAO.checkTaxCodeExist(c.getTaxCode(), c.getId())) {
+                request.setAttribute("customer", c);
+                request.setAttribute("error", "Mã số thuế này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.");
+                request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+                return;
+            }
+            if (c.getEmail() != null && !c.getEmail().trim().isEmpty() && customerDAO.checkEmailExist(c.getEmail(), c.getId())) {
+                request.setAttribute("customer", c);
+                request.setAttribute("error", "Email này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.");
+                request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+                return;
+            }
+            if (c.getCompanyName() != null && !c.getCompanyName().trim().isEmpty() && customerDAO.checkCompanyNameExist(c.getCompanyName(), c.getId())) {
+                request.setAttribute("customer", c);
+                request.setAttribute("error", "Tên Khách Hàng này đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.");
                 request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
                 return;
             }

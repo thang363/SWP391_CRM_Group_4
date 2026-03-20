@@ -117,4 +117,19 @@ public interface CustomerDAO {
     boolean mergeCustomers(int primaryId, int duplicateId);
 
     boolean updateCustomerStatus(int id, String status);
+
+    /**
+     * Checks if a tax code already exists in the database, excluding a specific customer ID.
+     */
+    boolean checkTaxCodeExist(String taxCode, Integer excludeId);
+
+    /**
+     * Checks if an email already exists in the database, excluding a specific customer ID.
+     */
+    boolean checkEmailExist(String email, Integer excludeId);
+
+    /**
+     * Checks if a company name already exists in the database, excluding a specific customer ID.
+     */
+    boolean checkCompanyNameExist(String companyName, Integer excludeId);
 }
