@@ -86,11 +86,16 @@
                                                                             <label
                                                                                 class="col-sm-4 col-form-label text-nowrap">Mã
                                                                                 Số
-                                                                                Thuế</label>
+                                                                                Thuế <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
                                                                                 <input type="text" class="form-control"
                                                                                     name="taxCode"
-                                                                                    value="${customer.taxCode}">
+                                                                                    value="${customer.taxCode}"
+                                                                                    pattern="[0-9]{10}"
+                                                                                    title="Mã số thuế phải bao gồm đúng 10 chữ số."
+                                                                                    oninput="this.value = this.value.replace(/[^0-9]/g, '');" 
+                                                                                    required>
                                                                             </div>
                                                                         </div>
 

@@ -249,6 +249,13 @@ public class CustomerServlet extends HttpServlet {
         Customer c = new Customer();
         populateCustomerFromRequest(c, request);
         
+        if (c.getTaxCode() == null || !c.getTaxCode().matches("^[0-9]{10}$")) {
+            request.setAttribute("customer", c);
+            request.setAttribute("error", "Mã số thuế không hợp lệ. Bao gồm đúng 10 chữ số.");
+            request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+            return;
+        }
+
         if (c.getPhone() == null || !c.getPhone().matches("^0[0-9]{6,10}$")) {
             request.setAttribute("customer", c);
             request.setAttribute("error", "Số điện thoại không hợp lệ. Phải bắt đầu bằng số 0, chỉ chứa chữ số và có độ dài từ 7 đến 11 ký tự.");
@@ -266,6 +273,13 @@ public class CustomerServlet extends HttpServlet {
         if (c != null) {
             populateCustomerFromRequest(c, request);
             
+            if (c.getTaxCode() == null || !c.getTaxCode().matches("^[0-9]{10}$")) {
+                request.setAttribute("customer", c);
+                request.setAttribute("error", "Mã số thuế không hợp lệ. Bao gồm đúng 10 chữ số.");
+                request.getRequestDispatcher("/views/customers/form.jsp").forward(request, response);
+                return;
+            }
+
             if (c.getPhone() == null || !c.getPhone().matches("^0[0-9]{6,10}$")) {
                 request.setAttribute("customer", c);
                 request.setAttribute("error", "Số điện thoại không hợp lệ. Phải bắt đầu bằng số 0, chỉ chứa chữ số và có độ dài từ 7 đến 11 ký tự.");
