@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import model.entity.Campaign;
 import model.entity.Lead;
+import model.entity.LeadNote;
 import util.DatabaseUtil;
 
 /**
@@ -18,6 +19,7 @@ public class LeadDAOImpl implements LeadDAO {
     public LeadDAOImpl() {
         this.dbUtil = DatabaseUtil.getInstance();
     }
+
     //AND is_converted = 0
     @Override
     public List<Lead> findBySaleId(int saleId) {
@@ -186,7 +188,7 @@ public class LeadDAOImpl implements LeadDAO {
 
         } catch (SQLException e) {
             System.err.println("Error inserting lead: " + e.getMessage());
-            e.printStackTrace(); 
+            e.printStackTrace();
             return false;
         } finally {
             closeResources(null, stmt, conn);
@@ -276,7 +278,6 @@ public class LeadDAOImpl implements LeadDAO {
         return list;
     }
 
-
     private Lead mapResultSetToLead(ResultSet rs) throws SQLException {
         Lead lead = new Lead();
         lead.setId(rs.getInt("id"));
@@ -286,6 +287,36 @@ public class LeadDAOImpl implements LeadDAO {
         lead.setStatus(rs.getString("status"));
         lead.setPotentialStatus(rs.getString("potential_status"));
         lead.setIsConverted(rs.getBoolean("is_converted"));
+        String noteContent = null;
+        try {
+            noteContent = rs.getString("last_note_content");
+        } catch (SQLException e) {
+            try {
+                noteContent = rs.getString("note_content");
+            } catch (SQLException e2) {
+                // Ignore if column not found
+            }
+        }
+
+        if (noteContent != null) {
+            LeadNote note = new LeadNote();
+            note.setNoteContent(noteContent);
+            Timestamp noteTs = null;
+            try {
+                noteTs = rs.getTimestamp("last_noted_at");
+            } catch (SQLException e) {
+                try {
+                    noteTs = rs.getTimestamp("created_at");
+                } catch (SQLException e2) {
+                    // Ignore
+                }
+            }
+            if (noteTs != null) {
+                note.setCreatedAt(noteTs.toLocalDateTime());
+            }
+
+            lead.setLeadnote(note);
+        }
 
         // Handling potential null for campaign/source if they exist
         try {
@@ -333,7 +364,15 @@ public class LeadDAOImpl implements LeadDAO {
 
     @Override
     public List<Lead> searchLeads(int saleId, String query, String status) {
-        StringBuilder sql = new StringBuilder("SELECT * FROM Leads WHERE assigned_to = ?");
+        StringBuilder sql = new StringBuilder("SELECT l.*, ln.note_content AS last_note_content, ln.created_at AS last_noted_at\n"
+                + "FROM Leads l\n"
+                + "OUTER APPLY (\n"
+                + "    SELECT TOP 1 *\n"
+                + "    FROM LeadNotes ln\n"
+                + "    WHERE ln.lead_id = l.id\n"
+                + "    ORDER BY ln.created_at DESC\n"
+                + ") ln\n"
+                + "WHERE l.assigned_to = ?");
         List<Object> params = new ArrayList<>();
         params.add(saleId);
 
@@ -352,18 +391,19 @@ public class LeadDAOImpl implements LeadDAO {
         sql.append(" ORDER BY created_at DESC");
 
         List<Lead> list = new ArrayList<>();
-        try (Connection conn = dbUtil.getConnection();
-             PreparedStatement stmt = (conn != null) ? conn.prepareStatement(sql.toString()) : null) {
-            
-            if (stmt == null) return list;
-            
+        try (Connection conn = dbUtil.getConnection(); PreparedStatement stmt = (conn != null) ? conn.prepareStatement(sql.toString()) : null) {
+
+            if (stmt == null) {
+                return list;
+            }
+
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    
-                list.add(mapResultSetToLead(rs));
+
+                    list.add(mapResultSetToLead(rs));
                 }
             }
         } catch (SQLException e) {
@@ -381,7 +421,7 @@ public class LeadDAOImpl implements LeadDAO {
 
             // 1. Get or Create activity_type_id
             int activityTypeId = ensureActivityType(conn, activityType);
-            
+
             // 2. Fallback for campaignId if null
             if (campaignId == null) {
                 String sqlCampaign = "SELECT campaign_id FROM Leads WHERE id = ?";
@@ -390,18 +430,24 @@ public class LeadDAOImpl implements LeadDAO {
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
                             int cid = rs.getInt("campaign_id");
-                            if (!rs.wasNull()) campaignId = cid;
+                            if (!rs.wasNull()) {
+                                campaignId = cid;
+                            }
                         }
                     }
                 }
             }
 
             // 3. Insert into LeadInteractions
-            String sqlInteraction = "INSERT INTO LeadInteractions (lead_id, campaign_id, activity_type_id, reference_url, score_change, created_at) " +
-                                  "VALUES (?, ?, ?, ?, ?, GETDATE())";
+            String sqlInteraction = "INSERT INTO LeadInteractions (lead_id, campaign_id, activity_type_id, reference_url, score_change, created_at) "
+                    + "VALUES (?, ?, ?, ?, ?, GETDATE())";
             try (PreparedStatement ps = conn.prepareStatement(sqlInteraction)) {
                 ps.setInt(1, leadId);
-                if (campaignId != null) ps.setInt(2, campaignId); else ps.setNull(2, Types.INTEGER);
+                if (campaignId != null) {
+                    ps.setInt(2, campaignId);
+                } else {
+                    ps.setNull(2, Types.INTEGER);
+                }
                 ps.setInt(3, activityTypeId);
                 ps.setString(4, details);
                 ps.setInt(5, scoreChange);
@@ -422,12 +468,18 @@ public class LeadDAOImpl implements LeadDAO {
         } catch (SQLException e) {
             System.err.println("Error recording interaction: " + e.getMessage());
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) {}
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                }
             }
             return false;
         } finally {
             if (conn != null) {
-                try { conn.setAutoCommit(true); } catch (SQLException ex) {}
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException ex) {
+                }
                 dbUtil.closeConnection(conn);
             }
         }
@@ -438,17 +490,21 @@ public class LeadDAOImpl implements LeadDAO {
         try (PreparedStatement ps = conn.prepareStatement(sqlSelect)) {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt("id");
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
             }
         }
-        
+
         String sqlInsert = "INSERT INTO ActivityTypes (name, description, is_active) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlInsert, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, name);
             ps.setString(2, "Automatic tracking type");
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         }
         return 0;
@@ -474,22 +530,22 @@ public class LeadDAOImpl implements LeadDAO {
         }
         dbUtil.closeConnection(conn);
     }
-    
+
     @Override
     public model.viewmodel.MonitorKPIsViewModel getMonitorKPIs(Integer campaignId) {
         model.viewmodel.MonitorKPIsViewModel kpi = new model.viewmodel.MonitorKPIsViewModel(0, 0);
-        String sql = "SELECT " +
-                     "SUM(CASE WHEN potential_status = 'Hot' THEN 1 ELSE 0 END) as hot_leads, " +
-                     "SUM(CASE WHEN assigned_to IS NULL AND potential_status = 'Hot' THEN 1 ELSE 0 END) as unassigned_leads " +
-                     "FROM Leads";
+        String sql = "SELECT "
+                + "SUM(CASE WHEN potential_status = 'Hot' THEN 1 ELSE 0 END) as hot_leads, "
+                + "SUM(CASE WHEN assigned_to IS NULL AND potential_status = 'Hot' THEN 1 ELSE 0 END) as unassigned_leads "
+                + "FROM Leads";
         if (campaignId != null) {
             sql += " WHERE campaign_id = ?";
         }
-        
+
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        
+
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(sql);
@@ -513,20 +569,20 @@ public class LeadDAOImpl implements LeadDAO {
     public List<Lead> getHotUnassignedLeads(Integer campaignId, String searchQuery, String dateFilter, int limit) {
         List<Lead> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT l.*, c.name as campaign_name FROM Leads l " +
-            "LEFT JOIN Campaigns c ON l.campaign_id = c.id " +
-            "WHERE l.assigned_to IS NULL AND l.status = 'New' AND l.potential_status = 'Hot'"
+                "SELECT l.*, c.name as campaign_name FROM Leads l "
+                + "LEFT JOIN Campaigns c ON l.campaign_id = c.id "
+                + "WHERE l.assigned_to IS NULL AND l.status = 'New' AND l.potential_status = 'Hot'"
         );
-        
+
         if (campaignId != null) {
             sql.append(" AND l.campaign_id = ?");
         }
-        
+
         boolean hasSearch = (searchQuery != null && !searchQuery.trim().isEmpty());
         if (hasSearch) {
             sql.append(" AND (l.full_name LIKE ? OR l.email LIKE ? OR l.phone LIKE ?)");
         }
-        
+
         if (dateFilter != null && !dateFilter.isEmpty() && !dateFilter.equals("all")) {
             switch (dateFilter) {
                 case "today":
@@ -540,9 +596,9 @@ public class LeadDAOImpl implements LeadDAO {
                     break;
             }
         }
-        
+
         sql.append(" ORDER BY l.created_at DESC");
-        
+
         String finalSql = sql.toString();
         if (limit > 0) {
             finalSql = finalSql.replaceFirst("SELECT l\\.\\*", "SELECT TOP " + limit + " l.*");
@@ -555,7 +611,7 @@ public class LeadDAOImpl implements LeadDAO {
         try {
             conn = dbUtil.getConnection();
             stmt = conn.prepareStatement(finalSql);
-            
+
             int paramIndex = 1;
             if (campaignId != null) {
                 stmt.setInt(paramIndex++, campaignId);
@@ -566,7 +622,7 @@ public class LeadDAOImpl implements LeadDAO {
                 stmt.setString(paramIndex++, likeQuery);
                 stmt.setString(paramIndex++, likeQuery);
             }
-            
+
             rs = stmt.executeQuery();
             while (rs.next()) {
                 Lead lead = mapResultSetToLead(rs);
@@ -589,16 +645,16 @@ public class LeadDAOImpl implements LeadDAO {
     @Override
     public List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Integer campaignId, int limit) {
         List<model.viewmodel.LeadInteractionViewModel> list = new ArrayList<>();
-        String sql = "SELECT i.id, i.lead_id, l.full_name, l.email, a.name as activity_name, i.reference_url, i.score_change, i.created_at " +
-                     "FROM LeadInteractions i " +
-                     "JOIN Leads l ON i.lead_id = l.id " +
-                     "JOIN ActivityTypes a ON i.activity_type_id = a.id";
-        
+        String sql = "SELECT i.id, i.lead_id, l.full_name, l.email, a.name as activity_name, i.reference_url, i.score_change, i.created_at "
+                + "FROM LeadInteractions i "
+                + "JOIN Leads l ON i.lead_id = l.id "
+                + "JOIN ActivityTypes a ON i.activity_type_id = a.id";
+
         if (campaignId != null) {
             sql += " WHERE i.campaign_id = ?";
         }
         sql += " ORDER BY i.created_at DESC";
-        
+
         if (limit > 0) {
             sql = sql.replaceFirst("SELECT i.id", "SELECT TOP " + limit + " i.id");
         }
@@ -719,7 +775,7 @@ public class LeadDAOImpl implements LeadDAO {
             // Prevent assigning if already assigned concurrently
             if (affected == 0) {
                 conn.rollback();
-                return false; 
+                return false;
             }
 
             // 2. Insert into LeadAssignments table
@@ -730,7 +786,7 @@ public class LeadDAOImpl implements LeadDAO {
                 psInsert.setInt(3, salesId);
                 psInsert.executeUpdate();
             }
-            
+
             // 3. Optional Insert status history
             String sqlHistory = "INSERT INTO LeadStatusHistory (lead_id, old_status, new_status, changed_by, changed_at) VALUES (?, 'New', 'Assigned', ?, GETDATE())";
             try (PreparedStatement psHist = conn.prepareStatement(sqlHistory)) {
@@ -817,4 +873,3 @@ public class LeadDAOImpl implements LeadDAO {
         }
     }
 }
-

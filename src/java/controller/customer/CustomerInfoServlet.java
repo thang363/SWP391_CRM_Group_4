@@ -109,6 +109,6 @@ public class CustomerInfoServlet extends HttpServlet {
         if (session == null)
             return false;
         Role role = (Role) session.getAttribute(Constants.SESSION_ROLE);
-        return Role.SUPPORT.equals(role) || Role.MANAGER.equals(role);
+        return Role.SUPPORT.equals(role) || Role.MANAGER.equals(role) || Role.SALE.equals(role);
     }
 }

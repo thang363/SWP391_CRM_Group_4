@@ -205,10 +205,14 @@ public class CustomerServlet extends HttpServlet {
         if (idStr != null) {
             Customer customer = customerDAO.getCustomerById(Integer.parseInt(idStr));
             request.setAttribute("customer", customer);
-            // In a real app we would load tickets, opportunities, interactions here.
-            // For now, we'll just pass the customer to the view.
         }
-        request.getRequestDispatcher("/views/customers/history.jsp").forward(request, response);
+        // Nếu được gọi từ AJAX popup (fragment=true), trả về fragment không có layout
+        boolean isFragment = "true".equals(request.getParameter("fragment"));
+        if (isFragment) {
+            request.getRequestDispatcher("/views/customers/history_fragment.jsp").forward(request, response);
+        } else {
+            request.getRequestDispatcher("/views/customers/history.jsp").forward(request, response);
+        }
     }
 
     private void showMergeForm(HttpServletRequest request, HttpServletResponse response)
