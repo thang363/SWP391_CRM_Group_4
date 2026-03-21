@@ -125,21 +125,20 @@ public class LandingPageDAOImpl implements LandingPageDAO {
             conn = dbUtil.getConnection();
             String sql = "INSERT INTO LandingPages (campaign_id, data_config, status, " +
                     "manager_comment, approved_by, created_at, name, created_by, view_count, brief) " +
-                    "VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             
             stmt.setObject(1, lp.getCampaignId());
-            // stmt.setString(2, lp.getHtmlTemplate()); -> NULL since column might be NOT NULL in DB
-            stmt.setString(3, lp.getDataConfig());
-            stmt.setString(4, lp.getStatus());
-            stmt.setString(5, lp.getManagerComment());
-            stmt.setObject(6, lp.getApprovedBy());
-            stmt.setTimestamp(7, lp.getCreatedAt());
-            stmt.setString(8, lp.getName());
-            stmt.setObject(9, lp.getCreatedBy());
-            stmt.setInt(10, lp.getViewCount() != null ? lp.getViewCount() : 0);
-            stmt.setString(11, lp.getBrief());
+            stmt.setString(2, lp.getDataConfig());
+            stmt.setString(3, lp.getStatus());
+            stmt.setString(4, lp.getManagerComment());
+            stmt.setObject(5, lp.getApprovedBy());
+            stmt.setTimestamp(6, lp.getCreatedAt());
+            stmt.setString(7, lp.getName());
+            stmt.setObject(8, lp.getCreatedBy());
+            stmt.setInt(9, lp.getViewCount() != null ? lp.getViewCount() : 0);
+            stmt.setString(10, lp.getBrief());
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
