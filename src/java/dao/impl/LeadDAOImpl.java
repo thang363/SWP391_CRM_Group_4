@@ -681,7 +681,7 @@ public class LeadDAOImpl implements LeadDAO {
                 }
 
                 // Update Lead -> Assigned & Converted
-                String sqlUpdateLeadC = "UPDATE Leads SET assigned_to = ?, status = 'Assigned', is_converted = 1 WHERE id = ? AND assigned_to IS NULL";
+                String sqlUpdateLeadC = "UPDATE Leads SET assigned_to = ?, status = 'Assigned', is_converted = 0 WHERE id = ? AND assigned_to IS NULL";
                 int affectedC = 0;
                 try (PreparedStatement psUpdC = conn.prepareStatement(sqlUpdateLeadC)) {
                     psUpdC.setInt(1, salesId);

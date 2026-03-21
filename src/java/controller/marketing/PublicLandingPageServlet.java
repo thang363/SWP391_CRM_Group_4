@@ -220,20 +220,18 @@ public class PublicLandingPageServlet extends HttpServlet {
                 if (campaign != null) {
                     String status = campaign.getStatus();
                     if ("Paused".equalsIgnoreCase(status) || "Finished".equalsIgnoreCase(status)) {
-                         result.addProperty("success", false);
-                         result.addProperty("message", "Chiến dịch này hiện không nhận đăng ký do đã tạm dừng hoặc kết thúc.");
-                         out.print(gson.toJson(result));
-                         return;
+                        result.addProperty("success", false);
+                        result.addProperty("message", "Chiến dịch đã kết thúc hoặc đang tạm dừng, hiện không nhận đăng ký mới.");
+                        out.print(gson.toJson(result));
+                        return;
                     }
                     
-                    boolean isLPPublic = "active".equalsIgnoreCase(lp.getStatus()) || "Public".equalsIgnoreCase(lp.getStatus());
-                    
                     if ("Draft".equalsIgnoreCase(status)) {
-                        submission.setSource("Internal Test (Draft Campaign)");
-                    } else if (!isLPPublic) {
-                        submission.setSource("Internal Test (Draft LP)");
+                        // Mark as test lead
+                        submission.setSource("Internal Test");
                     } else {
-                        submission.setSource("Landing Page"); // Default source for Web Form
+                        // All other active/public states
+                        submission.setSource("Landing Page");
                     }
                 } else {
                     submission.setSource("Landing Page");
