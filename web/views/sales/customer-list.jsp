@@ -174,14 +174,27 @@
                                                                                                             <i
                                                                                                                 class="fa fa-plus-circle"></i>
                                                                                                         </button>
-                                                                                                        <a href="${pageContext.request.contextPath}/customers?action=details&id=${customer.id}"
-                                                                                                            class="btn btn-sm btn-outline-primary"
-                                                                                                            title="Chi tiết"><i
-                                                                                                                class="fa fa-eye"></i></a>
-                                                                                                        <a href="${pageContext.request.contextPath}/customers?action=history&id=${customer.id}"
-                                                                                                            class="btn btn-sm btn-outline-warning"
-                                                                                                            title="Lịch sử tương tác"><i
-                                                                                                                class="fa fa-history"></i></a>
+                                                                                                        <button
+                                                                                                            type="button"
+                                                                                                            class="btn btn-sm btn-outline-primary btn-view-customer"
+                                                                                                            title="Xem chi tiết"
+                                                                                                            data-id="${customer.id}"
+                                                                                                            data-bs-toggle="modal"
+                                                                                                            data-bs-target="#viewCustomerModal">
+                                                                                                            <i
+                                                                                                                class="fa fa-eye"></i>
+                                                                                                        </button>
+                                                                                                        <button
+                                                                                                            type="button"
+                                                                                                            class="btn btn-sm btn-outline-warning btn-view-history"
+                                                                                                            title="Lịch sử tương tác"
+                                                                                                            data-id="${customer.id}"
+                                                                                                            data-name="${fn:escapeXml(customer.companyName)}"
+                                                                                                            data-bs-toggle="modal"
+                                                                                                            data-bs-target="#interactionLogModal">
+                                                                                                            <i
+                                                                                                                class="fa fa-history"></i>
+                                                                                                        </button>
                                                                                                     </div>
                                                                                                 </td>
                                                                                             </tr>
@@ -255,6 +268,61 @@
                                             </div>
                                         </div>
 
+                                        <!-- Modal: Xem chi tiết khách hàng -->
+                                        <div class="modal fade" id="viewCustomerModal" tabindex="-1"
+                                            aria-labelledby="viewCustomerModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-primary text-white">
+                                                        <h5 class="modal-title" id="viewCustomerModalLabel">
+                                                            <i class="fa fa-user me-2"></i>Chi tiết Khách hàng
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white"
+                                                            data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body" id="viewCustomerModalBody">
+                                                        <div class="text-center py-4">
+                                                            <div class="spinner-border text-primary" role="status">
+                                                            </div>
+                                                            <p class="mt-2 text-muted">Đang tải...</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Đóng</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Modal: Lịch sử tương tác -->
+                                        <div class="modal fade" id="interactionLogModal" tabindex="-1"
+                                            aria-labelledby="interactionLogModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-xl">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-warning text-dark">
+                                                        <h5 class="modal-title" id="interactionLogModalLabel">
+                                                            <i class="fa fa-history me-2"></i>Lịch sử tương tác — <span
+                                                                id="interactionLogCompanyName"></span>
+                                                        </h5>
+                                                        <button type="button" class="btn-close"
+                                                            data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body" id="interactionLogModalBody">
+                                                        <div class="text-center py-4">
+                                                            <div class="spinner-border text-warning" role="status">
+                                                            </div>
+                                                            <p class="mt-2 text-muted">Đang tải lịch sử...</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Đóng</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <!-- Back to Top -->
                                         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i
                                                 class="bi bi-arrow-up"></i></a>
@@ -265,23 +333,78 @@
                                     <script>
                                         document.addEventListener('DOMContentLoaded', function () {
                                             var spinner = document.getElementById('spinner');
-                                            if (spinner) {
-                                                spinner.classList.remove('show');
-                                            }
+                                            if (spinner) spinner.classList.remove('show');
 
-                                            // Handle Create Opportunity Modal
+                                            // ── Create Opportunity Modal ──────────────────────────────
                                             var createOppModal = document.getElementById('createOppModal');
                                             if (createOppModal) {
                                                 createOppModal.addEventListener('show.bs.modal', function (event) {
-                                                    var button = event.relatedTarget;
-                                                    var customerId = button.getAttribute('data-id');
-                                                    var companyName = button.getAttribute('data-name');
+                                                    var btn = event.relatedTarget;
+                                                    createOppModal.querySelector('#modalCustomerId').value = btn.getAttribute('data-id');
+                                                    createOppModal.querySelector('#modalCompanyName').value = 'Đơn hàng - ' + btn.getAttribute('data-name');
+                                                });
+                                            }
 
-                                                    var modalCustomerId = createOppModal.querySelector('#modalCustomerId');
-                                                    var modalCompanyName = createOppModal.querySelector('#modalCompanyName');
+                                            // ── View Customer Modal (AJAX → /customer-info) ───────────
+                                            var viewModal = document.getElementById('viewCustomerModal');
+                                            if (viewModal) {
+                                                viewModal.addEventListener('show.bs.modal', function (event) {
+                                                    var customerId = event.relatedTarget.getAttribute('data-id');
+                                                    var body = document.getElementById('viewCustomerModalBody');
+                                                    body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Đang tải...</p></div>';
+                                                    fetch('${pageContext.request.contextPath}/customer-info?id=' + customerId)
+                                                        .then(function (r) { return r.json(); })
+                                                        .then(function (c) {
+                                                            body.innerHTML =
+                                                                '<div class="row g-3">'
+                                                                + '<div class="col-md-6"><div class="card h-100 border-0 shadow-sm"><div class="card-body">'
+                                                                + '<h6 class="text-primary fw-bold mb-3"><i class="fa fa-building me-2"></i>Thông tin công ty</h6>'
+                                                                + '<table class="table table-sm table-borderless mb-0">'
+                                                                + '<tr><td class="text-muted" style="width:45%">Tên công ty</td><td><strong>' + (c.companyName || '-') + '</strong></td></tr>'
+                                                                + '<tr><td class="text-muted">Ngành</td><td>' + (c.industry || '-') + '</td></tr>'
+                                                                + '<tr><td class="text-muted">Hạng</td><td><span class="badge ' + (c.tier === 'VIP' ? 'bg-warning text-dark' : c.tier === 'VVIP' ? 'bg-danger' : 'bg-primary') + '">' + (c.tier || '-') + '</span></td></tr>'
+                                                                + '<tr><td class="text-muted">Website</td><td>' + (c.website ? '<a href="' + c.website + '" target="_blank">' + c.website + '</a>' : '-') + '</td></tr>'
+                                                                + '</table></div></div></div>'
+                                                                + '<div class="col-md-6"><div class="card h-100 border-0 shadow-sm"><div class="card-body">'
+                                                                + '<h6 class="text-success fw-bold mb-3"><i class="fa fa-address-book me-2"></i>Liên hệ</h6>'
+                                                                + '<table class="table table-sm table-borderless mb-0">'
+                                                                + '<tr><td class="text-muted" style="width:45%">Email</td><td>' + (c.email || '-') + '</td></tr>'
+                                                                + '<tr><td class="text-muted">Điện thoại</td><td>' + (c.phone || '-') + '</td></tr>'
+                                                                + '<tr><td class="text-muted">Thành phố</td><td>' + (c.city || '-') + '</td></tr>'
+                                                                + '<tr><td class="text-muted">Quốc gia</td><td>' + (c.country || '-') + '</td></tr>'
+                                                                + '<tr><td class="text-muted">Chăm sóc cuối</td><td>' + (c.lastCareDate || '-') + '</td></tr>'
+                                                                + '</table></div></div></div>'
+                                                                + '</div>';
+                                                        })
+                                                        .catch(function () {
+                                                            body.innerHTML = '<div class="alert alert-danger">Không thể tải thông tin khách hàng.</div>';
+                                                        });
+                                                });
+                                            }
 
-                                                    modalCustomerId.value = customerId;
-                                                    modalCompanyName.value = "Đơn hàng - " + companyName;
+                                            // ── Interaction Log Modal (AJAX → /customers?action=history) ─
+                                            var historyModal = document.getElementById('interactionLogModal');
+                                            if (historyModal) {
+                                                historyModal.addEventListener('show.bs.modal', function (event) {
+                                                    var btn = event.relatedTarget;
+                                                    var customerId = btn.getAttribute('data-id');
+                                                    var companyName = btn.getAttribute('data-name');
+                                                    document.getElementById('interactionLogCompanyName').textContent = companyName;
+                                                    var body = document.getElementById('interactionLogModalBody');
+                                                    body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-warning" role="status"></div><p class="mt-2 text-muted">Đang tải lịch sử...</p></div>';
+                                                    fetch('${pageContext.request.contextPath}/customers?action=history&id=' + customerId + '&fragment=true')
+                                                        .then(function (r) { return r.text(); })
+                                                        .then(function (html) {
+                                                            body.innerHTML = html;
+                                                        })
+                                                        .catch(function () {
+                                                            body.innerHTML = '<div class="alert alert-danger">Không thể tải lịch sử tương tác.</div>';
+                                                        });
+                                                });
+                                                // Clear body khi đóng để không cache dữ liệu cũ
+                                                historyModal.addEventListener('hidden.bs.modal', function () {
+                                                    document.getElementById('interactionLogModalBody').innerHTML = '';
+                                                    document.getElementById('viewCustomerModalBody').innerHTML = '';
                                                 });
                                             }
                                         });

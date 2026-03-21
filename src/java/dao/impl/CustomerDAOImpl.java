@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import dao.LeadDAO;
 
 /**
  * Lớp triển khai của giao diện CustomerDAO.
@@ -205,6 +206,8 @@ public class CustomerDAOImpl implements CustomerDAO {
                             customerId = rs.getInt(1);
                         }
                     }
+                    LeadDAO leadao=new LeadDAOImpl();
+                    leadao.markAsConverted(leadId);
                 }
             }
 
