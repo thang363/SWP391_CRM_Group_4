@@ -217,12 +217,12 @@ public class SubmissionsServlet extends HttpServlet {
             // --- Check Duplicate ---
             if (!force) {
                 boolean isDuplicate = leadDAO.checkDuplicate(submission.getEmail(), submission.getPhone(), submitCampaignId);
-                if (isDuplicate) {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("code", "DUPLICATE");
-                    sendJsonResponse(response, false, "Email hoặc số điện thoại đã tồn tại trong chiến dịch này.", data);
-                    return;
-                }
+//                if (isDuplicate) {
+//                    Map<String, Object> data = new HashMap<>();
+//                    data.put("code", "DUPLICATE");
+//                    sendJsonResponse(response, false, "Email hoặc số điện thoại đã tồn tại trong chiến dịch này.", data);
+//                    return;
+//                }
             }
 
             // --- Create Lead ---

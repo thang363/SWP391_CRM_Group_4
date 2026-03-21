@@ -105,8 +105,6 @@
                                                 <c:when test="${sessionScope.userRole == 'MANAGER'}">
                                                     <!-- Marketing Overview for Manager -->
                                                     <jsp:include page="/views/dashboard/manager-marketing-stats.jsp" />
-                                                    <!-- Sales Overview for Manager -->
-                                                    <jsp:include page="/views/dashboard/sale_dashboard.jsp" />
                                                 </c:when>
 
                                                 <c:when test="${sessionScope.userRole == 'MARKETING'}">
