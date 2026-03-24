@@ -85,6 +85,12 @@
                                                                     mức độ (Tier)</option>
                                                                 <option value="Standard" ${tier=='Standard' ? 'selected'
                                                                     : '' }>Standard</option>
+                                                                <option value="Silver" ${tier=='Silver' ? 'selected'
+                                                                    : '' }>Silver</option>
+                                                                <option value="Gold" ${tier=='Gold' ? 'selected'
+                                                                    : '' }>Gold</option>
+                                                                <option value="Platinum" ${tier=='Platinum' ? 'selected'
+                                                                    : '' }>Platinum</option>
                                                                 <option value="VIP" ${tier=='VIP' ? 'selected' : '' }>
                                                                     VIP</option>
                                                             </select>
@@ -97,6 +103,10 @@
                                                                     : '' }>Active</option>
                                                                 <option value="Inactive" ${status=='Inactive'
                                                                     ? 'selected' : '' }>Inactive</option>
+                                                                <option value="Churned" ${status=='Churned'
+                                                                    ? 'selected' : '' }>Churned</option>
+                                                                <option value="Blacklisted" ${status=='Blacklisted'
+                                                                    ? 'selected' : '' }>Blacklisted</option>
                                                             </select>
                                                         </div>
                                                         <div class="col-md-2">

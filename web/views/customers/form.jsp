@@ -37,12 +37,19 @@
                                                         <div class="bg-light rounded h-100 p-4">
                                                             <div
                                                                 class="d-flex justify-content-between align-items-center mb-4">
-                                                                <h4 class="mb-0">${customer != null ? 'Sửa thông tin
+                                                                <h4 class="mb-0">${customer != null && customer.id != 0 ? 'Sửa thông tin
                                                                     Khách hàng' : 'Thêm Khách hàng mới'}</h4>
                                                                 <a href="${pageContext.request.contextPath}/customers"
                                                                     class="btn btn-secondary"><i
                                                                         class="fa fa-arrow-left me-2"></i>Trở lại</a>
                                                             </div>
+
+                                                            <c:if test="${not empty error}">
+                                                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                                    <i class="fa fa-exclamation-circle me-2"></i><strong>Lỗi:</strong> ${error}
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                                                </div>
+                                                            </c:if>
 
                                                             <form action="${pageContext.request.contextPath}/customers"
                                                                 method="POST">
@@ -79,11 +86,16 @@
                                                                             <label
                                                                                 class="col-sm-4 col-form-label text-nowrap">Mã
                                                                                 Số
-                                                                                Thuế</label>
+                                                                                Thuế <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <div class="col-sm-8">
                                                                                 <input type="text" class="form-control"
                                                                                     name="taxCode"
-                                                                                    value="${customer.taxCode}">
+                                                                                    value="${customer.taxCode}"
+                                                                                    pattern="[0-9]{10}"
+                                                                                    title="Mã số thuế phải bao gồm đúng 10 chữ số."
+                                                                                    oninput="this.value = this.value.replace(/[^0-9]/g, '');" 
+                                                                                    required>
                                                                             </div>
                                                                         </div>
 
@@ -107,7 +119,11 @@
                                                                             <div class="col-sm-8">
                                                                                 <input type="text" class="form-control"
                                                                                     name="phone"
-                                                                                    value="${customer.phone}" required>
+                                                                                    value="${customer.phone}" 
+                                                                                    pattern="^0[0-9]{6,10}$" 
+                                                                                    title="Số điện thoại phải bắt đầu bằng số 0, chỉ chứa chữ số và có độ dài từ 7 đến 11 số."
+                                                                                    oninput="this.value = this.value.replace(/[^0-9]/g, '');" 
+                                                                                    required>
                                                                             </div>
                                                                         </div>
 
