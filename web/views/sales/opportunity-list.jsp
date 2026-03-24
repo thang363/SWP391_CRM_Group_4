@@ -153,10 +153,6 @@
                                                                                         ${opp.stage=='Negotiation'
                                                                                         ?'selected':''}>Thương lượng
                                                                                     </option>
-                                                                                    <option value="Won"
-                                                                                        ${opp.stage=='Won'
-                                                                                        ?'selected':''}>✅ Thành công
-                                                                                    </option>
                                                                                     <option value="Lost"
                                                                                         ${opp.stage=='Lost'
                                                                                         ?'selected':''}>❌ Thất bại

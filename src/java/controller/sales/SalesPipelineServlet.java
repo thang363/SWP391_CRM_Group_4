@@ -56,22 +56,32 @@ public class SalesPipelineServlet extends HttpServlet {
         }
 
         try {
-            int dealId = Integer.parseInt(request.getParameter("dealId"));
+            String dealIdParam = request.getParameter("dealId");
             String newStage = request.getParameter("stage");
             
-            // Tính toán xác suất dựa trên giai đoạn
+            if (dealIdParam == null || dealIdParam.isEmpty() || "null".equals(dealIdParam)) {
+                throw new IllegalArgumentException("Deal ID is missing or invalid");
+            }
+            if (newStage == null || newStage.isEmpty()) {
+                throw new IllegalArgumentException("Stage is missing");
+            }
+            
+            int dealId = Integer.parseInt(dealIdParam);
             int probability = calculateProbability(newStage);
             
-            // Cập nhật vào DB
             opportunityDAO.updateStage(dealId, newStage, probability);
             
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"success\": true, \"probability\": " + probability + "}");
+            response.getWriter().write("{\"success\": true, \"probability\": " + probability + ", \"stage\": \"" + newStage + "\"}");
             
         } catch (Exception e) {
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"success\": false, \"message\": \"" + e.getMessage() + "\"}");
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            String msg = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"") : "Internal Server Error";
+            response.getWriter().write("{\"success\": false, \"message\": \"" + msg + "\"}");
         }
     }
 
