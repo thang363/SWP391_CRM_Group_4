@@ -62,19 +62,17 @@ public class ConvertLeadServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         int leadID = Integer.parseInt(request.getParameter("leadId"));
-        LeadDAO ld = new LeadDAOImpl();
-        Lead lead = ld.findById(leadID);
+        LeadDAO leadao = new LeadDAOImpl();
+        Lead lead = leadao.findById(leadID);
         String leadName = lead.getFullName();
         Integer saleID = lead.getAssignedTo();
         OpportunityDAO op = new OpportunitiesDaoImpl();
         try {
-            if (lead != null 
-            && !lead.getIsConverted()
+            if (lead != null
             && "Qualified".equals(lead.getStatus())) {
 
             op.createFromLead(leadID, leadName, saleID);
             
-            ld.markAsConverted(leadID);
             response.sendRedirect(request.getContextPath() + "/sales/leads");
             }
         } catch (Exception e) {
