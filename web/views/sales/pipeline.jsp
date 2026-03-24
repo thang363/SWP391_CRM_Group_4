@@ -12,6 +12,7 @@
                         <%@ include file="/includes/head.jsp" %>
                             <style>
                                 .pipeline-column {
+                                    min-height: 400px;
                                     max-height: 75vh;
                                     overflow-y: auto;
                                     background: #f1f3f5;
@@ -247,6 +248,12 @@
 
                                     cards.forEach(card => {
                                         card.addEventListener('dragstart', function (e) {
+                                            const originalStage = this.parentElement.getAttribute('data-stage');
+                                            if (originalStage === 'Won') {
+                                                e.preventDefault();
+                                                showToast('Cảnh báo', 'Không thể kéo Deal đã ở trạng thái Won.', 'warning');
+                                                return;
+                                            }
                                             draggedCard = this;
                                             sourceColumn = this.parentElement;
                                             this.classList.add('opacity-50');
@@ -256,22 +263,26 @@
 
                                     columns.forEach(column => {
                                         column.addEventListener('dragover', e => e.preventDefault());
+                                        column.addEventListener('dragenter', e => e.preventDefault());
                                         column.addEventListener('drop', function (e) {
                                             e.preventDefault();
+                                            if (!draggedCard) return;
+
                                             const targetColumn = this;
                                             const stage = this.getAttribute('data-stage');
                                             const dealId = draggedCard.getAttribute('data-deal-id');
 
-                                            if (stage === 'Won') {
-                                                const wonModal = new bootstrap.Modal(document.getElementById('confirmWonModal'));
-                                                wonModal.show();
-                                                document.getElementById('confirmWonBtn').onclick = () => {
-                                                    updateDealStage(dealId, stage, targetColumn, draggedCard);
-                                                    wonModal.hide();
-                                                };
-                                            } else {
-                                                updateDealStage(dealId, stage, targetColumn, draggedCard);
+                                            if (!dealId) {
+                                                showToast('Lỗi', 'Không nhận dạng được ID của phiên', 'danger');
+                                                return;
                                             }
+
+                                            if (stage === 'Won') {
+                                                showToast('Cảnh báo', 'Không thể kéo Deal sang cột Won. Vui lòng cập nhật từ trang chi tiết.', 'warning');
+                                                return;
+                                            }
+
+                                            updateDealStage(dealId, stage, targetColumn, draggedCard);
                                         });
                                     });
 
@@ -279,19 +290,29 @@
                                         fetch('${pageContext.request.contextPath}/sales-pipeline', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                            body: `dealId=${dealId}&stage=${stage}`
+                                            body: 'dealId=' + encodeURIComponent(dealId) + '&stage=' + encodeURIComponent(stage)
                                         })
-                                            .then(res => res.json())
+                                            .then(res => {
+                                                if (!res.ok) {
+                                                    return res.json().then(data => { throw new Error(data.message || 'Lỗi hệ thống'); });
+                                                }
+                                                return res.json();
+                                            })
                                             .then(data => {
                                                 if (data.success) {
                                                     targetColumn.appendChild(card);
+                                                    const badge = card.querySelector('.badge');
+                                                    if (badge) {
+                                                        badge.innerText = data.stage || stage;
+                                                        badge.className = stage === 'Won' ? 'badge bg-success' : 'badge bg-primary';
+                                                    }
                                                     updateColumnStats();
                                                     showToast('Thành công', 'Đã cập nhật giai đoạn sang ' + stage);
                                                 } else {
                                                     showToast('Lỗi', data.message || 'Không thể cập nhật', 'danger');
                                                 }
                                             })
-                                            .catch(err => showToast('Lỗi', 'Lỗi kết nối server', 'danger'));
+                                            .catch(err => showToast('Lỗi', err.message || 'Lỗi kết nối server', 'danger'));
                                     }
 
                                     function updateColumnStats() {
