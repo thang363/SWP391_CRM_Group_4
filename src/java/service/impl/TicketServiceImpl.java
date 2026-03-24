@@ -90,7 +90,7 @@ public class TicketServiceImpl implements TicketService {
                 // 2. Sinh token xác nhận mới, hết hạn sau 72 giờ
                 String token = generateVerificationToken(ticketId);
                 if (token != null) {
-                    new service.EmailService().sendResolutionEmail(
+                    service.EmailService.sendResolutionEmailAsync(
                             customerEmail, ticket.getCustomerName(), ticketId, note, token);
                 } else {
                     System.err.println("Warning: Could not generate verification token for ticket #" + ticketId);
@@ -151,7 +151,7 @@ public class TicketServiceImpl implements TicketService {
             }
             ticketDAO.updatePriority(ticketId, "High");
             ticketDAO.updateStatus(ticketId, "In Progress");
-            new service.EmailService().sendEscalationEmail("manager@crm.com", ticketId);
+            service.EmailService.sendEscalationEmailAsync("manager@crm.com", ticketId);
             return "rejected";
         }
 

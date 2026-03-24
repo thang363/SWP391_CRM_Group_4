@@ -17,8 +17,9 @@ public interface CampaignTransferDAO {
     CampaignTransfer findPendingByCampaignId(Integer campaignId);
     
     // List Queries
-    List<CampaignTransfer> findPendingTransfersByRecipient(Integer managerId);
-    List<CampaignTransfer> findPendingTransfersBySender(Integer managerId);
-    List<CampaignTransfer> findRecentTransfersBySender(Integer managerId);
-    List<CampaignTransfer> findHistoryByCampaign(Integer campaignId);
+    List<CampaignTransfer> findPendingTransfersByRecipient(Integer managerId, int offset, int limit);
+    int countPendingTransfersByRecipient(Integer managerId);
+    
+    List<CampaignTransfer> findRecentTransfersBySender(Integer managerId, int offset, int limit);
+    int countRecentTransfersBySender(Integer managerId);
 }

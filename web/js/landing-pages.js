@@ -71,23 +71,19 @@ function openEditModal(id) {
 
                 // Show/Hide Warning based on status
                 const warningDiv = document.getElementById('editWarning');
-                if (data.status === 'Public') {
-                    warningDiv.classList.remove('d-none');
-                } else {
-                    warningDiv.classList.add('d-none');
+                if (warningDiv) {
+                    if (data.status === 'Public') {
+                        warningDiv.classList.remove('d-none');
+                    } else {
+                        warningDiv.classList.add('d-none');
+                    }
                 }
 
-                // Show/Hide Comment
-                const commentDiv = document.getElementById('managerCommentDiv');
-                if (data.managerComment && data.managerComment.trim() !== '') {
-                    document.getElementById('editManagerComment').value = data.managerComment;
-                    commentDiv.classList.remove('d-none');
-                } else {
-                    commentDiv.classList.add('d-none');
+                const modalEl = document.getElementById('editLPModal');
+                if (modalEl) {
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
                 }
-
-                const modal = new bootstrap.Modal(document.getElementById('editLPModal'));
-                modal.show();
             } else {
                 showAlert('danger', result.message || 'Không thể lấy dữ liệu');
             }

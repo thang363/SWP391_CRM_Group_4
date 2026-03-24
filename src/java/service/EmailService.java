@@ -6,6 +6,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 public class EmailService {
     private static final String FROM_EMAIL = "he180827phammanhhiep@gmail.com";
@@ -111,5 +112,83 @@ public class EmailService {
             e.printStackTrace();
             System.err.println("Failed to send HTML email to " + to + ": " + e.getMessage());
         }
+    }
+
+    // =========================================================================
+    // ASYNCHRONOUS WRAPPER METHODS (Tự động đa luồng)
+    // =========================================================================
+
+    public static void sendFeedbackEmailAsync(String toEmail, String token, String domainUrl) {
+        CompletableFuture.runAsync(() -> {
+            String feedbackLink = domainUrl + "/feedback?token=" + token;
+            String subject = "[CRM] Xin ý kiến đánh giá chất lượng dịch vụ & Hỗ trợ";
+            
+            StringBuilder content = new StringBuilder();
+            content.append("<html><body style='font-family: Arial, sans-serif;'>");
+            content.append("<h2>Kính gửi Quý khách,</h2>");
+            content.append("<p>Cảm ơn Quý khách đã tin tưởng và sử dụng dịch vụ của chúng tôi.</p>");
+            content.append("<p>Phản hồi của Quý khách là cơ sở quan trọng giúp chúng tôi cải thiện chất lượng phục vụ.</p>");
+            content.append("<p><a href='").append(feedbackLink)
+                   .append("' style='display:inline-block; padding:10px 20px; background-color:#0d6efd; color:#ffffff; text-decoration:none; border-radius:5px;'>")
+                   .append("👉 Bấm vào đây để Đánh Giá</a></p>");
+            content.append("<p>Trân trọng,<br>Đội ngũ Chăm sóc khách hàng CRM</p>");
+            content.append("</body></html>");
+
+            EmailService mailer = new EmailService();
+            boolean success = mailer.sendMarketingEmail(toEmail, subject, content.toString());
+            
+            if (success) {
+                System.out.println("[Feedback Email] Successfully sent feedback request to: " + toEmail);
+            } else {
+                System.err.println("[Feedback Email] Failed to send feedback request to: " + toEmail);
+            }
+        });
+    }
+
+    public static void sendThankYouEmailAsync(String toEmail, String customerName) {
+        CompletableFuture.runAsync(() -> {
+            EmailService mailer = new EmailService();
+            mailer.sendThankYouEmail(toEmail, customerName);
+            System.out.println("[Thank You Email] Successfully sent thank you email to: " + toEmail);
+        });
+    }
+
+    public static void sendOtpEmailAsync(String toEmail, String otp) {
+        CompletableFuture.runAsync(() -> {
+            EmailService mailer = new EmailService();
+            String subject = "[CRM] Mã xác thực lấy lại mật khẩu";
+            StringBuilder content = new StringBuilder();
+            content.append("<html><body style='font-family: Arial, sans-serif;'>");
+            content.append("<h2>Kính gửi Quý khách,</h2>");
+            content.append("<p>Chúng tôi nhận được yêu cầu lấy lại mật khẩu cho tài khoản của bạn.</p>");
+            content.append("<p>Mã xác thực (OTP) của bạn là: <strong style='font-size: 20px; color: #0d6efd;'>").append(otp).append("</strong></p>");
+            content.append("<p>Mã này có hiệu lực trong vòng 5 phút.</p>");
+            content.append("<p>Nếu bạn không yêu cầu lấy lại mật khẩu, vui lòng bỏ qua email này.</p>");
+            content.append("<p>Trân trọng,<br>Đội ngũ Chăm sóc hệ thống CRM</p>");
+            content.append("</body></html>");
+
+            boolean success = mailer.sendMarketingEmail(toEmail, subject, content.toString());
+            if (success) {
+                System.out.println("[OTP Email] Successfully sent OTP to: " + toEmail);
+            } else {
+                System.err.println("[OTP Email] Failed to send OTP to: " + toEmail);
+            }
+        });
+    }
+
+    public static void sendResolutionEmailAsync(String toEmail, String customerName, int ticketId, String note, String token) {
+        CompletableFuture.runAsync(() -> {
+            EmailService mailer = new EmailService();
+            mailer.sendResolutionEmail(toEmail, customerName, ticketId, note, token);
+            System.out.println("[Resolution Email] Successfully sent to: " + toEmail);
+        });
+    }
+
+    public static void sendEscalationEmailAsync(String toManagerEmail, int ticketId) {
+        CompletableFuture.runAsync(() -> {
+            EmailService mailer = new EmailService();
+            mailer.sendEscalationEmail(toManagerEmail, ticketId);
+            System.out.println("[Escalation Email] Successfully sent to: " + toManagerEmail);
+        });
     }
 }

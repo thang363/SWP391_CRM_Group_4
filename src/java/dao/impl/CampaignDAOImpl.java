@@ -14,34 +14,34 @@ import java.util.List;
  * Implementation of CampaignDAO interface
  */
 public class CampaignDAOImpl implements CampaignDAO {
-    
+
     private final DatabaseUtil dbUtil;
-    
+
     public CampaignDAOImpl() {
         this.dbUtil = DatabaseUtil.getInstance();
     }
-    
+
     @Override
     public Campaign findById(Integer id) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        
+
         try {
             conn = dbUtil.getConnection();
             String sql = "SELECT c.* " +
-                        "FROM Campaigns c " +
-                        "WHERE c.id = ?";
-            
+                    "FROM Campaigns c " +
+                    "WHERE c.id = ?";
+
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, id);
             rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 return mapResultSetToCampaign(rs);
             }
             return null;
-            
+
         } catch (SQLException e) {
             System.err.println("Error finding campaign by ID: " + e.getMessage());
             e.printStackTrace();
@@ -50,214 +50,177 @@ public class CampaignDAOImpl implements CampaignDAO {
             closeResources(rs, stmt, conn);
         }
     }
-    
+
     @Override
     public List<Campaign> findAll() {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
         List<Campaign> campaigns = new ArrayList<>();
-        
+
         try {
             conn = dbUtil.getConnection();
             String sql = "SELECT c.* " +
-                        "FROM Campaigns c " +
-                        "ORDER BY c.created_at DESC";
-            
+                    "FROM Campaigns c " +
+                    "ORDER BY c.created_at DESC";
+
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
-            
+
             while (rs.next()) {
                 campaigns.add(mapResultSetToCampaign(rs));
             }
-            
+
         } catch (SQLException e) {
             System.err.println("Error finding all campaigns: " + e.getMessage());
             e.printStackTrace();
         } finally {
             closeResources(rs, stmt, conn);
         }
-        
+
         return campaigns;
     }
-    
+
     @Override
-    public List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId, int offset, int limit) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+    public List<Campaign> findByFilters(String name, String status, Timestamp startDate, Timestamp endDate,
+            Integer managerId, int offset, int limit) {
         List<Campaign> campaigns = new ArrayList<>();
-        
-        try {
-            conn = dbUtil.getConnection();
-            StringBuilder sql = new StringBuilder(
-                "SELECT c.* " +
-                "FROM Campaigns c " +
-                "WHERE 1=1"
-            );
-            
-            List<Object> params = new ArrayList<>();
-            
-            // Filter by name (partial match)
-            if (name != null && !name.trim().isEmpty()) {
-                sql.append(" AND c.name LIKE ?");
-                params.add("%" + name.trim() + "%");
-            }
-            
-            // Filter by status
-            if (status != null && !status.trim().isEmpty()) {
-                sql.append(" AND c.status = ?");
-                params.add(status);
-            }
-            
-            // Filter by date range
-            if (startDate != null) {
-                sql.append(" AND c.start_date >= ?");
-                params.add(startDate);
-            }
-            
-            if (endDate != null) {
-                sql.append(" AND c.end_date <= ?");
-                params.add(endDate);
-            }
-            
-            // Filter by manager ID (for manager-level access control)
-            if (managerId != null) {
-                sql.append(" AND c.manager_id = ?");
-                params.add(managerId);
-            }
-            
-            sql.append(" ORDER BY c.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-            params.add(offset);
-            params.add(limit);
-            
-            stmt = conn.prepareStatement(sql.toString());
-            
-            // Set parameters
+
+        // 1. Xây dựng SQL động với mẹo 1=1
+        StringBuilder sql = new StringBuilder("SELECT c.* FROM Campaigns c WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (name != null && !name.trim().isEmpty()) {
+            sql.append(" AND c.name LIKE ?");
+            params.add("%" + name.trim() + "%");
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append(" AND c.status = ?");
+            params.add(status);
+        }
+        if (startDate != null) {
+            sql.append(" AND c.start_date >= ?");
+            params.add(startDate);
+        }
+        if (endDate != null) {
+            sql.append(" AND c.end_date <= ?");
+            params.add(endDate);
+        }
+        if (managerId != null) {
+            sql.append(" AND c.manager_id = ?");
+            params.add(managerId);
+        }
+
+        // Phân trang (Pagination)
+        sql.append(" ORDER BY c.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(limit);
+
+        // 2. Try-with-resources: Tự động đóng conn, stmt, rs (Không cần closeResources
+        // ở finally)
+        try (Connection conn = dbUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+            // 3. Nạp tham số tự động (Index bắt đầu từ 1)
             for (int i = 0; i < params.size(); i++) {
-                Object param = params.get(i);
-                if (param instanceof String) {
-                    stmt.setString(i + 1, (String) param);
-                } else if (param instanceof Timestamp) {
-                    stmt.setTimestamp(i + 1, (Timestamp) param);
-                } else if (param instanceof Integer) {
-                    stmt.setInt(i + 1, (Integer) param);
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    // Gọi hàm map dữ liệu của anh
+                    campaigns.add(mapResultSetToCampaign(rs));
                 }
             }
-            
-            rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                campaigns.add(mapResultSetToCampaign(rs));
-            }
-            
+
         } catch (SQLException e) {
-            System.err.println("Error finding campaigns by filters: " + e.getMessage());
+            // In lỗi ra console nếu không có Logger
+            System.err.println("Lỗi khi lọc Campaign: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            closeResources(rs, stmt, conn);
         }
-        
+
         return campaigns;
     }
 
     @Override
     public int countByFilters(String name, String status, Timestamp startDate, Timestamp endDate, Integer managerId) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        
-        try {
-            conn = dbUtil.getConnection();
-            StringBuilder sql = new StringBuilder(
-                "SELECT COUNT(*) FROM Campaigns c WHERE 1=1"
-            );
-            
-            List<Object> params = new ArrayList<>();
-            
-            if (name != null && !name.trim().isEmpty()) {
-                sql.append(" AND c.name LIKE ?");
-                params.add("%" + name.trim() + "%");
-            }
-            
-            if (status != null && !status.trim().isEmpty()) {
-                sql.append(" AND c.status = ?");
-                params.add(status);
-            }
-            
-            if (startDate != null) {
-                sql.append(" AND c.start_date >= ?");
-                params.add(startDate);
-            }
-            
-            if (endDate != null) {
-                sql.append(" AND c.end_date <= ?");
-                params.add(endDate);
-            }
-            
-            // Filter by manager ID (for manager-level access control)
-            if (managerId != null) {
-                sql.append(" AND c.manager_id = ?");
-                params.add(managerId);
-            }
-            
-            stmt = conn.prepareStatement(sql.toString());
-            
+        // 1. Sử dụng Try-with-resources để tự động đóng Connection, Statement,
+        // ResultSet
+        String sqlBase = "SELECT COUNT(*) FROM Campaigns c WHERE 1=1";
+        StringBuilder sql = new StringBuilder(sqlBase);
+        List<Object> params = new ArrayList<>();
+
+        // 2. Xây dựng câu SQL động
+        if (name != null && !name.trim().isEmpty()) {
+            sql.append(" AND c.name LIKE ?");
+            params.add("%" + name.trim() + "%");
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append(" AND c.status = ?");
+            params.add(status);
+        }
+        if (startDate != null) {
+            sql.append(" AND c.start_date >= ?");
+            params.add(startDate);
+        }
+        if (endDate != null) {
+            sql.append(" AND c.end_date <= ?");
+            params.add(endDate);
+        }
+        if (managerId != null) {
+            sql.append(" AND c.manager_id = ?");
+            params.add(managerId);
+        }
+
+        try (Connection conn = dbUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+            // 3. Đổ dữ liệu từ List vào PreparedStatement (SIÊU GỌN)
             for (int i = 0; i < params.size(); i++) {
-                Object param = params.get(i);
-                if (param instanceof String) {
-                    stmt.setString(i + 1, (String) param);
-                } else if (param instanceof Timestamp) {
-                    stmt.setTimestamp(i + 1, (Timestamp) param);
-                } else if (param instanceof Integer) {
-                    stmt.setInt(i + 1, (Integer) param);
-                }
+                // JDBC tự hiểu kiểu dữ liệu của Object trong list
+                stmt.setObject(i + 1, params.get(i));
             }
-            
-            rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getInt(1);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
             }
-            return 0;
-            
+
         } catch (SQLException e) {
+            // Log lỗi chuyên nghiệp hơn
             System.err.println("Error counting filtered campaigns: " + e.getMessage());
-            e.printStackTrace();
             return 0;
-        } finally {
-            closeResources(rs, stmt, conn);
         }
     }
-    
+
     @Override
     public Campaign create(Campaign campaign) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        
+
         try {
             conn = dbUtil.getConnection();
-            String sql = "INSERT INTO Campaigns (name, budget, start_date, end_date, manager_id, status, description) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            
+            String sql = "INSERT INTO Campaigns (name, budget, start_date, end_date, manager_id, status, description) "
+                    +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, campaign.getName());
             stmt.setBigDecimal(2, campaign.getBudget());
             stmt.setTimestamp(3, campaign.getStartDate());
             stmt.setTimestamp(4, campaign.getEndDate());
-            
+
             if (campaign.getManagerId() != null) {
                 stmt.setInt(5, campaign.getManagerId());
             } else {
                 stmt.setNull(5, Types.INTEGER);
             }
-            
+
             stmt.setString(6, campaign.getStatus());
             stmt.setString(7, campaign.getDescription());
-            
+
             int affectedRows = stmt.executeUpdate();
-            
+
             if (affectedRows > 0) {
                 rs = stmt.getGeneratedKeys();
                 if (rs.next()) {
@@ -265,9 +228,9 @@ public class CampaignDAOImpl implements CampaignDAO {
                     return campaign;
                 }
             }
-            
+
             return null;
-            
+
         } catch (SQLException e) {
             System.err.println("Error creating campaign: " + e.getMessage());
             e.printStackTrace();
@@ -276,36 +239,36 @@ public class CampaignDAOImpl implements CampaignDAO {
             closeResources(rs, stmt, conn);
         }
     }
-    
+
     @Override
     public boolean update(Campaign campaign) {
         Connection conn = null;
         PreparedStatement stmt = null;
-        
+
         try {
             conn = dbUtil.getConnection();
             String sql = "UPDATE Campaigns SET name = ?, budget = ?, start_date = ?, end_date = ?, " +
-                        "manager_id = ?, status = ?, description = ? WHERE id = ?";
-            
+                    "manager_id = ?, status = ?, description = ? WHERE id = ?";
+
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, campaign.getName());
             stmt.setBigDecimal(2, campaign.getBudget());
             stmt.setTimestamp(3, campaign.getStartDate());
             stmt.setTimestamp(4, campaign.getEndDate());
-            
+
             if (campaign.getManagerId() != null) {
                 stmt.setInt(5, campaign.getManagerId());
             } else {
                 stmt.setNull(5, Types.INTEGER);
             }
-            
+
             stmt.setString(6, campaign.getStatus());
             stmt.setString(7, campaign.getDescription());
             stmt.setInt(8, campaign.getId());
-            
+
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
-            
+
         } catch (SQLException e) {
             String errorMsg = "Error updating campaign: " + e.getMessage();
             System.err.println(errorMsg);
@@ -315,48 +278,35 @@ public class CampaignDAOImpl implements CampaignDAO {
             closeResources(null, stmt, conn);
         }
     }
-    
+
     @Override
     public boolean delete(Integer id) {
         Connection conn = null;
         PreparedStatement stmt = null;
-        
+
         try {
             conn = dbUtil.getConnection();
             conn.setAutoCommit(false); // Start transaction
-            
+
             // 1. Delete LeadSubmissions (directly linked to Campaign)
             String delSubSql = "DELETE FROM LeadSubmissions WHERE campaign_id = ?";
             stmt = conn.prepareStatement(delSubSql);
             stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
-            
-            // 2. Delete LeadInteractions (directly linked to Campaign)
-            String delIntSql = "DELETE FROM LeadInteractions WHERE campaign_id = ?";
-            stmt = conn.prepareStatement(delIntSql);
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-            stmt.close();
-            
-            // 3. Delete CampaignTransferHistory
-            String delTransHistSql = "DELETE FROM CampaignTransferHistory WHERE campaign_id = ?";
-            stmt = conn.prepareStatement(delTransHistSql);
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-            stmt.close();
-            
-            // 4. Delete CampaignTransfers
+
+            // 2. Delete CampaignTransfers
             String delTransSql = "DELETE FROM CampaignTransfers WHERE campaign_id = ?";
             stmt = conn.prepareStatement(delTransSql);
             stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
-            
+
             // 5. Delete LeadSubmissions that are linked to LandingPages of this campaign
-            // (Note: Step 1 already covers LeadSubmissions with campaign_id, but some might only have landing_page_id)
+            // (Note: Step 1 already covers LeadSubmissions with campaign_id, but some might
+            // only have landing_page_id)
             String delLPSubSql = "DELETE FROM LeadSubmissions WHERE landing_page_id IN " +
-                                "(SELECT id FROM LandingPages WHERE campaign_id = ?)";
+                    "(SELECT id FROM LandingPages WHERE campaign_id = ?)";
             stmt = conn.prepareStatement(delLPSubSql);
             stmt.setInt(1, id);
             stmt.executeUpdate();
@@ -368,24 +318,24 @@ public class CampaignDAOImpl implements CampaignDAO {
             stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
-            
+
             // 7. Unlink Leads (Set campaign_id to NULL)
             String unlinkLeadsSql = "UPDATE Leads SET campaign_id = NULL WHERE campaign_id = ?";
             stmt = conn.prepareStatement(unlinkLeadsSql);
             stmt.setInt(1, id);
             stmt.executeUpdate();
             stmt.close();
-            
+
             // 8. Finally delete the Campaign
             String sql = "DELETE FROM Campaigns WHERE id = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, id);
-            
+
             int affectedRows = stmt.executeUpdate();
             conn.commit(); // Commit transaction
-            
+
             return affectedRows > 0;
-            
+
         } catch (SQLException e) {
             if (conn != null) {
                 try {
@@ -401,25 +351,25 @@ public class CampaignDAOImpl implements CampaignDAO {
             closeResources(null, stmt, conn);
         }
     }
-    
+
     @Override
     public int countAll() {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        
+
         try {
             conn = dbUtil.getConnection();
             String sql = "SELECT COUNT(*) FROM Campaigns";
-            
+
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 return rs.getInt(1);
             }
             return 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error counting campaigns: " + e.getMessage());
             e.printStackTrace();
@@ -428,26 +378,26 @@ public class CampaignDAOImpl implements CampaignDAO {
             closeResources(rs, stmt, conn);
         }
     }
-    
+
     @Override
     public int countByStatus(String status) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        
+
         try {
             conn = dbUtil.getConnection();
             String sql = "SELECT COUNT(*) FROM Campaigns WHERE status = ?";
-            
+
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, status);
             rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 return rs.getInt(1);
             }
             return 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error counting campaigns by status: " + e.getMessage());
             e.printStackTrace();
@@ -456,7 +406,7 @@ public class CampaignDAOImpl implements CampaignDAO {
             closeResources(rs, stmt, conn);
         }
     }
-    
+
     /**
      * Map ResultSet to Campaign object
      */
@@ -467,22 +417,22 @@ public class CampaignDAOImpl implements CampaignDAO {
         campaign.setBudget(rs.getBigDecimal("budget"));
         campaign.setStartDate(rs.getTimestamp("start_date"));
         campaign.setEndDate(rs.getTimestamp("end_date"));
-        
+
         Integer managerId = rs.getInt("manager_id");
         if (!rs.wasNull()) {
             campaign.setManagerId(managerId);
         }
-        
+
         campaign.setStatus(rs.getString("status"));
         campaign.setDescription(rs.getString("description"));
         campaign.setCreatedAt(rs.getTimestamp("created_at"));
-        
+
         // Set manager name if available
         // Manager name is now handled by Service/ViewModel, not DAO
-        
+
         return campaign;
     }
-    
+
     /**
      * Close database resources
      */
@@ -494,7 +444,7 @@ public class CampaignDAOImpl implements CampaignDAO {
                 System.err.println("Error closing ResultSet: " + e.getMessage());
             }
         }
-        
+
         if (stmt != null) {
             try {
                 stmt.close();
@@ -502,11 +452,10 @@ public class CampaignDAOImpl implements CampaignDAO {
                 System.err.println("Error closing PreparedStatement: " + e.getMessage());
             }
         }
-        
+
         if (conn != null) {
             dbUtil.closeConnection(conn);
         }
     }
-
 
 }

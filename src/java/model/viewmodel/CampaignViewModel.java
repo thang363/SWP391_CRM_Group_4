@@ -144,11 +144,11 @@ public class CampaignViewModel {
     public String getStatusDisplayName() {
         if (status == null) return "N/A";
         switch (status) {
-            case "Active": return "Đang chạy";
-            case "Paused": return "Tạm dừng";
-            case "Draft": return "Nháp";
-            case "Finished": return "Đã kết thúc";
-            case "Rejected": return "Bị từ chối";
+            case "Active": return "Active";
+            case "Paused": return "Paused";
+            case "Draft": return "Draft";
+            case "Finished": return "Finished";
+            case "Rejected": return "Rejected";
             default: return status;
         }
     }

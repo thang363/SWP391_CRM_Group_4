@@ -269,7 +269,7 @@ public class SubmissionsServlet extends HttpServlet {
             boolean updateSuccess = submissionDAO.markAsProcessed(id);
             if (updateSuccess) {
                 // Send automated Thank You email
-                util.EmailService.sendThankYouEmailAsync(lead.getEmail(), lead.getFullName());
+                service.EmailService.sendThankYouEmailAsync(lead.getEmail(), lead.getFullName());
                 
                 sendJsonResponse(response, true, "Đã tạo Lead và gửi email cảm ơn thành công!", null);
             } else {

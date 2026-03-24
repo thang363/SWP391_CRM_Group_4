@@ -82,14 +82,7 @@ public interface LeadDAO {
      * @param scoreChange Points to add/subtract
      * @return true if successful
      */
-    boolean recordInteraction(int leadId, Integer campaignId, String activityType, String details, int scoreChange);
 
-    /**
-     * Update lead's total score.
-     * @param leadId ID of the lead
-     * @param newScore The new total score
-     */
-    void updateScore(int leadId, int newScore);
     
     /**
      * Get KPIs for monitor leads screen.
