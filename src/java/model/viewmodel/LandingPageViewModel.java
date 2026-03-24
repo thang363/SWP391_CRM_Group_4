@@ -16,13 +16,10 @@ public class LandingPageViewModel {
     private String status;
     private String statusBadgeClass; // For CSS badge
     private String createdByName;
-    private String approvedByName;
     private String formattedCreatedAt;
-    private Integer viewCount;
-    private String managerComment;
     
     // Static factory method
-    public static LandingPageViewModel fromEntity(LandingPage lp, String campaignName, String createdByName, String approvedByName) {
+    public static LandingPageViewModel fromEntity(LandingPage lp, String campaignName, String createdByName) {
         LandingPageViewModel vm = new LandingPageViewModel();
         vm.setId(lp.getId());
         vm.setCampaignId(lp.getCampaignId());
@@ -30,9 +27,6 @@ public class LandingPageViewModel {
         vm.setName(lp.getName());
         vm.setStatus(lp.getStatus());
         vm.setCreatedByName(createdByName != null ? createdByName : "Unknown");
-        vm.setApprovedByName(approvedByName != null ? approvedByName : "-");
-        vm.setViewCount(lp.getViewCount());
-        vm.setManagerComment(lp.getManagerComment());
         
         // Format Date
         if (lp.getCreatedAt() != null) {
@@ -46,11 +40,6 @@ public class LandingPageViewModel {
         vm.setStatusBadgeClass(resolveBadgeClass(lp.getStatus()));
         
         return vm;
-    }
-    
-    // Overloaded factory method (without approvedByName)
-    public static LandingPageViewModel fromEntity(LandingPage lp, String campaignName, String createdByName) {
-        return fromEntity(lp, campaignName, createdByName, null);
     }
     
     private static String resolveBadgeClass(String status) {
@@ -81,12 +70,6 @@ public class LandingPageViewModel {
     public void setStatusBadgeClass(String statusBadgeClass) { this.statusBadgeClass = statusBadgeClass; }
     public String getCreatedByName() { return createdByName; }
     public void setCreatedByName(String createdByName) { this.createdByName = createdByName; }
-    public String getApprovedByName() { return approvedByName; }
-    public void setApprovedByName(String approvedByName) { this.approvedByName = approvedByName; }
     public String getFormattedCreatedAt() { return formattedCreatedAt; }
     public void setFormattedCreatedAt(String formattedCreatedAt) { this.formattedCreatedAt = formattedCreatedAt; }
-    public Integer getViewCount() { return viewCount; }
-    public void setViewCount(Integer viewCount) { this.viewCount = viewCount; }
-    public String getManagerComment() { return managerComment; }
-    public void setManagerComment(String managerComment) { this.managerComment = managerComment; }
 }

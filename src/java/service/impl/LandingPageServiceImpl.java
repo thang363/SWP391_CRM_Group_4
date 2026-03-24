@@ -121,9 +121,6 @@ public class LandingPageServiceImpl implements LandingPageService {
             return false;
         }
         lp.setStatus(status);
-        if (comment != null) {
-            lp.setManagerComment(comment);
-        }
         return lpDAO.update(lp);
     }
 

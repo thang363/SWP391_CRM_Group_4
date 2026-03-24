@@ -124,16 +124,16 @@
                                                                         id="filterStatus">
                                                                         <option value="">Tất cả</option>
                                                                         <option value="Draft" ${param.status=='Draft'
-                                                                            ? 'selected' : '' }>Nháp (Draft)</option>
+                                                                            ? 'selected' : '' }>Draft</option>
                                                                         <option value="Active" ${param.status=='Active'
-                                                                            ? 'selected' : '' }>Đang chạy (Active)
+                                                                            ? 'selected' : '' }>Active
                                                                         </option>
                                                                         <option value="Paused" ${param.status=='Paused'
-                                                                            ? 'selected' : '' }>Tạm dừng (Paused)
+                                                                            ? 'selected' : '' }>Paused
                                                                         </option>
                                                                         <option value="Finished"
                                                                             ${param.status=='Finished' ? 'selected' : ''
-                                                                            }>Đã kết thúc (Finished)</option>
+                                                                            }>Finished</option>
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-md-2">

@@ -77,7 +77,6 @@
                                                             <th>Người phụ trách</th>
                                                             <th>Trạng thái</th>
                                                             <th>Ngày tạo</th>
-                                                            <th>Lượt xem</th>
                                                             <th>Thao tác</th>
                                                         </tr>
                                                     </thead>
@@ -85,7 +84,7 @@
                                                         <c:choose>
                                                             <c:when test="${empty landingPages}">
                                                                 <tr>
-                                                                    <td colspan="8" class="text-center text-muted py-4">
+                                                                    <td colspan="7" class="text-center text-muted py-4">
                                                                         <i class="fa fa-inbox fa-3x mb-3 d-block"></i>
                                                                         Chưa có Landing Page nào.
                                                                     </td>
@@ -99,15 +98,19 @@
                                                                             <strong>${lp.name}</strong>
                                                                         </td>
                                                                         <td>
-                                                                            <c:url value="/campaigns" var="campaignUrl">
-                                                                                <c:param name="id"
-                                                                                    value="${lp.campaignId}" />
-                                                                            </c:url>
-                                                                            <a href="${campaignUrl}"
-                                                                                class="text-decoration-none"
-                                                                                title="Xem chi tiết chiến dịch">
-                                                                                ${lp.campaignName}
-                                                                            </a>
+                                                                            <c:choose>
+                                                                                <c:when test="${isManager}">
+                                                                                    <c:url value="/campaigns" var="campaignUrl">
+                                                                                        <c:param name="id" value="${lp.campaignId}" />
+                                                                                    </c:url>
+                                                                                    <a href="${campaignUrl}" class="text-decoration-none" title="Xem chi tiết chiến dịch">
+                                                                                        <i class="fa fa-briefcase me-1 text-primary"></i>${lp.campaignName}
+                                                                                    </a>
+                                                                                </c:when>
+                                                                                <c:otherwise>
+                                                                                    <span class="text-muted"><i class="fa fa-briefcase me-1"></i>${lp.campaignName}</span>
+                                                                                </c:otherwise>
+                                                                            </c:choose>
                                                                         </td>
                                                                         <td>
                                                                             <i
@@ -118,10 +121,6 @@
                                                                                 class="badge bg-${lp.statusBadgeClass}">${lp.status}</span>
                                                                         </td>
                                                                         <td>${lp.formattedCreatedAt}</td>
-                                                                        <td>
-                                                                            <span
-                                                                                class="badge bg-secondary">${lp.viewCount}</span>
-                                                                        </td>
                                                                         <td>
                                                                             <div class="btn-group btn-group-sm">
                                                                                 <a href="${pageContext.request.contextPath}/landing-pages?action=preview&id=${lp.id}"
@@ -290,11 +289,6 @@
                             <input type="hidden" id="editLpStatus" name="status">
                             <div class="modal-body">
                                 <!-- Warning / Comments -->
-                                <div class="mb-3 d-none" id="managerCommentDiv">
-                                    <label class="form-label text-danger fw-bold">Lý do từ chối / Góp ý:</label>
-                                    <textarea class="form-control is-invalid bg-light" id="editManagerComment" rows="3"
-                                        readonly></textarea>
-                                </div>
                                 <div id="editWarning" class="alert alert-warning d-none">
                                     <i class="fa fa-exclamation-triangle"></i> Lưu ý: Nội dung sẽ được cập nhật trực tiếp lên Landing Page đang hoạt động.
                                 </div>

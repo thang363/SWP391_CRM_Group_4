@@ -53,8 +53,7 @@
                                                                 data-bs-toggle="tab" data-bs-target="#incoming"
                                                                 type="button" role="tab">
                                                                 <i class="fa fa-inbox me-2"></i>Yêu cầu đến
-                                                                (${pendingIncoming != null ? pendingIncoming.size() :
-                                                                0})
+                                                                <span class="badge bg-secondary">${totalIn}</span>
                                                             </button>
                                                         </li>
                                                         <li class="nav-item" role="presentation">
@@ -62,8 +61,7 @@
                                                                 data-bs-toggle="tab" data-bs-target="#outgoing"
                                                                 type="button" role="tab">
                                                                 <i class="fa fa-paper-plane me-2"></i>Yêu cầu đi
-                                                                (${pendingOutgoing != null ? pendingOutgoing.size() :
-                                                                0})
+                                                                <span class="badge bg-secondary">${totalOut}</span>
                                                             </button>
                                                         </li>
                                                     </ul>
@@ -79,8 +77,7 @@
                                                                             <tr>
                                                                                 <th>Chiến dịch</th>
                                                                                 <th>Từ Manager</th>
-                                                                                <th>Ngân sách</th>
-                                                                                <th>Ngày gửi yêu cầu</th>
+                                                                                <th>Ngày yêu cầu</th>
                                                                                 <th>Lý do</th>
                                                                                 <th>Thao tác</th>
                                                                             </tr>
@@ -89,52 +86,29 @@
                                                                             <c:choose>
                                                                                 <c:when test="${empty pendingIncoming}">
                                                                                     <tr>
-                                                                                        <td colspan="6"
-                                                                                            class="text-center text-muted">
-                                                                                            <i
-                                                                                                class="fa fa-check-circle fa-2x mb-2 d-block text-success"></i>
-                                                                                            Không có yêu cầu chuyển giao
-                                                                                            nào
+                                                                                        <td colspan="5" class="text-center text-muted">
+                                                                                            <i class="fa fa-check-circle fa-2x mb-2 d-block text-success"></i>
+                                                                                            Không có yêu cầu chuyển giao nào
                                                                                         </td>
                                                                                     </tr>
                                                                                 </c:when>
                                                                                 <c:otherwise>
-                                                                                    <c:forEach var="transfer"
-                                                                                        items="${pendingIncoming}">
-                                                                                        <tr
-                                                                                            id="transfer-row-${transfer.id}">
-                                                                                            <td><strong>${transfer.campaignName}</strong>
-                                                                                            </td>
-                                                                                            <td>${transfer.fromManagerName}
-                                                                                            </td>
+                                                                                    <c:forEach var="transfer" items="${pendingIncoming}">
+                                                                                        <tr id="transfer-row-${transfer.id}">
+                                                                                            <td><strong>${transfer.campaignName}</strong></td>
+                                                                                            <td>${transfer.fromManagerName}</td>
                                                                                             <td>
-                                                                                                <fmt:formatNumber
-                                                                                                    value="${transfer.campaignBudget}"
-                                                                                                    type="currency"
-                                                                                                    currencySymbol="₫"
-                                                                                                    groupingUsed="true" />
+                                                                                                <fmt:formatDate value="${transfer.requestedAt}" pattern="dd/MM/yyyy HH:mm" />
                                                                                             </td>
+                                                                                            <td>${transfer.transferReason}</td>
                                                                                             <td>
-                                                                                                <fmt:formatDate
-                                                                                                    value="${transfer.requestedAt}"
-                                                                                                    pattern="dd/MM/yyyy HH:mm" />
-                                                                                            </td>
-                                                                                            <td>${transfer.transferReason}
-                                                                                            </td>
-                                                                                            <td>
-                                                                                                <button
-                                                                                                    class="btn btn-sm btn-success me-1"
+                                                                                                <button class="btn btn-sm btn-success me-1"
                                                                                                     onclick="openReviewModal(${transfer.id}, '${transfer.campaignName}', '${transfer.fromManagerName}', '${transfer.transferReason}', true)">
-                                                                                                    <i
-                                                                                                        class="fa fa-check me-1"></i>Chấp
-                                                                                                    nhận
+                                                                                                    <i class="fa fa-check me-1"></i>Duyệt
                                                                                                 </button>
-                                                                                                <button
-                                                                                                    class="btn btn-sm btn-danger"
+                                                                                                <button class="btn btn-sm btn-outline-danger"
                                                                                                     onclick="openReviewModal(${transfer.id}, '${transfer.campaignName}', '${transfer.fromManagerName}', '${transfer.transferReason}', false)">
-                                                                                                    <i
-                                                                                                        class="fa fa-times me-1"></i>Từ
-                                                                                                    chối
+                                                                                                    <i class="fa fa-times me-1"></i>Từ chối
                                                                                                 </button>
                                                                                             </td>
                                                                                         </tr>
@@ -144,6 +118,25 @@
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
+
+                                                                <!-- Pagination -->
+                                                                <c:if test="${totalPagesIn > 1}">
+                                                                    <nav class="mt-4">
+                                                                        <ul class="pagination pagination-sm justify-content-center">
+                                                                            <li class="page-item ${pageIn == 1 ? 'disabled' : ''}">
+                                                                                <a class="page-link" href="?pageIn=${pageIn - 1}&pageOut=${pageOut}">Trước</a>
+                                                                            </li>
+                                                                            <c:forEach begin="1" end="${totalPagesIn}" var="i">
+                                                                                <li class="page-item ${pageIn == i ? 'active' : ''}">
+                                                                                    <a class="page-link" href="?pageIn=${i}&pageOut=${pageOut}">${i}</a>
+                                                                                </li>
+                                                                            </c:forEach>
+                                                                            <li class="page-item ${pageIn == totalPagesIn ? 'disabled' : ''}">
+                                                                                <a class="page-link" href="?pageIn=${pageIn + 1}&pageOut=${pageOut}">Sau</a>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </nav>
+                                                                </c:if>
                                                             </div>
                                                         </div>
 
@@ -156,10 +149,9 @@
                                                                             <tr>
                                                                                 <th>Chiến dịch</th>
                                                                                 <th>Đến Manager</th>
-                                                                                <th>Ngày gửi yêu cầu</th>
-                                                                                <th>Lý do gửi</th>
+                                                                                <th>Ngày yêu cầu</th>
                                                                                 <th>Trạng thái</th>
-                                                                                <th>Phản hồi từ người nhận</th>
+                                                                                <th>Phản hồi</th>
                                                                                 <th>Thao tác</th>
                                                                             </tr>
                                                                         </thead>
@@ -167,64 +159,42 @@
                                                                             <c:choose>
                                                                                 <c:when test="${empty pendingOutgoing}">
                                                                                     <tr>
-                                                                                        <td colspan="7"
-                                                                                            class="text-center text-muted">
+                                                                                        <td colspan="6" class="text-center text-muted">
                                                                                             Không có yêu cầu nào gần đây
                                                                                         </td>
                                                                                     </tr>
                                                                                 </c:when>
                                                                                 <c:otherwise>
-                                                                                    <c:forEach var="transfer"
-                                                                                        items="${pendingOutgoing}">
-                                                                                        <tr
-                                                                                            id="transfer-row-${transfer.id}">
-                                                                                            <td><strong>${transfer.campaignName}</strong>
-                                                                                            </td>
-                                                                                            <td>${transfer.toManagerName}
-                                                                                            </td>
+                                                                                    <c:forEach var="transfer" items="${pendingOutgoing}">
+                                                                                        <tr id="transfer-row-${transfer.id}">
+                                                                                            <td><strong>${transfer.campaignName}</strong></td>
+                                                                                            <td>${transfer.toManagerName}</td>
                                                                                             <td>
-                                                                                                <fmt:formatDate
-                                                                                                    value="${transfer.requestedAt}"
-                                                                                                    pattern="dd/MM/yyyy HH:mm" />
-                                                                                            </td>
-                                                                                            <td>${transfer.transferReason}
+                                                                                                <fmt:formatDate value="${transfer.requestedAt}" pattern="dd/MM/yyyy HH:mm" />
                                                                                             </td>
                                                                                             <td>
                                                                                                 <c:choose>
-                                                                                                    <c:when
-                                                                                                        test="${transfer.transferStatus == 'Pending'}">
-                                                                                                        <span
-                                                                                                            class="badge bg-warning text-dark">Chờ
-                                                                                                            duyệt</span>
+                                                                                                    <c:when test="${transfer.transferStatus == 'Pending'}">
+                                                                                                        <span class="badge bg-warning text-dark">Chờ duyệt</span>
                                                                                                     </c:when>
-                                                                                                    <c:when
-                                                                                                        test="${transfer.transferStatus == 'Rejected'}">
-                                                                                                        <span
-                                                                                                            class="badge bg-danger">Bị
-                                                                                                            từ
-                                                                                                            chối</span>
+                                                                                                    <c:when test="${transfer.transferStatus == 'Rejected'}">
+                                                                                                        <span class="badge bg-danger">Bị từ chối</span>
+                                                                                                    </c:when>
+                                                                                                    <c:when test="${transfer.transferStatus == 'Accepted'}">
+                                                                                                        <span class="badge bg-success">Đã nhận</span>
                                                                                                     </c:when>
                                                                                                     <c:otherwise>
-                                                                                                        <span
-                                                                                                            class="badge bg-secondary">${transfer.transferStatus}</span>
+                                                                                                        <span class="badge bg-secondary">${transfer.transferStatus}</span>
                                                                                                     </c:otherwise>
                                                                                                 </c:choose>
                                                                                             </td>
-                                                                                            <td class="text-danger">
-                                                                                                ${transfer.responseNotes
-                                                                                                != null ?
-                                                                                                transfer.responseNotes :
-                                                                                                '-'}
+                                                                                            <td class="${transfer.transferStatus == 'Rejected' ? 'text-danger' : (transfer.transferStatus == 'Accepted' ? 'text-success' : '')}">
+                                                                                                ${transfer.responseNotes != null ? transfer.responseNotes : '-'}
                                                                                             </td>
                                                                                             <td>
-                                                                                                <c:if
-                                                                                                    test="${transfer.transferStatus == 'Pending'}">
-                                                                                                    <button
-                                                                                                        class="btn btn-sm btn-secondary"
-                                                                                                        onclick="cancelTransfer(${transfer.id}, '${transfer.campaignName}')">
-                                                                                                        <i
-                                                                                                            class="fa fa-times me-1"></i>Hủy
-                                                                                                        bỏ
+                                                                                                <c:if test="${transfer.transferStatus == 'Pending'}">
+                                                                                                    <button class="btn btn-sm btn-outline-secondary" onclick="cancelTransfer(${transfer.id}, '${transfer.campaignName}')">
+                                                                                                        <i class="fa fa-times me-1"></i>Hủy
                                                                                                     </button>
                                                                                                 </c:if>
                                                                                             </td>
@@ -235,6 +205,25 @@
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
+
+                                                                <!-- Pagination -->
+                                                                <c:if test="${totalPagesOut > 1}">
+                                                                    <nav class="mt-4">
+                                                                        <ul class="pagination pagination-sm justify-content-center">
+                                                                            <li class="page-item ${pageOut == 1 ? 'disabled' : ''}">
+                                                                                <a class="page-link" href="?pageOut=${pageOut - 1}&pageIn=${pageIn}&tab=outgoing">Trước</a>
+                                                                            </li>
+                                                                            <c:forEach begin="1" end="${totalPagesOut}" var="i">
+                                                                                <li class="page-item ${pageOut == i ? 'active' : ''}">
+                                                                                    <a class="page-link" href="?pageOut=${i}&pageIn=${pageIn}&tab=outgoing">${i}</a>
+                                                                                </li>
+                                                                            </c:forEach>
+                                                                            <li class="page-item ${pageOut == totalPagesOut ? 'disabled' : ''}">
+                                                                                <a class="page-link" href="?pageOut=${pageOut + 1}&pageIn=${pageIn}&tab=outgoing">Sau</a>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </nav>
+                                                                </c:if>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -283,6 +272,34 @@
 
                                 <script>
                                     // Use standard JS/jQuery for interactivity
+                                    function showAlert(type, message) {
+                                        // Remove existing alerts to avoid clutter
+                                        const existingAlerts = document.querySelectorAll('.alert.transfer-alert');
+                                        existingAlerts.forEach(alert => alert.remove());
+
+                                        const alertDiv = document.createElement('div');
+                                        alertDiv.className = `alert alert-${type} alert-dismissible fade show transfer-alert`;
+                                        alertDiv.setAttribute('role', 'alert');
+                                        alertDiv.innerHTML = `
+                                            ${message}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        `;
+
+                                        // Insert at top of content area
+                                        const contentArea = document.querySelector('.container-fluid.pt-4');
+                                        if (contentArea) {
+                                            contentArea.insertBefore(alertDiv, contentArea.firstChild);
+
+                                            // Auto-dismiss after 5 seconds
+                                            setTimeout(() => {
+                                                alertDiv.classList.remove('show');
+                                                setTimeout(() => alertDiv.remove(), 150);
+                                            }, 5000);
+                                        } else {
+                                            alert(message); // Fallback
+                                        }
+                                    }
+
                                     function openReviewModal(id, campaignName, fromName, reason, isAccept) {
                                         document.getElementById('reviewTransferId').value = id;
                                         document.getElementById('reviewIsAccept').value = isAccept;
@@ -327,15 +344,17 @@
                                             .then(response => response.json())
                                             .then(result => {
                                                 if (result.success) {
-                                                    alert(result.message || 'Thành công');
-                                                    window.location.reload();
+                                                    showAlert('success', result.message || 'Thành công');
+                                                    setTimeout(() => {
+                                                        window.location.reload();
+                                                    }, 1000);
                                                 } else {
-                                                    alert('Lỗi: ' + result.message);
+                                                    showAlert('danger', result.message);
                                                 }
                                             })
                                             .catch(error => {
                                                 console.error('Error:', error);
-                                                alert('Có lỗi xảy ra');
+                                                showAlert('danger', 'Có lỗi xảy ra');
                                             });
                                     }
 
@@ -357,15 +376,17 @@
                                                     .then(response => response.json())
                                                     .then(result => {
                                                         if (result.success) {
-                                                            alert('Đã hủy yêu cầu chuyển giao.');
-                                                            window.location.reload();
+                                                            showAlert('success', 'Đã hủy yêu cầu chuyển giao.');
+                                                            setTimeout(() => {
+                                                                window.location.reload();
+                                                            }, 1000);
                                                         } else {
-                                                            alert('Lỗi: ' + result.message);
+                                                            showAlert('danger', result.message);
                                                         }
                                                     })
                                                     .catch(error => {
                                                         console.error('Error:', error);
-                                                        alert('Có lỗi xảy ra');
+                                                        showAlert('danger', 'Có lỗi xảy ra');
                                                     });
                                             },
                                             { title: 'Hủy chuyển giao', confirmText: 'Hủy yêu cầu', confirmClass: 'btn-warning' }
@@ -380,6 +401,16 @@
                                         }
                                     });
                                 </script>
-                    </body>
+                        <script>
+        // Keep active tab on reload
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab');
+            if (activeTab === 'outgoing') {
+                $('#outgoing-tab').tab('show');
+            }
+        });
+    </script>
+</body>
 
                     </html>

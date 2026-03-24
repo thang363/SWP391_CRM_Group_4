@@ -4,7 +4,7 @@ import dao.CustomerDAO;
 import dao.impl.CustomerDAOImpl;
 import dao.ReviewDAO;
 import dao.impl.ReviewDAOImpl;
-import util.EmailService;
+import service.EmailService;
 import model.entity.Customer;
 import model.entity.Role;
 import util.Constants;

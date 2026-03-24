@@ -18,13 +18,11 @@ public interface CampaignTransferService {
     boolean cancelTransfer(Integer transferId, Integer cancellingManagerId);
     
     // Queries
-    List<CampaignTransfer> getPendingTransfersForRecipient(Integer managerId);
+    List<CampaignTransfer> getPendingTransfersForRecipient(Integer managerId, int offset, int limit);
+    int countPendingTransfersByRecipient(Integer managerId);
     
-    List<CampaignTransfer> getPendingTransfersForSender(Integer managerId);
-    
-    List<CampaignTransfer> getRecentTransfersForSender(Integer managerId);
-    
-    List<CampaignTransfer> getTransferHistory(Integer campaignId);
+    List<CampaignTransfer> getRecentTransfersForSender(Integer managerId, int offset, int limit);
+    int countRecentTransfersBySender(Integer managerId);
     
     CampaignTransfer getTransferById(Integer id);
 }

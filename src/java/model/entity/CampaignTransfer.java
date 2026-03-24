@@ -13,7 +13,6 @@ public class CampaignTransfer {
     private Integer toManagerId;
     private String transferStatus; // Pending, Accepted, Rejected, Cancelled
     private String transferReason;
-    private String notes;
     private Timestamp requestedAt;
     private Timestamp respondedAt;
     private String responseNotes;
@@ -22,7 +21,6 @@ public class CampaignTransfer {
     private String campaignName;
     private String fromManagerName;
     private String toManagerName;
-    private java.math.BigDecimal campaignBudget;
 
     public CampaignTransfer() {
     }
@@ -85,13 +83,6 @@ public class CampaignTransfer {
         this.transferReason = transferReason;
     }
 
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
 
     public Timestamp getRequestedAt() {
         return requestedAt;
@@ -142,13 +133,6 @@ public class CampaignTransfer {
         this.toManagerName = toManagerName;
     }
 
-    public java.math.BigDecimal getCampaignBudget() {
-        return campaignBudget;
-    }
-
-    public void setCampaignBudget(java.math.BigDecimal campaignBudget) {
-        this.campaignBudget = campaignBudget;
-    }
 
     @Override
     public String toString() {

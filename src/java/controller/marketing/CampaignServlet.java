@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import model.entity.LandingPage;
 
 @WebServlet(name = "CampaignServlet", urlPatterns = {"/campaigns"})
 public class CampaignServlet extends HttpServlet {
@@ -59,96 +60,80 @@ public class CampaignServlet extends HttpServlet {
         Integer currentUserId =  (Integer) session.getAttribute(Constants.SESSION_USER_ID);
         Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
-        // Handle AJAX GET requests (e.g., fetch particular campaign for edit)
         String action = request.getParameter("action");
         if ("get".equals(action)) {
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
             handleGet(request, response);
             return;
         }
 
-        // Get filter parameters
-        // Get filter parameters
-        String nameFilter = request.getParameter("name");
-        String statusFilter = request.getParameter("status");
-        String startDateStr = request.getParameter("startDate");
-        String endDateStr = request.getParameter("endDate");
-
-        // Parse dates
-        Timestamp startDate = parseDate(startDateStr);
-        Timestamp endDate = parseDate(endDateStr);
-
-        // Pagination
+        // ---------------------------------------------------------
+        // PART 1: Determine what to fetch (Specific ID or Full List)
+        // ---------------------------------------------------------
+        List<Campaign> campaigns = new ArrayList<>();
+        int totalItems = 0;
+        int totalPages = 1;
         int page = 1;
-        int pageSize = Constants.DEFAULT_PAGE_SIZE;
-        try {
-            String pageStr = request.getParameter("page");
-            if (pageStr != null && !pageStr.isEmpty()) {
-                page = Integer.parseInt(pageStr);
-            }
-        } catch (NumberFormatException e) {
-            page = 1;
-        }
-        if (page < 1) page = 1;
-
-        int offset = (page - 1) * pageSize;
-
-        // Owner filtering (Default to 'mine' for Managers)
-        String ownerFilter = request.getParameter("ownerFilter");
-        if (ownerFilter == null || ownerFilter.trim().isEmpty()) {
-            ownerFilter = "mine";
-        }
-
-        // Manager-level access control: filter by managerId unless Admin
-        Integer managerIdFilter = null;
-        if (Role.MANAGER.equals(currentUserRole)) {
-            if ("mine".equals(ownerFilter)) {
-                managerIdFilter = currentUserId;
-            }
-            // If "all", managerIdFilter stays null
-        }
-        // If Admin, managerIdFilter stays null = see all campaigns
-        
-        request.setAttribute("ownerFilter", ownerFilter);
-
-        // Get total items and calculate pages
-        int totalItems = campaignService.countCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter);
-        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
-        if (totalPages < 1) totalPages = 1;
-        if (page > totalPages) {
-            page = totalPages;
-            offset = (page - 1) * pageSize;
-        }
-
-        // Get campaigns
-        List<Campaign> campaigns;
         String idFilterStr = request.getParameter("id");
+
         if (idFilterStr != null && !idFilterStr.trim().isEmpty()) {
-            // Filter by specific ID (from LP list link)
+            // A. View Specific Campaign (Prioritized)
             try {
                 Integer idFilter = Integer.parseInt(idFilterStr);
                 Campaign specificCampaign = campaignService.getCampaignById(idFilter);
                 if (specificCampaign != null) {
-                    // Check manager permission
-                    if (!Role.MANAGER.equals(currentUserRole) || 
-                        specificCampaign.getManagerId() != null && specificCampaign.getManagerId().equals(currentUserId)) {
-                         campaigns = new ArrayList<>();
-                         campaigns.add(specificCampaign);
-                    } else {
-                        campaigns = new ArrayList<>(); // Found but no permission
-                    }
-                } else {
-                    campaigns = new ArrayList<>(); // Not found
+                    campaigns.add(specificCampaign);
+                    totalItems = 1;
+                    totalPages = 1;
+                    page = 1;
                 }
-                totalItems = campaigns.size(); // Reset totals
             } catch (NumberFormatException e) {
-                 campaigns = new ArrayList<>();
+                // Invalid ID format - campaigns remains empty list
             }
         } else {
-            // Normal search
-             campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter, offset, pageSize);
+            // B. Full List / Search / Pagination
+            // Get search filter parameters
+            String nameFilter = request.getParameter("name");
+            String statusFilter = request.getParameter("status");
+            String startDateStr = request.getParameter("startDate");
+            String endDateStr = request.getParameter("endDate");
+            Timestamp startDate = parseDate(startDateStr);
+            Timestamp endDate = parseDate(endDateStr);
+
+            // Handle Owner filter (Default: 'mine')
+            String ownerFilter = request.getParameter("ownerFilter");
+            if (ownerFilter == null || ownerFilter.trim().isEmpty()) {
+                ownerFilter = "mine";
+            }
+            Integer managerIdFilter = "mine".equals(ownerFilter) ? currentUserId : null;
+            request.setAttribute("ownerFilter", ownerFilter);
+
+            // Pagination calculation
+            int pageSize = Constants.DEFAULT_PAGE_SIZE;
+            try {
+                String pageStr = request.getParameter("page");
+                if (pageStr != null && !pageStr.isEmpty()) {
+                    page = Integer.parseInt(pageStr);
+                }
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+            if (page < 1) page = 1;
+
+            // Database Count & Page calculation
+            totalItems = campaignService.countCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter);
+            totalPages = (int) Math.ceil((double) totalItems / pageSize);
+            if (totalPages < 1) totalPages = 1;
+            if (page > totalPages) page = totalPages;
+
+            int offset = (page - 1) * pageSize;
+
+            // Fetch list
+            campaigns = campaignService.searchCampaigns(nameFilter, statusFilter, startDate, endDate, managerIdFilter, offset, pageSize);
         }
+
+        // ---------------------------------------------------------
+        // PART 2: Processing & ViewModel Conversion (Shared)
+        // ---------------------------------------------------------
 
         // Convert to ViewModels
         List<CampaignViewModel> viewModels = new ArrayList<>();
@@ -164,23 +149,8 @@ public class CampaignServlet extends HttpServlet {
             // Check pending transfer
             boolean hasPending = transferDAO.hasPendingTransfer(c.getId());
             
-            // Get Landing Page info
-            String lpStatus = "null";
-            Integer assigneeId = null;
-            String assigneeName = "-";
-            
-            model.entity.LandingPage lp = lpService.getLandingPageByCampaignId(c.getId().intValue());
-            if (lp != null) {
-                lpStatus = lp.getStatus();
-                if (lp.getCreatedBy() != null) {
-                    assigneeId = Integer.valueOf(lp.getCreatedBy());
-                    User assignee = userService.getUserById(assigneeId);
-                    assigneeName = (assignee != null) ? assignee.getFullName() : "Unknown ID: " + assigneeId;
-                }
-            }
-            
-            // Create ViewModel
-            viewModels.add(CampaignViewModel.fromEntity(c, managerName, hasPending, lpStatus, assigneeId, assigneeName, currentUserId));
+            // Create ViewModel (currentUserId is passed to determine isOwner)
+            viewModels.add(CampaignViewModel.fromEntity(c, managerName, hasPending, null, null, null, currentUserId));
         }
 
         // Get all managers for Transfer dropdown
@@ -196,6 +166,7 @@ public class CampaignServlet extends HttpServlet {
         request.setAttribute("currentPageNumber", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalItems", totalItems);
+        request.setAttribute("isManager", currentUserRole == Role.MANAGER);
         request.setAttribute("currentPage", "campaigns");
         request.setAttribute("pageTitle", "Quản lý Chiến dịch");
 
@@ -216,8 +187,6 @@ public class CampaignServlet extends HttpServlet {
 
 
         request.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
 
@@ -252,27 +221,18 @@ public class CampaignServlet extends HttpServlet {
         try {
             Campaign campaign = extractCampaignFromRequest(request);
             
-            // Force status to Draft for newly created campaigns
-            campaign.setStatus("Draft");
-
             // Auto-assign current user as campaign manager
             HttpSession session = request.getSession(false);
             Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
             campaign.setManagerId(currentUserId);
-
-            // Validate
-            String validationError = campaignService.validateCampaign(campaign);
-            if (validationError != null) {
-                sendJsonResponse(response, false, validationError, null);
-                return;
-            }
-
-            // Create
+            
+            // Note: status is forced to 'Draft' and basic validation is done inside Service
             Campaign created = campaignService.createCampaign(campaign);
+            
             if (created != null) {
                 sendJsonResponse(response, true, Constants.SUCCESS_CAMPAIGN_CREATED, created);
             } else {
-                sendJsonResponse(response, false, "Không thể tạo chiến dịch", null);
+                sendJsonResponse(response, false, "Không thể tạo chiến dịch. Vui lòng kiểm tra lại thông tin.", null);
             }
 
         } catch (Exception e) {
@@ -306,16 +266,9 @@ public class CampaignServlet extends HttpServlet {
                 return;
             }
 
-            if (Role.MANAGER.equals(currentUserRole)) {
-                if (existingCampaign.getManagerId() == null || !existingCampaign.getManagerId().equals(currentUserId)) {
-                    sendJsonResponse(response, false, "Bạn không có quyền chỉnh sửa chiến dịch này", null);
-                    return;
-                }
-            }
-
-            // Prevent editing Finished campaigns
-            if ("Finished".equals(existingCampaign.getStatus())) {
-                sendJsonResponse(response, false, "Không thể chỉnh sửa chiến dịch đã kết thúc", null);
+            // Authorization check: Manager can only update their own campaigns
+            if (existingCampaign.getManagerId() == null || !existingCampaign.getManagerId().equals(currentUserId)) {
+                sendJsonResponse(response, false, "Bạn không có quyền chỉnh sửa chiến dịch này", null);
                 return;
             }
 
@@ -328,49 +281,14 @@ public class CampaignServlet extends HttpServlet {
             // Preserve managerId - it should only change via Transfer, not direct edit
             campaign.setManagerId(existingCampaign.getManagerId());
 
-            // Check status transition validity
-            String oldStatus = existingCampaign.getStatus();
-            String newStatus = campaign.getStatus();
-
-            if (oldStatus != null && newStatus != null && !oldStatus.equals(newStatus)) {
-                boolean validTransition = false;
-                switch (oldStatus) {
-                    case "Draft":
-                        if (newStatus.equals("Active") || newStatus.equals("Finished")) validTransition = true;
-                        break;
-                    case "Active":
-                        if (newStatus.equals("Paused") || newStatus.equals("Finished")) validTransition = true;
-                        break;
-                    case "Paused":
-                        if (newStatus.equals("Active") || newStatus.equals("Finished")) validTransition = true;
-                        break;
-                    case "Finished":
-                        // No transitions allowed from Finished
-                        break;
-                }
-                
-                if (!validTransition) {
-                    sendJsonResponse(response, false, "Chuyển đổi trạng thái từ " + oldStatus + " sang " + newStatus + " không hợp lệ", null);
-                    return;
-                }
-            }
-
-            // Validate
-            String validationError = campaignService.validateCampaign(campaign);
-            if (validationError != null) {
-                System.out.println("Update failed validation: " + validationError);
-                sendJsonResponse(response, false, validationError, null);
-                return;
-            }
-
-            System.out.println("Updating campaign: " + campaign.toString());
-
-            // Update
+            // Validate and Update via Service
+            // (Business rules like Status Transitions and Finished check are now in Service)
             boolean updated = campaignService.updateCampaign(campaign);
+            
             if (updated) {
                 sendJsonResponse(response, true, Constants.SUCCESS_CAMPAIGN_UPDATED, campaign);
             } else {
-                sendJsonResponse(response, false, "Không thể cập nhật chiến dịch", null);
+                sendJsonResponse(response, false, "Không thể cập nhật chiến dịch. Vui lòng kiểm tra lại trạng thái hoặc quyền hạn.", null);
             }
 
         } catch (Exception e) {
@@ -391,36 +309,23 @@ public class CampaignServlet extends HttpServlet {
             Integer id = Integer.parseInt(idStr);
 
             // Check if campaign has pending transfer - prevent deletion during handover
-            if (transferDAO.hasPendingTransfer(id)) {
-                sendJsonResponse(response, false, "Chiến dịch đang trong quá trình chuyển giao, không thể xóa", null);
-                return;
-            }
-
-            // Get existing campaign for status and ownership check
+            // Get existing campaign for ownership check
             Campaign existingCampaign = campaignService.getCampaignById(id);
             if (existingCampaign == null) {
                 sendJsonResponse(response, false, "Chiến dịch không tồn tại", null);
                 return;
             }
 
-            // Authorization check: Only Admin or the owner can delete
+            // Authorization check: Only the owner can delete
             HttpSession session = request.getSession(false);
             Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
-            Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
-            if (Role.MANAGER.equals(currentUserRole)) {
-                if (existingCampaign.getManagerId() == null || !existingCampaign.getManagerId().equals(currentUserId)) {
-                    sendJsonResponse(response, false, "Bạn không có quyền xóa chiến dịch này", null);
-                    return;
-                }
-            }
-
-            // Check if campaign status is Draft - prevent deletion if not Draft
-            if (!"Draft".equals(existingCampaign.getStatus())) {
-                sendJsonResponse(response, false, "Chỉ có thể xóa chiến dịch ở trạng thái Draft", null);
+            if (existingCampaign.getManagerId() == null || !existingCampaign.getManagerId().equals(currentUserId)) {
+                sendJsonResponse(response, false, "Bạn không có quyền xóa chiến dịch này", null);
                 return;
             }
 
+            // Delete via Service (checks for Draft status and Pending Transfers internally)
             boolean deleted = campaignService.deleteCampaign(id);
 
             if (deleted) {
@@ -452,16 +357,13 @@ public class CampaignServlet extends HttpServlet {
                 return;
             }
 
-            // Authorization: Manager can only view their own campaigns
+            // Authorization: Manager can only load their own campaign data for editing
             HttpSession session = request.getSession(false);
             Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
-            Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
 
-            if (Role.MANAGER.equals(currentUserRole)) {
-                if (campaign.getManagerId() == null || !campaign.getManagerId().equals(currentUserId)) {
-                    sendJsonResponse(response, false, "Bạn không có quyền xem chiến dịch này", null);
-                    return;
-                }
+            if (campaign.getManagerId() == null || !campaign.getManagerId().equals(currentUserId)) {
+                sendJsonResponse(response, false, "Bạn không có quyền chỉnh sửa chiến dịch này", null);
+                return;
             }
 
             sendJsonResponse(response, true, "Thành công", campaign);
@@ -548,6 +450,8 @@ public class CampaignServlet extends HttpServlet {
 
     private void sendJsonResponse(HttpServletResponse response, boolean success,
             String message, Object data) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         Map<String, Object> jsonResponse = new HashMap<>();
         jsonResponse.put("success", success);
         jsonResponse.put("message", message);

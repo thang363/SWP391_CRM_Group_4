@@ -9,20 +9,18 @@ public class LeadInteractionViewModel {
     private String leadEmail;
     private String activityName;
     private String details;
-    private int scoreChange;
     private Timestamp createdAt;
 
     public LeadInteractionViewModel() {
     }
 
-    public LeadInteractionViewModel(int interactionId, int leadId, String leadName, String leadEmail, String activityName, String details, int scoreChange, Timestamp createdAt) {
+    public LeadInteractionViewModel(int interactionId, int leadId, String leadName, String leadEmail, String activityName, String details, Timestamp createdAt) {
         this.interactionId = interactionId;
         this.leadId = leadId;
         this.leadName = leadName;
         this.leadEmail = leadEmail;
         this.activityName = activityName;
         this.details = details;
-        this.scoreChange = scoreChange;
         this.createdAt = createdAt;
     }
 
@@ -74,13 +72,6 @@ public class LeadInteractionViewModel {
         this.details = details;
     }
 
-    public int getScoreChange() {
-        return scoreChange;
-    }
-
-    public void setScoreChange(int scoreChange) {
-        this.scoreChange = scoreChange;
-    }
 
     public Timestamp getCreatedAt() {
         return createdAt;

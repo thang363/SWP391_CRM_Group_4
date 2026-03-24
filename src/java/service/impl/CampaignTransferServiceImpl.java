@@ -1,10 +1,8 @@
 package service.impl;
 
-import dao.AuditDAO;
 import dao.CampaignDAO;
 import dao.CampaignTransferDAO;
 import dao.UserDAO;
-import dao.impl.AuditDAOImpl;
 import dao.impl.CampaignDAOImpl;
 import dao.impl.CampaignTransferDAOImpl;
 import dao.impl.UserDAOImpl;
@@ -24,18 +22,15 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
     private final CampaignTransferDAO transferDAO;
     private final CampaignDAO campaignDAO;
     private final UserDAO userDAO;
-    private final AuditDAO auditDAO;
 
     public CampaignTransferServiceImpl() {
         this.transferDAO = new CampaignTransferDAOImpl();
         this.campaignDAO = new CampaignDAOImpl();
         this.userDAO = new UserDAOImpl();
-        this.auditDAO = new AuditDAOImpl();
     }
 
     @Override
     public CampaignTransfer requestTransfer(Integer campaignId, Integer fromManagerId, Integer toManagerId, String reason) {
-        // 1. Validate ownership
         Campaign campaign = campaignDAO.findById(campaignId);
         if (campaign == null) {
             throw new IllegalArgumentException("Campaign not found");
@@ -47,7 +42,6 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
             throw new SecurityException("You are not the owner of this campaign");
         }
 
-        // Prevent transferring Finished campaigns
         if ("Finished".equals(campaign.getStatus())) {
             throw new IllegalStateException("Cannot transfer a finished campaign");
         }
@@ -57,7 +51,7 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
             throw new IllegalStateException("A transfer is already pending for this campaign");
         }
 
-        // 3. Validate target manager
+       
         try {
             User targetManager = userDAO.findById(toManagerId);
             if (targetManager == null) {
@@ -77,8 +71,6 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
         Integer id = transferDAO.insert(transfer);
         transfer.setId(id);
 
-        // 5. Audit Log
-        auditDAO.log(fromManagerId, "TRANSFER_REQUESTED", "Campaign", campaignId);
         
         return transfer;
     }
@@ -105,7 +97,6 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
         if (campaign == null) {
             throw new IllegalArgumentException("Campaign not found");
         }
-        Integer oldManagerId = campaign.getManagerId();
         campaign.setManagerId(acceptingManagerId);
         boolean campaignUpdated = campaignDAO.update(campaign);
         
@@ -119,8 +110,6 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
         transfer.setResponseNotes(notes);
         transferDAO.update(transfer);
 
-        // 3. Audit Log
-        auditDAO.log(acceptingManagerId, "TRANSFER_ACCEPTED", "Campaign", campaign.getId());
 
         return true;
     }
@@ -146,8 +135,6 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
         transfer.setResponseNotes(notes);
         transferDAO.update(transfer);
 
-        // Audit Log
-        auditDAO.log(rejectingManagerId, "TRANSFER_REJECTED", "Campaign", transfer.getCampaignId());
 
         return true;
     }
@@ -172,30 +159,30 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
         transfer.setRespondedAt(new Timestamp(System.currentTimeMillis()));
         transferDAO.update(transfer);
 
-        // Audit Log
-        auditDAO.log(cancellingManagerId, "TRANSFER_CANCELLED", "Campaign", transfer.getCampaignId());
 
         return true;
     }
 
     @Override
-    public List<CampaignTransfer> getPendingTransfersForRecipient(Integer managerId) {
-        return transferDAO.findPendingTransfersByRecipient(managerId);
+    public List<CampaignTransfer> getPendingTransfersForRecipient(Integer managerId, int offset, int limit) {
+        return transferDAO.findPendingTransfersByRecipient(managerId, offset, limit);
     }
+
+    @Override
+    public int countPendingTransfersByRecipient(Integer managerId) {
+        return transferDAO.countPendingTransfersByRecipient(managerId);
+    }
+
+
     
     @Override
-    public List<CampaignTransfer> getPendingTransfersForSender(Integer managerId) {
-         return transferDAO.findPendingTransfersBySender(managerId);
+    public List<CampaignTransfer> getRecentTransfersForSender(Integer managerId, int offset, int limit) {
+        return transferDAO.findRecentTransfersBySender(managerId, offset, limit);
     }
-    
+
     @Override
-    public List<CampaignTransfer> getRecentTransfersForSender(Integer managerId) {
-         return transferDAO.findRecentTransfersBySender(managerId);
-    }
-    
-    @Override
-    public List<CampaignTransfer> getTransferHistory(Integer campaignId) {
-        return transferDAO.findHistoryByCampaign(campaignId);
+    public int countRecentTransfersBySender(Integer managerId) {
+        return transferDAO.countRecentTransfersBySender(managerId);
     }
     
     @Override

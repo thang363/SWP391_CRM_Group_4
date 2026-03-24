@@ -91,7 +91,7 @@ public class LandingPageServlet extends HttpServlet {
         // Convert to ViewModels
         // Convert to ViewModels and Filter by Role
         List<LandingPageViewModel> viewModels = new ArrayList<>();
-        User currentUser = (User) session.getAttribute(Constants.SESSION_USER);
+        Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
         Role userRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
         boolean isManager = Role.MANAGER.equals(userRole);
 
@@ -108,12 +108,12 @@ public class LandingPageServlet extends HttpServlet {
             // Visibility Filter
             if (isManager) {
                 // Manager: Only see LPs from Campaigns they manage
-                if (campaign == null || campaign.getManagerId() == null || !currentUser.getId().equals(campaign.getManagerId())) {
+                if (campaign == null || campaign.getManagerId() == null || !currentUserId.equals(campaign.getManagerId())) {
                     continue; 
                 }
             } else {
                 // Marketing: Only see LPs assigned to them
-                if (lp.getCreatedBy() == null || !currentUser.getId().equals(lp.getCreatedBy())) {
+                if (lp.getCreatedBy() == null || !currentUserId.equals(lp.getCreatedBy())) {
                     continue;
                 }
             }
@@ -146,7 +146,7 @@ public class LandingPageServlet extends HttpServlet {
         
         if (isManager) {
             for (Campaign c : allCampaigns) {
-                if (c.getManagerId() != null && c.getManagerId().equals(currentUser.getId())) {
+                if (c.getManagerId() != null && c.getManagerId().equals(currentUserId)) {
                     campaigns.add(c);
                 }
             }
@@ -362,7 +362,6 @@ public class LandingPageServlet extends HttpServlet {
                 }
             } catch (Exception e) { e.printStackTrace(); }
             data.put("status", lp.getStatus());
-            data.put("managerComment", lp.getManagerComment());
 
             sendJsonResponse(response, true, "Lấy dữ liệu thành công", data);
 
@@ -405,8 +404,8 @@ public class LandingPageServlet extends HttpServlet {
 
             // Marketing checks
             HttpSession session = request.getSession(false);
-            User currentUser = (User) session.getAttribute(Constants.SESSION_USER);
-            if (currentUser != null && !currentUser.getId().equals(lp.getCreatedBy())) { 
+            Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
+            if (currentUserId != null && !currentUserId.equals(lp.getCreatedBy())) { 
                  // Simple ownership check
             }
 
@@ -481,6 +480,19 @@ public class LandingPageServlet extends HttpServlet {
                 if (!"Public".equals(newStatus) && !"Draft".equals(newStatus)) {
                      sendJsonResponse(response, false, "Staff chỉ có thể Công khai hoặc Lưu nháp", null);
                      return;
+                }
+                
+                if ("Public".equals(newStatus)) {
+                    LandingPage lp = lpService.getLandingPageById(id);
+                    if (lp == null || lp.getCampaignId() == null) {
+                        sendJsonResponse(response, false, "Không tìm thấy thông tin Chiến dịch", null);
+                        return;
+                    }
+                    Campaign campaign = campaignService.getCampaignById(lp.getCampaignId());
+                    if (campaign == null || !"Active".equals(campaign.getStatus())) {
+                        sendJsonResponse(response, false, "Chỉ có thể Công khai Landing Page khi Chiến dịch đang Active", null);
+                        return;
+                    }
                 }
             }
             

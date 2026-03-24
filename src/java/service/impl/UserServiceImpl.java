@@ -99,6 +99,21 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
+    public User getUserByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return null;
+        }
+        
+        try {
+            return userDAO.findByEmail(email);
+        } catch (SQLException e) {
+            System.err.println("Database error while fetching user by email: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    @Override
     public UserViewModel getUserViewModelById(Integer userId) {
         User user = getUserById(userId);
         return user != null ? convertToViewModel(user) : null;

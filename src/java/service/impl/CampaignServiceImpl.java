@@ -16,14 +16,17 @@ import java.util.List;
 public class CampaignServiceImpl implements CampaignService {
     
     private final CampaignDAO campaignDAO;
+    private final dao.CampaignTransferDAO transferDAO;
     
     public CampaignServiceImpl() {
         this.campaignDAO = new CampaignDAOImpl();
+        this.transferDAO = new dao.impl.CampaignTransferDAOImpl();
     }
     
     // Constructor for testing with dependency injection
-    public CampaignServiceImpl(CampaignDAO campaignDAO) {
+    public CampaignServiceImpl(CampaignDAO campaignDAO, dao.CampaignTransferDAO transferDAO) {
         this.campaignDAO = campaignDAO;
+        this.transferDAO = transferDAO;
     }
     
     @Override
@@ -57,6 +60,7 @@ public class CampaignServiceImpl implements CampaignService {
             if ("Active".equals(c.getStatus()) && c.getEndDate().before(now)) {
                 c.setStatus("Finished");
                 campaignDAO.update(c); // Update DB
+                revertPublicLPsToDraft(c.getId()); // Auto-revert LPs to Draft
                 needsRefetch = true;
             }
         }
@@ -74,18 +78,19 @@ public class CampaignServiceImpl implements CampaignService {
     
     @Override
     public Campaign createCampaign(Campaign campaign) {
-        // Validate campaign
+        if (campaign == null) return null;
+
+        // 1. Force Draft status for new campaigns
+        campaign.setStatus("Draft");
+
+        // 2. Validate campaign
         String validationError = validateCampaign(campaign);
         if (validationError != null) {
             System.err.println("Campaign validation failed: " + validationError);
             return null;
         }
         
-        // Set default values if not provided
-        if (campaign.getStatus() == null || campaign.getStatus().trim().isEmpty()) {
-            campaign.setStatus("Draft");
-        }
-        
+        // 3. Set default budget if not provided
         if (campaign.getBudget() == null) {
             campaign.setBudget(BigDecimal.ZERO);
         }
@@ -98,15 +103,77 @@ public class CampaignServiceImpl implements CampaignService {
         if (campaign == null || campaign.getId() == null) {
             return false;
         }
-        
-        // Validate campaign
+
+        // 1. Core Validation
         String validationError = validateCampaign(campaign);
         if (validationError != null) {
             System.err.println("Campaign validation failed: " + validationError);
             return false;
         }
-        
-        return campaignDAO.update(campaign);
+
+        // 2. Fetch current state for business rule checks
+        Campaign existing = campaignDAO.findById(campaign.getId());
+        if (existing == null) return false;
+
+        // 3. Business Rule: Cannot edit Finished campaigns
+        if ("Finished".equals(existing.getStatus())) {
+            System.err.println("Cannot edit Finished campaign ID " + campaign.getId());
+            return false;
+        }
+
+        // 4. Business Rule: Validate status transition
+        String oldStatus = existing.getStatus();
+        String newStatus = campaign.getStatus();
+        if (oldStatus != null && newStatus != null && !oldStatus.equals(newStatus)) {
+            if (!isValidTransition(oldStatus, newStatus)) {
+                System.err.println("Invalid status transition from " + oldStatus + " to " + newStatus);
+                return false;
+            }
+        }
+
+        // 5. Database Update
+        boolean success = campaignDAO.update(campaign);
+
+        // 6. Post-update Logic: If Campaign is no longer Active, revert Public LPs to Draft
+        if (success && !"Active".equals(newStatus)) {
+            revertPublicLPsToDraft(campaign.getId());
+        }
+
+        return success;
+    }
+
+    private boolean isValidTransition(String oldStatus, String newStatus) {
+        if (oldStatus == null || newStatus == null) return false;
+        if (oldStatus.equals(newStatus)) return true;
+
+        switch (oldStatus) {
+            case "Draft":
+                return newStatus.equals("Active") || newStatus.equals("Finished");
+            case "Active":
+                return newStatus.equals("Paused") || newStatus.equals("Finished");
+            case "Paused":
+                return newStatus.equals("Active") || newStatus.equals("Finished");
+            case "Finished":
+                return false; // Terminal state
+            default:
+                return false;
+        }
+    }
+
+    private void revertPublicLPsToDraft(Integer campaignId) {
+        try {
+            dao.LandingPageDAO lpDAO = new dao.impl.LandingPageDAOImpl();
+            List<model.entity.LandingPage> lps = lpDAO.findAllByCampaignId(campaignId);
+            for (model.entity.LandingPage lp : lps) {
+                if ("Public".equals(lp.getStatus())) {
+                    lp.setStatus("Draft");
+                    lpDAO.update(lp);
+                    System.out.println("Auto-reverted LP ID " + lp.getId() + " to Draft (Campaign is not Active)");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error reverting LPs for campaign " + campaignId + ": " + e.getMessage());
+        }
     }
     
     @Override
@@ -114,6 +181,26 @@ public class CampaignServiceImpl implements CampaignService {
         if (id == null || id <= 0) {
             return false;
         }
+
+        // 1. Check existence and state
+        Campaign existing = campaignDAO.findById(id);
+        if (existing == null) {
+            System.err.println("Cannot delete: Campaign ID " + id + " not found");
+            return false;
+        }
+
+        // 2. Business Rule: Only 'Draft' campaigns can be deleted
+        if (!"Draft".equals(existing.getStatus())) {
+            System.err.println("Cannot delete: Campaign ID " + id + " is in status " + existing.getStatus());
+            return false;
+        }
+
+        // 3. Business Rule: Cannot delete if it has a pending transfer
+        if (transferDAO.hasPendingTransfer(id)) {
+            System.err.println("Cannot delete: Campaign ID " + id + " has a pending transfer");
+            return false;
+        }
+
         return campaignDAO.delete(id);
     }
     

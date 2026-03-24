@@ -372,92 +372,8 @@ public class LeadDAOImpl implements LeadDAO {
         return list;
     }
 
-    @Override
-    public boolean recordInteraction(int leadId, Integer campaignId, String activityType, String details, int scoreChange) {
-        Connection conn = null;
-        try {
-            conn = dbUtil.getConnection();
-            conn.setAutoCommit(false);
 
-            // 1. Get or Create activity_type_id
-            int activityTypeId = ensureActivityType(conn, activityType);
-            
-            // 2. Fallback for campaignId if null
-            if (campaignId == null) {
-                String sqlCampaign = "SELECT campaign_id FROM Leads WHERE id = ?";
-                try (PreparedStatement ps = conn.prepareStatement(sqlCampaign)) {
-                    ps.setInt(1, leadId);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        if (rs.next()) {
-                            int cid = rs.getInt("campaign_id");
-                            if (!rs.wasNull()) campaignId = cid;
-                        }
-                    }
-                }
-            }
 
-            // 3. Insert into LeadInteractions
-            String sqlInteraction = "INSERT INTO LeadInteractions (lead_id, campaign_id, activity_type_id, reference_url, score_change, created_at) " +
-                                  "VALUES (?, ?, ?, ?, ?, GETDATE())";
-            try (PreparedStatement ps = conn.prepareStatement(sqlInteraction)) {
-                ps.setInt(1, leadId);
-                if (campaignId != null) ps.setInt(2, campaignId); else ps.setNull(2, Types.INTEGER);
-                ps.setInt(3, activityTypeId);
-                ps.setString(4, details);
-                ps.setInt(5, scoreChange);
-                ps.executeUpdate();
-            }
-
-            // 4. Update potential_status to 'Hot' if scoreChange > 0 (significant interaction)
-            if (scoreChange > 0) {
-                String sqlUpdateLead = "UPDATE Leads SET potential_status = 'Hot' WHERE id = ?";
-                try (PreparedStatement ps = conn.prepareStatement(sqlUpdateLead)) {
-                    ps.setInt(1, leadId);
-                    ps.executeUpdate();
-                }
-            }
-
-            conn.commit();
-            return true;
-        } catch (SQLException e) {
-            System.err.println("Error recording interaction: " + e.getMessage());
-            if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) {}
-            }
-            return false;
-        } finally {
-            if (conn != null) {
-                try { conn.setAutoCommit(true); } catch (SQLException ex) {}
-                dbUtil.closeConnection(conn);
-            }
-        }
-    }
-
-    private int ensureActivityType(Connection conn, String name) throws SQLException {
-        String sqlSelect = "SELECT id FROM ActivityTypes WHERE name = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sqlSelect)) {
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt("id");
-            }
-        }
-        
-        String sqlInsert = "INSERT INTO ActivityTypes (name, description, is_active) VALUES (?, ?, 1)";
-        try (PreparedStatement ps = conn.prepareStatement(sqlInsert, java.sql.Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, name);
-            ps.setString(2, "Automatic tracking type");
-            ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) return rs.getInt(1);
-            }
-        }
-        return 0;
-    }
-
-    @Override
-    public void updateScore(int leadId, int newScore) {
-        // Scoring removed, operation ignored or can be repurposed to set status
-    }
 
     private void closeResources(ResultSet rs, PreparedStatement stmt, Connection conn) {
         try {
@@ -589,7 +505,7 @@ public class LeadDAOImpl implements LeadDAO {
     @Override
     public List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Integer campaignId, int limit) {
         List<model.viewmodel.LeadInteractionViewModel> list = new ArrayList<>();
-        String sql = "SELECT i.id, i.lead_id, l.full_name, l.email, a.name as activity_name, i.reference_url, i.score_change, i.created_at " +
+        String sql = "SELECT i.id, i.lead_id, l.full_name, l.email, a.name as activity_name, i.reference_url, i.created_at " +
                      "FROM LeadInteractions i " +
                      "JOIN Leads l ON i.lead_id = l.id " +
                      "JOIN ActivityTypes a ON i.activity_type_id = a.id";
@@ -622,7 +538,6 @@ public class LeadDAOImpl implements LeadDAO {
                 vm.setLeadEmail(rs.getString("email"));
                 vm.setActivityName(rs.getString("activity_name"));
                 vm.setDetails(rs.getString("reference_url")); // reference_url acts as details
-                vm.setScoreChange(rs.getInt("score_change"));
                 Timestamp ts = rs.getTimestamp("created_at");
                 vm.setCreatedAt(ts);
                 list.add(vm);

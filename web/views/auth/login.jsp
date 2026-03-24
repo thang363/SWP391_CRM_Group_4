@@ -108,18 +108,11 @@
                                         <label for="password">Mật khẩu</label>
                                     </div>
                                     <div class="d-flex align-items-center justify-content-between mb-4">
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" id="rememberMe"
-                                                name="rememberMe">
-                                            <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
-                                        </div>
+                                        
                                         <a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu</a>
                                     </div>
                                     <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Đăng nhập</button>
-                                    <p class="text-center mb-0">
-                                        Chưa có tài khoản?
-                                        <a href="${pageContext.request.contextPath}/register">Đăng ký</a>
-                                    </p>
+                                    
                                 </form>
                             </div>
                         </div>

@@ -28,8 +28,8 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
         try {
             conn = dbUtil.getConnection();
             String sql = "INSERT INTO CampaignTransfers (campaign_id, from_manager_id, to_manager_id, " +
-                    "transfer_status, transfer_reason, notes, requested_at) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    "transfer_status, transfer_reason, requested_at) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
 
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, transfer.getCampaignId());
@@ -37,8 +37,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
             stmt.setInt(3, transfer.getToManagerId());
             stmt.setString(4, transfer.getTransferStatus());
             stmt.setString(5, transfer.getTransferReason());
-            stmt.setString(6, transfer.getNotes());
-            stmt.setTimestamp(7, transfer.getRequestedAt());
+            stmt.setTimestamp(6, transfer.getRequestedAt());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -69,14 +68,13 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
         try {
             conn = dbUtil.getConnection();
             String sql = "UPDATE CampaignTransfers SET transfer_status = ?, responded_at = ?, " +
-                    "response_notes = ?, notes = ? WHERE id = ?";
+                    "response_notes = ? WHERE id = ?";
 
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, transfer.getTransferStatus());
             stmt.setTimestamp(2, transfer.getRespondedAt());
             stmt.setString(3, transfer.getResponseNotes());
-            stmt.setString(4, transfer.getNotes());
-            stmt.setInt(5, transfer.getId());
+            stmt.setInt(4, transfer.getId());
 
             stmt.executeUpdate();
 
@@ -97,7 +95,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
         try {
             conn = dbUtil.getConnection();
             String sql = "SELECT ct.*, " +
-                    "c.name as campaign_name, c.budget as campaign_budget, " +
+                    "c.name as campaign_name, " +
                     "u_from.full_name as from_manager_name, " +
                     "u_to.full_name as to_manager_name " +
                     "FROM CampaignTransfers ct " +
@@ -162,7 +160,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
         try {
             conn = dbUtil.getConnection();
             String sql = "SELECT ct.*, " +
-                    "c.name as campaign_name, c.budget as campaign_budget, " +
+                    "c.name as campaign_name, " +
                     "u_from.full_name as from_manager_name, " +
                     "u_to.full_name as to_manager_name " +
                     "FROM CampaignTransfers ct " +
@@ -190,7 +188,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public List<CampaignTransfer> findPendingTransfersByRecipient(Integer managerId) {
+    public List<CampaignTransfer> findPendingTransfersByRecipient(Integer managerId, int offset, int limit) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -199,7 +197,7 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
         try {
             conn = dbUtil.getConnection();
             String sql = "SELECT ct.*, " +
-                    "c.name as campaign_name, c.budget as campaign_budget, " +
+                    "c.name as campaign_name, " +
                     "u_from.full_name as from_manager_name, " +
                     "u_to.full_name as to_manager_name " +
                     "FROM CampaignTransfers ct " +
@@ -207,10 +205,12 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
                     "JOIN Users u_from ON ct.from_manager_id = u_from.id " +
                     "JOIN Users u_to ON ct.to_manager_id = u_to.id " +
                     "WHERE ct.to_manager_id = ? AND ct.transfer_status = 'Pending' " +
-                    "ORDER BY ct.requested_at DESC";
+                    "ORDER BY ct.requested_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, managerId);
+            stmt.setInt(2, offset);
+            stmt.setInt(3, limit);
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -228,65 +228,54 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public List<CampaignTransfer> findPendingTransfersBySender(Integer managerId) {
+    public int countPendingTransfersByRecipient(Integer managerId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        List<CampaignTransfer> transfers = new ArrayList<>();
 
         try {
             conn = dbUtil.getConnection();
-            String sql = "SELECT ct.*, " +
-                    "c.name as campaign_name, c.budget as campaign_budget, " +
-                    "u_from.full_name as from_manager_name, " +
-                    "u_to.full_name as to_manager_name " +
-                    "FROM CampaignTransfers ct " +
-                    "JOIN Campaigns c ON ct.campaign_id = c.id " +
-                    "JOIN Users u_from ON ct.from_manager_id = u_from.id " +
-                    "JOIN Users u_to ON ct.to_manager_id = u_to.id " +
-                    "WHERE ct.from_manager_id = ? AND ct.transfer_status = 'Pending' " +
-                    "ORDER BY ct.requested_at DESC";
-
+            String sql = "SELECT COUNT(*) FROM CampaignTransfers WHERE to_manager_id = ? AND transfer_status = 'Pending'";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, managerId);
             rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                transfers.add(mapResultSetToTransfer(rs));
+            if (rs.next()) {
+                return rs.getInt(1);
             }
-
         } catch (SQLException e) {
-            System.err.println("Error finding pending transfers by sender: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error counting pending transfers by recipient: " + e.getMessage());
         } finally {
             closeResources(rs, stmt, conn);
         }
-
-        return transfers;
+        return 0;
     }
 
+   
     @Override
-    public List<CampaignTransfer> findRecentTransfersBySender(Integer managerId) {
+    public List<CampaignTransfer> findRecentTransfersBySender(Integer managerId, int offset, int limit) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
         List<CampaignTransfer> transfers = new ArrayList<>();
-
+// "WHERE ct.from_manager_id = ? AND (ct.transfer_status = 'Pending' OR ct.transfer_status = 'Rejected') " +
         try {
             conn = dbUtil.getConnection();
             String sql = "SELECT ct.*, " +
-                    "c.name as campaign_name, c.budget as campaign_budget, " +
+                    "c.name as campaign_name, " +
                     "u_from.full_name as from_manager_name, " +
                     "u_to.full_name as to_manager_name " +
                     "FROM CampaignTransfers ct " +
                     "JOIN Campaigns c ON ct.campaign_id = c.id " +
                     "JOIN Users u_from ON ct.from_manager_id = u_from.id " +
                     "JOIN Users u_to ON ct.to_manager_id = u_to.id " +
-                    "WHERE ct.from_manager_id = ? AND (ct.transfer_status = 'Pending' OR ct.transfer_status = 'Rejected') " +
-                    "ORDER BY ct.requested_at DESC";
+                    "WHERE ct.from_manager_id = ? " +
+                    "ORDER BY ct.requested_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, managerId);
+            stmt.setInt(2, offset);
+            stmt.setInt(3, limit);
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -304,42 +293,29 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
     }
 
     @Override
-    public List<CampaignTransfer> findHistoryByCampaign(Integer campaignId) {
+    public int countRecentTransfersBySender(Integer managerId) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        List<CampaignTransfer> transfers = new ArrayList<>();
 
         try {
             conn = dbUtil.getConnection();
-            String sql = "SELECT ct.*, " +
-                    "c.name as campaign_name, c.budget as campaign_budget, " +
-                    "u_from.full_name as from_manager_name, " +
-                    "u_to.full_name as to_manager_name " +
-                    "FROM CampaignTransfers ct " +
-                    "JOIN Campaigns c ON ct.campaign_id = c.id " +
-                    "JOIN Users u_from ON ct.from_manager_id = u_from.id " +
-                    "JOIN Users u_to ON ct.to_manager_id = u_to.id " +
-                    "WHERE ct.campaign_id = ? " +
-                    "ORDER BY ct.requested_at DESC";
-
+            String sql = "SELECT COUNT(*) FROM CampaignTransfers WHERE from_manager_id = ?";
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, campaignId);
+            stmt.setInt(1, managerId);
             rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                transfers.add(mapResultSetToTransfer(rs));
+            if (rs.next()) {
+                return rs.getInt(1);
             }
-
         } catch (SQLException e) {
-            System.err.println("Error finding transfer history: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error counting recent transfers by sender: " + e.getMessage());
         } finally {
             closeResources(rs, stmt, conn);
         }
-
-        return transfers;
+        return 0;
     }
+
 
     private CampaignTransfer mapResultSetToTransfer(ResultSet rs) throws SQLException {
         CampaignTransfer transfer = new CampaignTransfer();
@@ -349,7 +325,6 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
         transfer.setToManagerId(rs.getInt("to_manager_id"));
         transfer.setTransferStatus(rs.getString("transfer_status"));
         transfer.setTransferReason(rs.getString("transfer_reason"));
-        transfer.setNotes(rs.getString("notes"));
         transfer.setRequestedAt(rs.getTimestamp("requested_at"));
         transfer.setRespondedAt(rs.getTimestamp("responded_at"));
         transfer.setResponseNotes(rs.getString("response_notes"));
@@ -358,7 +333,6 @@ public class CampaignTransferDAOImpl implements CampaignTransferDAO {
         transfer.setCampaignName(rs.getString("campaign_name"));
         transfer.setFromManagerName(rs.getString("from_manager_name"));
         transfer.setToManagerName(rs.getString("to_manager_name"));
-        transfer.setCampaignBudget(rs.getBigDecimal("campaign_budget"));
 
         return transfer;
     }
