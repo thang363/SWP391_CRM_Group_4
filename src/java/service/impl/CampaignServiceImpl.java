@@ -10,9 +10,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-/**
- * Implementation of CampaignService interface
- */
+
 public class CampaignServiceImpl implements CampaignService {
     
     private final CampaignDAO campaignDAO;
@@ -23,7 +21,6 @@ public class CampaignServiceImpl implements CampaignService {
         this.transferDAO = new dao.impl.CampaignTransferDAOImpl();
     }
     
-    // Constructor for testing with dependency injection
     public CampaignServiceImpl(CampaignDAO campaignDAO, dao.CampaignTransferDAO transferDAO) {
         this.campaignDAO = campaignDAO;
         this.transferDAO = transferDAO;

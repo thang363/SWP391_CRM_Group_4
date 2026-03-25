@@ -272,6 +272,15 @@
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <c:choose>
+                                                                                                        <c:when test="${sub.source eq 'Internal Test'}">
+                                                                                                            <span class="badge bg-warning text-dark source-badge" title="Test Nội Bộ">
+                                                                                                                <i class="fa fa-flask me-1"></i>
+                                                                                                                Test Nội Bộ
+                                                                                                                <c:if test="${sub.landingPageId != null}">
+                                                                                                                    (<c:out value="${sub.landingPageName}" default="LP" />)
+                                                                                                                </c:if>
+                                                                                                            </span>
+                                                                                                        </c:when>
                                                                                                         <c:when
                                                                                                             test="${sub.landingPageId != null}">
                                                                                                             <span
@@ -354,7 +363,7 @@
                                                                                                             class="fa fa-eye"></i>
                                                                                                     </button>
                                                                                                     <c:if
-                                                                                                        test="${!sub.isProcessed}">
+                                                                                                        test="${!sub.isProcessed && sub.source ne 'Internal Test'}">
                                                                                                         <button
                                                                                                             class="btn btn-sm btn-success"
                                                                                                             onclick="handleConvert(${sub.id})"

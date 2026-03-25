@@ -13,7 +13,6 @@ public class Task {
     private String relatedToEntity; // "Customer"
     private Integer relatedRecordId;// FK → Customers.id
     private String customerName; // JOIN field
-    private Integer careProgramId;
     private String taskType; // Renewal, Upsell
     private Timestamp createdAt;
 
@@ -100,13 +99,6 @@ public class Task {
         this.customerName = customerName;
     }
 
-    public Integer getCareProgramId() {
-        return careProgramId;
-    }
-
-    public void setCareProgramId(Integer careProgramId) {
-        this.careProgramId = careProgramId;
-    }
 
     public String getTaskType() {
         return taskType;
