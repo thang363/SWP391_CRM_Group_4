@@ -210,6 +210,7 @@
                                                                                     <th>Góp Ý</th>
                                                                                 </tr>
                                                                             </thead>
+                                                                            <jsp:useBean id="now" class="java.util.Date" />
                                                                             <tbody>
                                                                                 <c:forEach var="r" items="${reviews}">
                                                                                     <tr>
@@ -231,10 +232,17 @@
                                                                                             </c:if>
                                                                                         </td>
                                                                                         <td>
-                                                                                            <span
-                                                                                                class="badge ${r.used ? 'bg-success' : 'bg-warning'}">${r.used
-                                                                                                ? 'Đã phản hồi' : 'Chờ
-                                                                                                phản hồi'}</span>
+                                                                                            <c:choose>
+                                                                                                <c:when test="${r.used}">
+                                                                                                    <span class="badge bg-success">Đã phản hồi</span>
+                                                                                                </c:when>
+                                                                                                <c:when test="${r.expiresAt != null && r.expiresAt.time < now.time}">
+                                                                                                    <span class="badge bg-danger">Yêu cầu đã quá hạn</span>
+                                                                                                </c:when>
+                                                                                                <c:otherwise>
+                                                                                                    <span class="badge bg-warning text-dark">Chờ phản hồi</span>
+                                                                                                </c:otherwise>
+                                                                                            </c:choose>
                                                                                         </td>
                                                                                         <td>${r.serviceRating != null ?
                                                                                             r.serviceRating.toString().concat('

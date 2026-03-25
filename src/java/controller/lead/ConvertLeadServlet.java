@@ -68,12 +68,17 @@ public class ConvertLeadServlet extends HttpServlet {
         Integer saleID = lead.getAssignedTo();
         OpportunityDAO op = new OpportunitiesDaoImpl();
         try {
-            if (lead != null
-            && "Qualified".equals(lead.getStatus())) {
+            if (lead != null && "Qualified".equals(lead.getStatus())) {
 
-            op.createFromLead(leadID, leadName, saleID);
-            
-            response.sendRedirect(request.getContextPath() + "/sales/leads");
+                // 1. Tạo Opportunity
+                op.createFromLead(leadID, leadName, saleID != null ? saleID : 0);
+                
+                // 2. Chuyển Status của Lead sang Converted
+                leadao.updateLeadStatus(leadID, "Converted");
+                
+                response.sendRedirect(request.getContextPath() + "/sales/leads");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/sales/leads");
             }
         } catch (Exception e) {
             e.printStackTrace();
