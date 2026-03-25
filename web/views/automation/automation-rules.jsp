@@ -404,7 +404,7 @@
                                     row.innerHTML =
                                         '<select class="form-select form-select-sm cond-field" style="width:35%">' +
                                         '<option value="lastCareDays"' + (field === 'lastCareDays' ? ' selected' : '') + '>Ngày chưa care (lastCareDays)</option>' +
-                                        '<option value="status"' + (field === 'status' ? ' selected' : '') + '>Trạng thái KH (status)</option>' +
+                                        //'<option value="status"' + (field === 'status' ? ' selected' : '') + '>Trạng thái KH (status)</option>' +
                                         '<option value="tier"' + (field === 'tier' ? ' selected' : '') + '>Hạng KH (tier)</option>' +
                                         '<option value="totalRevenue"' + (field === 'totalRevenue' ? ' selected' : '') + '>Doanh thu (totalRevenue)</option>' +
                                         '</select>' +
@@ -416,7 +416,7 @@
                                         '<option value=">"' + (operator === '>' ? ' selected' : '') + '>&gt;</option>' +
                                         '<option value="<"' + (operator === '<' ? ' selected' : '') + '>&lt;</option>' +
                                         '</select>' +
-                                        '<input type="text" class="form-control form-control-sm cond-value" style="width:40%" placeholder="Giá trị (VD: 30, Active, VIP)" value="' + (value || '') + '">' +
+                                        '<input type="text" class="form-control form-control-sm cond-value" style="width:40%" placeholder="Giá trị (VD: 30, VIP)" value="' + (value || '') + '">' +
                                         '<button type="button" class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">' +
                                         '<i class="fa fa-times"></i>' +
                                         '</button>';
