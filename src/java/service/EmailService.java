@@ -86,15 +86,20 @@ public class EmailService {
     private void sendEmailHtml(String to, String subject, String htmlBody) {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.enable", "true");
         props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.port", "465");
+        props.put("mail.smtp.socketFactory.port", "465");
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         
         // Cấu hình bổ sung khắc phục lỗi EHLO/HELO hostname khi chạy trên thiết bị mạng khác
         props.put("mail.smtp.localhost", "127.0.0.1");
         // Bảo vệ chứng chỉ SSL và giao thức bảo mật mặc định TLSv1.2
         props.put("mail.smtp.ssl.protocols", "TLSv1.2");
         props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
+        // Bật Debug để in ra Console toàn bộ nguyên nhân lỗi nếu Google/Mạng cấm kết nối
+        props.put("mail.debug", "true");
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
