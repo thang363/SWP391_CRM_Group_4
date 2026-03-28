@@ -37,9 +37,9 @@
                                 color: #212529;
                             }
 
-                            .badge-upsell {
-                                background-color: #198754;
-                                color: white;
+                            .badge-care {
+                                background-color: #0dcaf0;
+                                color: #212529;
                             }
 
                             .badge-open {
@@ -271,11 +271,11 @@
                                                                                             </span>
                                                                                         </c:when>
                                                                                         <c:when
-                                                                                            test="${task.taskType == 'Upsell'}">
+                                                                                            test="${task.taskType == 'Care'}">
                                                                                             <span
-                                                                                                class="badge badge-upsell">
+                                                                                                class="badge badge-care">
                                                                                                 <i
-                                                                                                    class="fa fa-arrow-up me-1"></i>Upsell
+                                                                                                    class="fa fa-heart me-1"></i>Chăm sóc
                                                                                             </span>
                                                                                         </c:when>
                                                                                         <c:otherwise>
@@ -514,8 +514,8 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Upsell Actions -->
-                                            <div id="upsellActions" style="display:none;">
+                                            <!-- Care Actions -->
+                                            <div id="careActions" style="display:none;">
                                                 <div class="d-flex gap-2 flex-wrap">
                                                     <form method="post" action="${pageContext.request.contextPath}/my-tasks" style="display:inline">
                                                         <input type="hidden" name="action" value="mark_called">
@@ -664,9 +664,9 @@
                             if (taskType === 'Renewal') {
                                 typeEl.textContent = 'Renewal (Gia hạn)';
                                 typeEl.className = 'badge badge-renewal';
-                            } else if (taskType === 'Upsell') {
-                                typeEl.textContent = 'Upsell (Tư vấn)';
-                                typeEl.className = 'badge badge-upsell';
+                            } else if (taskType === 'Care') {
+                                typeEl.textContent = 'Chăm sóc KH';
+                                typeEl.className = 'badge badge-care';
                             } else {
                                 typeEl.textContent = taskType || '—';
                                 typeEl.className = 'badge bg-secondary';
@@ -687,16 +687,16 @@
 
                             // Toggle action sections
                             var renewalActions = document.getElementById('renewalActions');
-                            var upsellActions = document.getElementById('upsellActions');
+                            var careActions = document.getElementById('careActions');
                             renewalActions.style.display = 'none';
-                            upsellActions.style.display = 'none';
+                            careActions.style.display = 'none';
 
                             if (taskType === 'Renewal') {
                                 renewalActions.style.display = 'block';
                                 document.getElementById('renewalTaskId').value = taskId;
                                 document.getElementById('cancelTaskId').value = taskId;
-                            } else if (taskType === 'Upsell') {
-                                upsellActions.style.display = 'block';
+                            } else if (taskType === 'Care') {
+                                careActions.style.display = 'block';
                                 document.getElementById('calledTaskId').value = taskId;
                                 document.getElementById('transferTaskId').value = taskId;
                             }
