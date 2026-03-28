@@ -7,6 +7,7 @@
                     <!DOCTYPE html>
                     <html lang="vi">
 
+
                     <head>
                         <title>Sales Pipeline - CRM System</title>
                         <%@ include file="/includes/head.jsp" %>
@@ -100,8 +101,14 @@
                                 }
 
                                 .stage-total {
-                                    font-size: 0.85rem;
-                                    opacity: 0.9;
+                                    font-size: 0.95rem;
+                                    font-weight: bold;
+                                    display: inline-block;
+                                    margin-top: 5px;
+                                    padding: 4px 10px;
+                                    background: rgba(255, 255, 255, 0.2);
+                                    border-radius: 5px;
+                                    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
                                 }
                             </style>
                     </head>
@@ -125,10 +132,10 @@
                                             <div class="d-flex justify-content-between align-items-center mb-4">
                                                 <h3 class="mb-0"><i class="fa fa-funnel-dollar me-2"></i>Sales Pipeline
                                                 </h3>
-                                                <button class="btn btn-primary" data-bs-toggle="modal"
-                                                    data-bs-target="#addDealModal">
+                                                <a href="${pageContext.request.contextPath}/sales/leads"
+                                                    class="btn btn-primary">
                                                     <i class="fa fa-plus me-2"></i>Thêm Deal
-                                                </button>
+                                                </a>
                                             </div>
                                         </div>
 
@@ -335,12 +342,52 @@
                                     }
 
                                     function showToast(title, message, type = 'success') {
+                                        const bgColors = { 'success': '#d1e7dd', 'danger': '#f8d7da', 'warning': '#fff3cd', 'info': '#cff4fc' };
+                                        const textColors = { 'success': '#0f5132', 'danger': '#842029', 'warning': '#664d03', 'info': '#055160' };
+                                        const borderColors = { 'success': '#badbcc', 'danger': '#f5c2c7', 'warning': '#ffecb5', 'info': '#b6effb' };
+
+                                        const bgColor = bgColors[type] || '#fff';
+                                        const textColor = textColors[type] || '#000';
+                                        const borderColor = borderColors[type] || '#ccc';
+                                        const icon = type === 'success' ? 'fa-check-circle' : (type === 'danger' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+
                                         const toast = document.createElement('div');
-                                        toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3 shadow`;
-                                        toast.style.zIndex = '9999';
-                                        toast.innerHTML = `<strong>${title}:</strong> ${message}`;
+                                        toast.style.cssText =
+                                            "position: fixed; top: 20px; right: 20px;" +
+                                            "background-color: " + bgColor + " !important;" +
+                                            "color: " + textColor + " !important;" +
+                                            "border: 1px solid " + borderColor + " !important;" +
+                                            "border-radius: 8px; padding: 15px 20px;" +
+                                            "box-shadow: 0 4px 12px rgba(0,0,0,0.15);" +
+                                            "z-index: 999999; display: flex; flex-direction: column;" +
+                                            "min-width: 280px; max-width: 400px; font-family: sans-serif;" +
+                                            "opacity: 0; transform: translateY(-20px); transition: all 0.3s ease;";
+
+                                        var innerHtmlContent =
+                                            "<div style='display: flex; align-items: center; margin-bottom: 5px;'>" +
+                                            "<i class='fa " + icon + "' style='font-size: 1.2rem; margin-right: 10px; color: " + textColor + ";'></i>" +
+                                            "<strong style='font-size: 1.1rem; color: " + textColor + " !important;'>" + title + "</strong>" +
+                                            "</div>" +
+                                            "<div style='font-size: 0.95rem; margin-left: 28px; line-height: 1.4; color: " + textColor + " !important;'>" +
+                                            message +
+                                            "</div>";
+
+                                        toast.innerHTML = innerHtmlContent;
+
                                         document.body.appendChild(toast);
-                                        setTimeout(() => toast.remove(), 3000);
+
+                                        // Hiệu ứng hiện
+                                        setTimeout(() => {
+                                            toast.style.opacity = '1';
+                                            toast.style.transform = 'translateY(0)';
+                                        }, 10);
+
+                                        // Hiệu ứng ẩn
+                                        setTimeout(() => {
+                                            toast.style.opacity = '0';
+                                            toast.style.transform = 'translateY(-20px)';
+                                            setTimeout(() => toast.remove(), 300);
+                                        }, 3500);
                                     }
                                 });
                             </script>
