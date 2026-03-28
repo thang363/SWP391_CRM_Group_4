@@ -154,16 +154,14 @@
                                                                                                     <span
                                                                                                         class="badge badge-expiring">
                                                                                                         <i
-                                                                                                            class="fa fa-clock me-1"></i>Sắp
-                                                                                                        hết hạn
+                                                                                                            class="fa fa-clock me-1"></i>Expiring
                                                                                                     </span>
                                                                                                 </c:when>
                                                                                                 <c:otherwise>
                                                                                                     <span
                                                                                                         class="badge badge-highpotential">
                                                                                                         <i
-                                                                                                            class="fa fa-heart me-1"></i>Chăm
-                                                                                                        sóc KH
+                                                                                                            class="fa fa-heart me-1"></i>Care
                                                                                                     </span>
                                                                                                 </c:otherwise>
                                                                                             </c:choose>
@@ -299,7 +297,7 @@
                                                         class="text-danger">*</span></label>
                                                 <select class="form-select" id="targetType" name="targetType" required onchange="onTargetTypeChange(this.value)">
                                                     <option value="">-- Chọn --</option>
-                                                    <option value="Expiring">Khách sắp hết hạn (Expiring)</option>
+                                                    <option value="Expiring">Khách sắp hết hạn</option>
                                                     <option value="HighPotential">Chăm sóc khách hàng</option>
                                                 </select>
                                             </div>

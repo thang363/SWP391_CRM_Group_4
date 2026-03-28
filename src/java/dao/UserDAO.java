@@ -28,6 +28,8 @@ public interface UserDAO {
     
     boolean emailExists(String email) throws SQLException;
     
+    boolean phoneExists(String phone) throws SQLException;
+    
     int countAll() throws SQLException;
     
     int countActive() throws SQLException;

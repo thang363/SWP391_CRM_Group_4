@@ -74,6 +74,8 @@ public class TicketServlet extends HttpServlet {
         }
     }
 
+    private static final int PAGE_SIZE = 10;
+
     private void listTickets(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String keyword = request.getParameter("keyword");
@@ -96,31 +98,49 @@ public class TicketServlet extends HttpServlet {
 
         // === RBAC: Filter theo role ===
         if (Role.MANAGER.equals(role)) {
-            // Manager xem tất cả
             if ("my".equals(view) && userId != null) {
                 assignedTo = userId.intValue();
             } else if ("unassigned".equals(view)) {
                 isUnassigned = true;
             }
         } else if (Role.SUPPORT.equals(role)) {
-            // Support: Xem tất cả tickets
             if ("my".equals(view) && userId != null) {
                 assignedTo = userId.intValue();
             } else if ("unassigned".equals(view)) {
                 isUnassigned = true;
             }
-            // Mặc định (view=all hoặc null) -> Xem tất cả (assignedTo = null, isUnassigned
-            // = false)
         } else {
-            // Marketing/Sale hoặc không có role
-            assignedTo = -1; // Không có ticket nào
+            assignedTo = -1;
         }
         // === End RBAC ===
 
-        List<Ticket> tickets = ticketService.searchTickets(keyword, status, priority, assignedTo, isUnassigned);
-        request.setAttribute("tickets", tickets);
+        List<Ticket> allTickets = ticketService.searchTickets(keyword, status, priority, assignedTo, isUnassigned);
+
+        // --- Pagination ---
+        int totalTickets = allTickets.size();
+        int totalPages = (int) Math.ceil((double) totalTickets / PAGE_SIZE);
+        if (totalPages == 0) totalPages = 1;
+
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            try {
+                page = Integer.parseInt(pageParam);
+            } catch (NumberFormatException ignored) {}
+        }
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+
+        int fromIndex = (page - 1) * PAGE_SIZE;
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, totalTickets);
+        List<Ticket> pagedTickets = allTickets.subList(fromIndex, toIndex);
+
+        request.setAttribute("tickets", pagedTickets);
         request.setAttribute("currentPage", "support");
         request.setAttribute("pageTitle", "Quản lý Ticket");
+        request.setAttribute("ticketPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalTickets", totalTickets);
         request.getRequestDispatcher("/views/ticket/tickets.jsp").forward(request, response);
     }
 

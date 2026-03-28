@@ -189,6 +189,54 @@
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- Pagination -->
+                                        <c:if test="${totalPages > 1}">
+                                            <div class="row mt-4">
+                                                <div class="col-md-6 d-flex align-items-center">
+                                                    <span class="text-muted">
+                                                        Hiển thị ${(logPage - 1) * 10 + 1} - ${logPage * 10 > totalLogs ? totalLogs : logPage * 10} / ${totalLogs} logs
+                                                    </span>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <nav aria-label="Log pagination">
+                                                        <ul class="pagination justify-content-end mb-0">
+                                                            <%-- Previous --%>
+                                                            <li class="page-item ${logPage <= 1 ? 'disabled' : ''}">
+                                                                <a class="page-link" href="${pageContext.request.contextPath}/system-job-logs?page=${logPage - 1}">
+                                                                    <i class="fa fa-chevron-left"></i>
+                                                                </a>
+                                                            </li>
+
+                                                            <%-- Page numbers --%>
+                                                            <c:forEach var="i" begin="1" end="${totalPages}">
+                                                                <c:choose>
+                                                                    <c:when test="${totalPages <= 7 || i <= 2 || i > totalPages - 2 || (i >= logPage - 1 && i <= logPage + 1)}">
+                                                                        <li class="page-item ${i == logPage ? 'active' : ''}">
+                                                                            <a class="page-link" href="${pageContext.request.contextPath}/system-job-logs?page=${i}">${i}</a>
+                                                                        </li>
+                                                                    </c:when>
+                                                                    <c:when test="${i == 3 && logPage > 4}">
+                                                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                                    </c:when>
+                                                                    <c:when test="${i == totalPages - 2 && logPage < totalPages - 3}">
+                                                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                                    </c:when>
+                                                                </c:choose>
+                                                                </c:forEach>
+
+                                                            <%-- Next --%>
+                                                            <li class="page-item ${logPage >= totalPages ? 'disabled' : ''}">
+                                                                <a class="page-link" href="${pageContext.request.contextPath}/system-job-logs?page=${logPage + 1}">
+                                                                    <i class="fa fa-chevron-right"></i>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </nav>
+                                                </div>
+                                            </div>
+                                        </c:if>
+
                                     </div>
 
                                     <%@ include file="/includes/footer.jsp" %>

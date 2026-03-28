@@ -187,16 +187,16 @@
                                                 <td class="text-center">
                                                     <c:choose>
                                                         <c:when test="${u.role == 'MANAGER'}">
-                                                            <span class="badge role-badge-manager">Quản lý</span>
+                                                            <span class="badge role-badge-manager">MANAGER</span>
                                                         </c:when>
                                                         <c:when test="${u.role == 'SALE'}">
-                                                            <span class="badge role-badge-sale">Kinh doanh</span>
+                                                            <span class="badge role-badge-sale">SALE</span>
                                                         </c:when>
                                                         <c:when test="${u.role == 'MARKETING'}">
-                                                            <span class="badge role-badge-marketing">Tiếp thị</span>
+                                                            <span class="badge role-badge-marketing">MARKETING</span>
                                                         </c:when>
                                                         <c:when test="${u.role == 'SUPPORT'}">
-                                                            <span class="badge role-badge-support">Hỗ trợ</span>
+                                                            <span class="badge role-badge-support">SUPPORT</span>
                                                         </c:when>
                                                         <c:otherwise>
                                                             <span class="badge bg-secondary">${u.role}</span>
@@ -206,10 +206,10 @@
                                                 <td class="text-center">
                                                     <c:choose>
                                                         <c:when test="${u.status == 'Active'}">
-                                                            <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Hoạt động</span>
+                                                            <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Active</span>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Ngừng HĐ</span>
+                                                            <span class="badge bg-danger"><i class="fa fa-times-circle me-1"></i>Inactive</span>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </td>
@@ -293,9 +293,11 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="username" required
+                                <input type="text" class="form-control" name="username" id="addUsername" required
                                        pattern="^[a-zA-Z0-9_]{3,50}$"
-                                       title="3-50 ký tự, chỉ gồm chữ, số và dấu gạch dưới">
+                                       title="3-50 ký tự, chỉ gồm chữ, số và dấu gạch dưới"
+                                       onblur="checkDuplicate('username', this.value)">
+                                <div class="invalid-feedback" id="usernameFeedback" style="display:none;"></div>
                                 <div class="form-text">3-50 ký tự, chỉ chữ, số và dấu gạch dưới</div>
                             </div>
                             <div class="col-md-6">
@@ -304,12 +306,16 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" name="email" required>
+                                <input type="email" class="form-control" name="email" id="addEmail" required
+                                       onblur="checkDuplicate('email', this.value)">
+                                <div class="invalid-feedback" id="emailFeedback" style="display:none;"></div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Số điện thoại</label>
-                                <input type="tel" class="form-control" name="phone" pattern="^0[0-9]{9,10}$"
-                                       title="Bắt đầu bằng 0, 10-11 chữ số">
+                                <input type="tel" class="form-control" name="phone" id="addPhone" pattern="^0[0-9]{9,10}$"
+                                       title="Bắt đầu bằng 0, 10-11 chữ số"
+                                       onblur="checkDuplicate('phone', this.value)">
+                                <div class="invalid-feedback" id="phoneFeedback" style="display:none;"></div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Vai trò <span class="text-danger">*</span></label>
@@ -653,6 +659,69 @@
                 }
             });
         }
+
+        // ===== Duplicate check for username / email =====
+        var duplicateFlags = { username: false, email: false, phone: false };
+
+        function checkDuplicate(field, value) {
+            var feedbackMap = { username: 'usernameFeedback', email: 'emailFeedback', phone: 'phoneFeedback' };
+            var inputMap = { username: 'addUsername', email: 'addEmail', phone: 'addPhone' };
+            var labelMap = { username: 'Tên đăng nhập', email: 'Email', phone: 'Số điện thoại' };
+            var feedbackEl = document.getElementById(feedbackMap[field]);
+            var inputEl = document.getElementById(inputMap[field]);
+
+            if (!value || value.trim() === '') {
+                feedbackEl.style.display = 'none';
+                inputEl.classList.remove('is-invalid', 'is-valid');
+                duplicateFlags[field] = false;
+                return;
+            }
+
+            $.ajax({
+                url: '${pageContext.request.contextPath}/users',
+                data: { action: 'checkDuplicate', field: field, value: value.trim() },
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.exists) {
+                        feedbackEl.textContent = labelMap[field] + ' "' + value.trim() + '" đã tồn tại trong hệ thống.';
+                        feedbackEl.style.display = 'block';
+                        inputEl.classList.add('is-invalid');
+                        inputEl.classList.remove('is-valid');
+                        duplicateFlags[field] = true;
+                    } else {
+                        feedbackEl.style.display = 'none';
+                        inputEl.classList.remove('is-invalid');
+                        inputEl.classList.add('is-valid');
+                        duplicateFlags[field] = false;
+                    }
+                },
+                error: function() {
+                    feedbackEl.style.display = 'none';
+                    inputEl.classList.remove('is-invalid', 'is-valid');
+                    duplicateFlags[field] = false;
+                }
+            });
+        }
+
+        // Prevent form submit if duplicates exist
+        document.addEventListener('DOMContentLoaded', function() {
+            var addForm = document.getElementById('addUserForm');
+            if (addForm) {
+                addForm.addEventListener('submit', function(e) {
+                    if (duplicateFlags.username || duplicateFlags.email || duplicateFlags.phone) {
+                        e.preventDefault();
+                        if (duplicateFlags.username) {
+                            document.getElementById('addUsername').focus();
+                        } else if (duplicateFlags.email) {
+                            document.getElementById('addEmail').focus();
+                        } else {
+                            document.getElementById('addPhone').focus();
+                        }
+                    }
+                });
+            }
+        });
     </script>
 </body>
 
