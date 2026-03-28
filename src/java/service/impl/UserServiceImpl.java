@@ -418,4 +418,18 @@ public class UserServiceImpl implements UserService {
             return new ArrayList<>();
         }
     }
+    
+    @Override
+    public boolean phoneExists(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            return userDAO.phoneExists(phone);
+        } catch (SQLException e) {
+            System.err.println("Database error while checking phone: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

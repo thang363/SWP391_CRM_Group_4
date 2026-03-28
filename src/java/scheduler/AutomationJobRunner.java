@@ -117,7 +117,8 @@ public class AutomationJobRunner implements Runnable {
                     sql.append(" AND (last_care_date IS NULL OR DATEDIFF(DAY, last_care_date, GETDATE()) >= 30)");
                     break;
                 case "HighPotential":
-                    sql.append(" AND total_revenue >= 100000000");
+                    // Anniversary: founded_date month+day equals today
+                    sql.append(" AND MONTH(founded_date) = MONTH(GETDATE()) AND DAY(founded_date) = DAY(GETDATE())");
                     break;
                 default:
                     break;
@@ -183,6 +184,11 @@ public class AutomationJobRunner implements Runnable {
                     sql.append(sanitizeOperator(operator));
                     sql.append(" ?)");
                     params.add(Integer.parseInt(value));
+                    break;
+                case "foundedDate":
+                    // Anniversary condition: same month and day as today, ignore year
+                    sql.append(" AND MONTH(founded_date) = MONTH(GETDATE()) AND DAY(founded_date) = DAY(GETDATE())");
+                    // No params needed — comparison is always against GETDATE()
                     break;
                 case "tier":
                     sql.append(" AND tier ").append(sanitizeOperator(operator)).append(" ?");
@@ -290,7 +296,7 @@ public class AutomationJobRunner implements Runnable {
             case "Expiring":
                 return "Renewal";
             case "HighPotential":
-                return "Upsell";
+                return "Care";
             default:
                 return targetType;
         }

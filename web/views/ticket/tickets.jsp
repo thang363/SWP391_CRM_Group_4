@@ -275,6 +275,54 @@
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                <!-- Pagination -->
+                                                <c:if test="${totalPages > 1}">
+                                                    <div class="row mt-4">
+                                                        <div class="col-md-6 d-flex align-items-center">
+                                                            <span class="text-muted">
+                                                                Hiển thị ${(ticketPage - 1) * 10 + 1} - ${ticketPage * 10 > totalTickets ? totalTickets : ticketPage * 10} / ${totalTickets} tickets
+                                                            </span>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <nav aria-label="Ticket pagination">
+                                                                <ul class="pagination justify-content-end mb-0">
+                                                                    <%-- Previous --%>
+                                                                    <li class="page-item ${ticketPage <= 1 ? 'disabled' : ''}">
+                                                                        <a class="page-link" href="${pageContext.request.contextPath}/tickets?page=${ticketPage - 1}&view=${param.view}&keyword=${param.keyword}&status=${param.status}&priority=${param.priority}">
+                                                                            <i class="fa fa-chevron-left"></i>
+                                                                        </a>
+                                                                    </li>
+
+                                                                    <%-- Page numbers --%>
+                                                                    <c:forEach var="i" begin="1" end="${totalPages}">
+                                                                        <c:choose>
+                                                                            <c:when test="${totalPages <= 7 || i <= 2 || i > totalPages - 2 || (i >= ticketPage - 1 && i <= ticketPage + 1)}">
+                                                                                <li class="page-item ${i == ticketPage ? 'active' : ''}">
+                                                                                    <a class="page-link" href="${pageContext.request.contextPath}/tickets?page=${i}&view=${param.view}&keyword=${param.keyword}&status=${param.status}&priority=${param.priority}">${i}</a>
+                                                                                </li>
+                                                                            </c:when>
+                                                                            <c:when test="${i == 3 && ticketPage > 4}">
+                                                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                                            </c:when>
+                                                                            <c:when test="${i == totalPages - 2 && ticketPage < totalPages - 3}">
+                                                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                                            </c:when>
+                                                                        </c:choose>
+                                                                    </c:forEach>
+
+                                                                    <%-- Next --%>
+                                                                    <li class="page-item ${ticketPage >= totalPages ? 'disabled' : ''}">
+                                                                        <a class="page-link" href="${pageContext.request.contextPath}/tickets?page=${ticketPage + 1}&view=${param.view}&keyword=${param.keyword}&status=${param.status}&priority=${param.priority}">
+                                                                            <i class="fa fa-chevron-right"></i>
+                                                                        </a>
+                                                                    </li>
+                                                                </ul>
+                                                            </nav>
+                                                        </div>
+                                                    </div>
+                                                </c:if>
+
                                             </div>
 
                                             <%-- Include Footer --%>
