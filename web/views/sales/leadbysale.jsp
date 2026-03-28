@@ -92,6 +92,57 @@
                                             font-size: 0.9rem;
                                             opacity: 0.9;
                                         }
+
+                                        /* Pagination Styles */
+                                        .pagination-container {
+                                            display: flex;
+                                            justify-content: center;
+                                            margin-top: 20px;
+                                            gap: 5px;
+                                        }
+
+                                        .pagination-link {
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            width: 38px;
+                                            padding: 0 16px;
+                                            height: 42px;
+                                            min-width: 42px;
+                                            background: #fff;
+                                            color: #0093ff;
+                                            text-decoration: none;
+                                            border: 1px solid #dee2e6;
+                                            border-right: none;
+                                            transition: all 0.2s;
+                                            font-family: inherit;
+                                            font-size: 1.1rem;
+                                        }
+
+                                        .pagination-link:first-child {
+                                            border-top-left-radius: 8px;
+                                            border-bottom-left-radius: 8px;
+                                            color: #6c757d;
+                                            /* Xám cho nút "Trước" */
+                                        }
+
+                                        .pagination-link:last-child {
+                                            border-top-right-radius: 8px;
+                                            border-bottom-right-radius: 8px;
+                                            border-right: 1px solid #dee2e6;
+                                        }
+
+                                        .pagination-link:hover {
+                                            background-color: #f8f9fa;
+                                            z-index: 1;
+                                        }
+
+                                        .pagination-link.active {
+                                            background-color: #0093ff;
+                                            color: #fff !important;
+                                            border-color: #0093ff;
+                                            z-index: 2;
+                                        }
                                     </style>
                             </head>
 
@@ -198,7 +249,7 @@
                                                                                         </tr>
                                                                                     </c:if>
                                                                                     <c:forEach var="lead"
-                                                                                        items="${leadList}">
+                                                                                        items="${newList}">
                                                                                         <tr>
                                                                                             <td>${lead.id}</td>
                                                                                             <td><strong>${lead.fullName}</strong>
@@ -340,6 +391,30 @@
                                                                                     </c:forEach>
                                                                                 </tbody>
                                                                             </table>
+                                                                            <div class="pagination-container">
+                                                                                <c:if test="${page > 1}">
+                                                                                    <a href="${pageContext.request.contextPath}/sales/leads?page=${page - 1}&search=${fn:escapeXml(searchQuery)}&status=${statusFilter}"
+                                                                                        class="pagination-link">
+                                                                                        Trước
+                                                                                    </a>
+                                                                                </c:if>
+
+                                                                                <c:forEach var="i" begin="1"
+                                                                                    end="${totalPage}">
+                                                                                    <a href="${pageContext.request.contextPath}/sales/leads?page=${i}&search=${fn:escapeXml(searchQuery)}&status=${statusFilter}"
+                                                                                        class="pagination-link ${page == i ? 'active' : ''}">
+                                                                                        ${i}
+                                                                                    </a>
+                                                                                </c:forEach>
+
+                                                                                <c:if test="${page < totalPage}">
+                                                                                    <a href="${pageContext.request.contextPath}/sales/leads?page=${page + 1}&search=${fn:escapeXml(searchQuery)}&status=${statusFilter}"
+                                                                                        class="pagination-link">
+                                                                                        Sau
+                                                                                    </a>
+                                                                                </c:if>
+                                                                            </div>
+
                                                                         </div>
                                                                     </div>
                                                                 </div>

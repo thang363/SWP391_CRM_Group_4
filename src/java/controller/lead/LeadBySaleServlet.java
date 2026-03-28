@@ -51,6 +51,8 @@ public class LeadBySaleServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            String pageParam = request.getParameter("page");
+            int page = 1;
             request.setAttribute("pageTitle", "Sales Pipeline");
             List<Lead> lead_list = new ArrayList<>();
             LeadDAO ld = new LeadDAOImpl();
@@ -70,7 +72,23 @@ public class LeadBySaleServlet extends HttpServlet {
                 System.out.println("No user found in session for LeadBySaleServlet");
             }
             
+            try {
+                page = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+            int totalPages = (int) Math.ceil((double) lead_list.size() / 10);
+            List<Lead> newListLead = new ArrayList<>();
+            if(page<totalPages){
+                newListLead = lead_list.subList((page-1)*10, page*10);
+            }else {
+                newListLead = lead_list.subList((page-1)*10,lead_list.size());
+            }
             request.setAttribute("leadList", lead_list != null ? lead_list : new ArrayList<>());
+           
+            request.setAttribute("totalPage", totalPages);
+            request.setAttribute("page", page);
+            request.setAttribute("newList", newListLead);
 
             RequestDispatcher dispatcher = request.getRequestDispatcher("/views/sales/leadbysale.jsp");
             dispatcher.forward(request, response);
