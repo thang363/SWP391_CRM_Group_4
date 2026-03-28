@@ -167,6 +167,18 @@
                                                                                 </a>
                                                                             </li>
                                                                             <li class="nav-item">
+                                                                                <a class="nav-link ${activeTab == 'products' ? 'active' : ''}"
+                                                                                    href="${pageContext.request.contextPath}/sales/opportunity-detail?id=${opp.id}&tab=products">
+                                                                                    <i class="fa fa-boxes me-1"></i>Sản
+                                                                                    phẩm
+                                                                                    <c:if
+                                                                                        test="${not empty oppProducts}">
+                                                                                        <span
+                                                                                            class="badge bg-primary ms-1">${fn:length(oppProducts)}</span>
+                                                                                    </c:if>
+                                                                                </a>
+                                                                            </li>
+                                                                            <li class="nav-item">
                                                                                 <a class="nav-link ${activeTab == 'activity' ? 'active' : ''}"
                                                                                     href="${pageContext.request.contextPath}/sales/opportunity-detail?id=${opp.id}&tab=activity">
                                                                                     <i
@@ -274,8 +286,7 @@
                                                                                             <c:if
                                                                                                 test="${opp.stage != 'Won' && opp.stage != 'Lost'}">
                                                                                                 <form
-                                                                                                    action="${pageContext.request.contextPath}/sales/opportunities"
-                                                                                                    method="post"
+                                                                                                    id="quickStageForm"
                                                                                                     class="mb-2">
                                                                                                     <input type="hidden"
                                                                                                         name="opportunityId"
@@ -284,54 +295,42 @@
                                                                                                         class="input-group">
                                                                                                         <select
                                                                                                             name="stage"
-                                                                                                            class="form-select form-select-sm"
-                                                                                                            onchange="this.form.submit()">
+                                                                                                            id="quickStageSelect"
+                                                                                                            class="form-select form-select-sm">
                                                                                                             <option
                                                                                                                 value="Prospecting"
                                                                                                                 ${opp.stage=='Prospecting'
                                                                                                                 ?'selected':''}>
-                                                                                                                Tìm
-                                                                                                                kiếm
+                                                                                                                Prospecting
                                                                                                             </option>
                                                                                                             <option
                                                                                                                 value="Qualification"
                                                                                                                 ${opp.stage=='Qualification'
                                                                                                                 ?'selected':''}>
-                                                                                                                Đánh
-                                                                                                                giá
+                                                                                                                Qualification
                                                                                                             </option>
                                                                                                             <option
                                                                                                                 value="Proposal"
                                                                                                                 ${opp.stage=='Proposal'
                                                                                                                 ?'selected':''}>
-                                                                                                                Đề
-                                                                                                                xuất
+                                                                                                                Proposal
                                                                                                             </option>
                                                                                                             <option
                                                                                                                 value="Negotiation"
                                                                                                                 ${opp.stage=='Negotiation'
                                                                                                                 ?'selected':''}>
-                                                                                                                Thương
-                                                                                                                lượng
-                                                                                                            </option>
-                                                                                                            <option
-                                                                                                                value="Won"
-                                                                                                                ${opp.stage=='Won'
-                                                                                                                ?'selected':''}>
-                                                                                                                ✅
-                                                                                                                Thành
-                                                                                                                công
+                                                                                                                Negotiation
                                                                                                             </option>
                                                                                                             <option
                                                                                                                 value="Lost"
                                                                                                                 ${opp.stage=='Lost'
                                                                                                                 ?'selected':''}>
-                                                                                                                ❌
-                                                                                                                Thất bại
+                                                                                                                Lost
                                                                                                             </option>
                                                                                                         </select>
                                                                                                         <button
-                                                                                                            type="submit"
+                                                                                                            type="button"
+                                                                                                            onclick="showStageModal()"
                                                                                                             class="btn btn-outline-secondary btn-sm">Đổi</button>
                                                                                                     </div>
                                                                                                 </form>
@@ -809,31 +808,455 @@
                                                                                 </c:if>
 
                                                                                 <%--====================TAB:
-                                                                                    ACTIVITY====================--%>
+                                                                                    PRODUCTS====================--%>
                                                                                     <c:if
-                                                                                        test="${activeTab == 'activity'}">
+                                                                                        test="${activeTab == 'products'}">
                                                                                         <div
                                                                                             class="bg-light rounded p-4">
-                                                                                            <h6
-                                                                                                class="text-muted text-uppercase fw-bold mb-3">
-                                                                                                Lịch sử Hoạt động</h6>
                                                                                             <div
-                                                                                                class="text-center text-muted py-5">
-                                                                                                <i
-                                                                                                    class="fa fa-history fa-3x mb-3 d-block"></i>
-                                                                                                <p>Lịch sử tương tác sẽ
-                                                                                                    hiển
-                                                                                                    thị ở
-                                                                                                    đây.</p>
-                                                                                                <small
-                                                                                                    class="text-muted">(Ghi
-                                                                                                    log
-                                                                                                    call, email, meeting
-                                                                                                    từ
-                                                                                                    Interactions)</small>
+                                                                                                class="d-flex justify-content-between align-items-center mb-3">
+                                                                                                <h6
+                                                                                                    class="mb-0 text-muted text-uppercase fw-bold">
+                                                                                                    Sản phẩm khách quan
+                                                                                                    tâm (Dự kiến)</h6>
+                                                                                                <c:if
+                                                                                                    test="${opp.stage != 'Won' && opp.stage != 'Lost'}">
+                                                                                                    <button
+                                                                                                        class="btn btn-primary btn-sm"
+                                                                                                        data-bs-toggle="modal"
+                                                                                                        data-bs-target="#addProductModal">
+                                                                                                        <i
+                                                                                                            class="fa fa-plus me-1"></i>Thêm
+                                                                                                        sản phẩm
+                                                                                                    </button>
+                                                                                                </c:if>
+                                                                                            </div>
+
+                                                                                            <div
+                                                                                                class="table-responsive">
+                                                                                                <table
+                                                                                                    class="table table-hover align-middle">
+                                                                                                    <thead
+                                                                                                        class="table-light">
+                                                                                                        <tr>
+                                                                                                            <th>Sản phẩm
+                                                                                                            </th>
+                                                                                                            <th
+                                                                                                                class="text-end">
+                                                                                                                Đơn giá
+                                                                                                                dự kiến
+                                                                                                            </th>
+                                                                                                            <th
+                                                                                                                class="text-center">
+                                                                                                                Số lượng
+                                                                                                            </th>
+                                                                                                            <th
+                                                                                                                class="text-end">
+                                                                                                                Thành
+                                                                                                                tiền
+                                                                                                            </th>
+                                                                                                            <th
+                                                                                                                class="text-center">
+                                                                                                                Thao tác
+                                                                                                            </th>
+                                                                                                        </tr>
+                                                                                                    </thead>
+                                                                                                    <tbody>
+                                                                                                        <c:forEach
+                                                                                                            var="op"
+                                                                                                            items="${oppProducts}">
+                                                                                                            <tr>
+                                                                                                                <td>${fn:escapeXml(op.productName)}
+                                                                                                                </td>
+                                                                                                                <td
+                                                                                                                    class="text-end">
+                                                                                                                    <fmt:formatNumber
+                                                                                                                        value="${op.salesPrice}"
+                                                                                                                        type="currency"
+                                                                                                                        currencySymbol="₫" />
+                                                                                                                </td>
+                                                                                                                <td
+                                                                                                                    class="text-center">
+                                                                                                                    ${op.quantity}
+                                                                                                                </td>
+                                                                                                                <td
+                                                                                                                    class="text-end fw-bold">
+                                                                                                                    <fmt:formatNumber
+                                                                                                                        value="${op.totalAmount}"
+                                                                                                                        type="currency"
+                                                                                                                        currencySymbol="₫" />
+                                                                                                                </td>
+                                                                                                                <td
+                                                                                                                    class="text-center">
+                                                                                                                    <c:if
+                                                                                                                        test="${opp.stage != 'Won' && opp.stage != 'Lost'}">
+                                                                                                                        <button
+                                                                                                                            type="button"
+                                                                                                                            class="btn btn-sm btn-outline-danger"
+                                                                                                                            title="Xóa"
+                                                                                                                            data-id="${op.id}"
+                                                                                                                            data-name="${fn:escapeXml(op.productName)}"
+                                                                                                                            onclick="showDeleteProductModal(this)">
+                                                                                                                            <i
+                                                                                                                                class="fa fa-trash"></i>
+                                                                                                                        </button>
+                                                                                                                    </c:if>
+                                                                                                                </td>
+                                                                                                            </tr>
+                                                                                                        </c:forEach>
+                                                                                                        <c:if
+                                                                                                            test="${empty oppProducts}">
+                                                                                                            <tr>
+                                                                                                                <td colspan="5"
+                                                                                                                    class="text-center text-muted py-4">
+                                                                                                                    Chưa
+                                                                                                                    có
+                                                                                                                    sản
+                                                                                                                    phẩm
+                                                                                                                    nào
+                                                                                                                    được
+                                                                                                                    gán
+                                                                                                                    cho
+                                                                                                                    cơ
+                                                                                                                    hội
+                                                                                                                    này.
+                                                                                                                </td>
+                                                                                                            </tr>
+                                                                                                        </c:if>
+                                                                                                    </tbody>
+                                                                                                    <tfoot
+                                                                                                        class="table-light">
+                                                                                                        <tr
+                                                                                                            class="fw-bold">
+                                                                                                            <td colspan="3"
+                                                                                                                class="text-end">
+                                                                                                                Tổng giá
+                                                                                                                trị dự
+                                                                                                                kiến:
+                                                                                                            </td>
+                                                                                                            <td
+                                                                                                                class="text-end text-success">
+                                                                                                                <fmt:formatNumber
+                                                                                                                    value="${opp.expectedValue}"
+                                                                                                                    type="currency"
+                                                                                                                    currencySymbol="₫" />
+                                                                                                            </td>
+                                                                                                            <td></td>
+                                                                                                        </tr>
+                                                                                                    </tfoot>
+                                                                                                </table>
                                                                                             </div>
                                                                                         </div>
+
+                                                                                        <%-- Add Product Modal --%>
+                                                                                            <div class="modal fade"
+                                                                                                id="addProductModal"
+                                                                                                tabindex="-1"
+                                                                                                aria-hidden="true">
+                                                                                                <div
+                                                                                                    class="modal-dialog modal-dialog-centered">
+                                                                                                    <div
+                                                                                                        class="modal-content border-0 shadow">
+                                                                                                        <div
+                                                                                                            class="modal-header bg-primary text-white border-0">
+                                                                                                            <h5
+                                                                                                                class="modal-title">
+                                                                                                                <i
+                                                                                                                    class="fa fa-plus me-2"></i>Thêm
+                                                                                                                sản phẩm
+                                                                                                                dự kiến
+                                                                                                            </h5>
+                                                                                                            <button
+                                                                                                                type="button"
+                                                                                                                class="btn-close btn-close-white"
+                                                                                                                data-bs-dismiss="modal"
+                                                                                                                aria-label="Close"></button>
+                                                                                                        </div>
+                                                                                                        <form
+                                                                                                            action="${pageContext.request.contextPath}/sales/opportunity-product"
+                                                                                                            method="post">
+                                                                                                            <input
+                                                                                                                type="hidden"
+                                                                                                                name="action"
+                                                                                                                value="add">
+                                                                                                            <input
+                                                                                                                type="hidden"
+                                                                                                                name="opportunityId"
+                                                                                                                value="${opp.id}">
+                                                                                                            <div
+                                                                                                                class="modal-body p-4">
+                                                                                                                <div
+                                                                                                                    class="mb-3">
+                                                                                                                    <label
+                                                                                                                        class="form-label fw-bold">Chọn
+                                                                                                                        sản
+                                                                                                                        phẩm</label>
+                                                                                                                    <select
+                                                                                                                        name="productId"
+                                                                                                                        class="form-select"
+                                                                                                                        required
+                                                                                                                        onchange="updateAddPrice(this)">
+                                                                                                                        <option
+                                                                                                                            value="">
+                                                                                                                            --
+                                                                                                                            Chọn
+                                                                                                                            sản
+                                                                                                                            phẩm
+                                                                                                                            --
+                                                                                                                        </option>
+                                                                                                                        <c:forEach
+                                                                                                                            var="p"
+                                                                                                                            items="${productList}">
+                                                                                                                            <option
+                                                                                                                                value="${p.id}"
+                                                                                                                                data-price="${p.unitPrice}">
+                                                                                                                                ${fn:escapeXml(p.name)}
+                                                                                                                            </option>
+                                                                                                                        </c:forEach>
+                                                                                                                    </select>
+                                                                                                                </div>
+                                                                                                                <div
+                                                                                                                    class="mb-3">
+                                                                                                                    <label
+                                                                                                                        class="form-label fw-bold">Đơn
+                                                                                                                        giá
+                                                                                                                        dự
+                                                                                                                        kiến</label>
+                                                                                                                    <input
+                                                                                                                        type="number"
+                                                                                                                        name="salesPrice"
+                                                                                                                        id="addSalesPrice"
+                                                                                                                        class="form-control"
+                                                                                                                        required
+                                                                                                                        min="0">
+                                                                                                                </div>
+                                                                                                                <div
+                                                                                                                    class="mb-0">
+                                                                                                                    <label
+                                                                                                                        class="form-label fw-bold">Số
+                                                                                                                        lượng</label>
+                                                                                                                    <input
+                                                                                                                        type="number"
+                                                                                                                        name="quantity"
+                                                                                                                        class="form-control"
+                                                                                                                        value="1"
+                                                                                                                        required
+                                                                                                                        min="1">
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div
+                                                                                                                class="modal-footer border-0 justify-content-center pb-4">
+                                                                                                                <button
+                                                                                                                    type="button"
+                                                                                                                    class="btn btn-light px-4"
+                                                                                                                    data-bs-dismiss="modal">Hủy</button>
+                                                                                                                <button
+                                                                                                                    type="submit"
+                                                                                                                    class="btn btn-primary px-4">Thêm
+                                                                                                                    vào
+                                                                                                                    Cơ
+                                                                                                                    hội</button>
+                                                                                                            </div>
+                                                                                                        </form>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+
+                                                                                            <%-- Delete Product Confirm
+                                                                                                Modal --%>
+                                                                                                <div class="modal fade"
+                                                                                                    id="deleteProductModal"
+                                                                                                    tabindex="-1"
+                                                                                                    aria-hidden="true">
+                                                                                                    <div
+                                                                                                        class="modal-dialog modal-dialog-centered">
+                                                                                                        <div
+                                                                                                            class="modal-content border-0 shadow">
+                                                                                                            <div
+                                                                                                                class="modal-header bg-danger text-white border-0">
+                                                                                                                <h5
+                                                                                                                    class="modal-title">
+                                                                                                                    <i
+                                                                                                                        class="fa fa-trash me-2"></i>Xóa
+                                                                                                                    sản
+                                                                                                                    phẩm
+                                                                                                                </h5>
+                                                                                                                <button
+                                                                                                                    type="button"
+                                                                                                                    class="btn-close btn-close-white"
+                                                                                                                    data-bs-dismiss="modal"
+                                                                                                                    aria-label="Close"></button>
+                                                                                                            </div>
+                                                                                                            <form
+                                                                                                                action="${pageContext.request.contextPath}/sales/opportunity-product"
+                                                                                                                method="post">
+                                                                                                                <input
+                                                                                                                    type="hidden"
+                                                                                                                    name="action"
+                                                                                                                    value="delete">
+                                                                                                                <input
+                                                                                                                    type="hidden"
+                                                                                                                    name="id"
+                                                                                                                    id="deleteProductId">
+                                                                                                                <input
+                                                                                                                    type="hidden"
+                                                                                                                    name="opportunityId"
+                                                                                                                    value="${opp.id}">
+                                                                                                                <div
+                                                                                                                    class="modal-body p-4 text-center">
+                                                                                                                    <i
+                                                                                                                        class="fa fa-exclamation-triangle fa-4x text-warning mb-3"></i>
+                                                                                                                    <h5
+                                                                                                                        class="mb-2">
+                                                                                                                        Xác
+                                                                                                                        nhận
+                                                                                                                        xóa
+                                                                                                                    </h5>
+                                                                                                                    <p
+                                                                                                                        class="text-muted mb-0">
+                                                                                                                        Bạn
+                                                                                                                        có
+                                                                                                                        chắc
+                                                                                                                        chắn
+                                                                                                                        muốn
+                                                                                                                        xóa
+                                                                                                                        sản
+                                                                                                                        phẩm
+                                                                                                                        <strong
+                                                                                                                            id="deleteProductName"></strong>
+                                                                                                                        khỏi
+                                                                                                                        cơ
+                                                                                                                        hội
+                                                                                                                        này?
+                                                                                                                    </p>
+                                                                                                                </div>
+                                                                                                                <div
+                                                                                                                    class="modal-footer border-0 justify-content-center pb-4">
+                                                                                                                    <button
+                                                                                                                        type="button"
+                                                                                                                        class="btn btn-light px-4"
+                                                                                                                        data-bs-dismiss="modal">Hủy</button>
+                                                                                                                    <button
+                                                                                                                        type="submit"
+                                                                                                                        class="btn btn-danger px-4">Xóa
+                                                                                                                        ngay</button>
+                                                                                                                </div>
+                                                                                                            </form>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <script>
+                                                                                                    function updateAddPrice(select) {
+                                                                                                        const price = select.options[select.selectedIndex].getAttribute('data-price');
+                                                                                                        document.getElementById('addSalesPrice').value = price || '';
+                                                                                                    }
+
+                                                                                                    function showDeleteProductModal(btn) {
+                                                                                                        document.getElementById('deleteProductId').value = btn.getAttribute('data-id');
+                                                                                                        document.getElementById('deleteProductName').innerText = btn.getAttribute('data-name');
+                                                                                                        var modal = new bootstrap.Modal(document.getElementById('deleteProductModal'));
+                                                                                                        modal.show();
+                                                                                                    }
+                                                                                                </script>
                                                                                     </c:if>
+
+                                                                                    <%--====================TAB:
+                                                                                        ACTIVITY====================--%>
+                                                                                        <c:if
+                                                                                            test="${activeTab == 'activity'}">
+                                                                                            <div
+                                                                                                class="bg-light rounded p-4 mb-4">
+                                                                                                <div
+                                                                                                    class="d-flex justify-content-between align-items-center mb-3">
+                                                                                                    <h6
+                                                                                                        class="text-muted text-uppercase fw-bold mb-0">
+                                                                                                        Lịch sử Hoạt
+                                                                                                        động
+                                                                                                    </h6>
+                                                                                                    <c:if
+                                                                                                        test="${opp.stage != 'Won' && opp.stage != 'Lost'}">
+                                                                                                        <button
+                                                                                                            type="button"
+                                                                                                            class="btn btn-sm btn-primary"
+                                                                                                            data-bs-toggle="modal"
+                                                                                                            data-bs-target="#addNoteModal">
+                                                                                                            <i
+                                                                                                                class="fa fa-plus me-1"></i>
+                                                                                                            Thêm Ghi chú
+                                                                                                        </button>
+                                                                                                    </c:if>
+                                                                                                </div>
+
+                                                                                                <c:if
+                                                                                                    test="${empty notes}">
+                                                                                                    <div
+                                                                                                        class="text-center text-muted py-5">
+                                                                                                        <i
+                                                                                                            class="fa fa-history fa-3x mb-3 d-block"></i>
+                                                                                                        <p>Chưa có lịch
+                                                                                                            sử tương tác
+                                                                                                            nào.</p>
+                                                                                                    </div>
+                                                                                                </c:if>
+
+                                                                                                <c:if
+                                                                                                    test="${not empty notes}">
+                                                                                                    <div
+                                                                                                        class="timeline">
+                                                                                                        <c:forEach
+                                                                                                            var="note"
+                                                                                                            items="${notes}">
+                                                                                                            <div
+                                                                                                                class="timeline-item pb-3 mb-3 border-bottom">
+                                                                                                                <div
+                                                                                                                    class="d-flex w-100 justify-content-between">
+                                                                                                                    <h6
+                                                                                                                        class="mb-1">
+                                                                                                                        <i
+                                                                                                                            class="fa ${note.noteType == 'StageChange' ? 'fa-exchange-alt text-warning' : (note.noteType == 'Call' ? 'fa-phone text-success' : (note.noteType == 'Meeting' ? 'fa-users text-primary' : (note.noteType == 'Email' ? 'fa-envelope text-info' : 'fa-sticky-note text-secondary')))} me-2"></i>
+                                                                                                                        <c:choose>
+                                                                                                                            <c:when
+                                                                                                                                test="${note.noteType == 'StageChange'}">
+                                                                                                                                Chuyển
+                                                                                                                                giai
+                                                                                                                                đoạn:
+                                                                                                                                <span
+                                                                                                                                    class="badge bg-secondary">${note.oldStage}</span>
+                                                                                                                                <i class="fa fa-arrow-right mx-1"
+                                                                                                                                    style="font-size:0.8em"></i>
+                                                                                                                                <span
+                                                                                                                                    class="badge bg-primary">${note.newStage}</span>
+                                                                                                                            </c:when>
+                                                                                                                            <c:otherwise>
+                                                                                                                                ${note.noteType
+                                                                                                                                ==
+                                                                                                                                'General'
+                                                                                                                                ?
+                                                                                                                                'Ghi
+                                                                                                                                chú
+                                                                                                                                chung'
+                                                                                                                                :
+                                                                                                                                note.noteType}
+                                                                                                                            </c:otherwise>
+                                                                                                                        </c:choose>
+                                                                                                                    </h6>
+                                                                                                                    <small
+                                                                                                                        class="text-muted">${note.createdAt}</small>
+                                                                                                                </div>
+                                                                                                                <p
+                                                                                                                    class="mb-1 mt-2 text-dark">
+                                                                                                                    ${fn:escapeXml(note.noteContent)}
+                                                                                                                </p>
+                                                                                                                <small
+                                                                                                                    class="text-muted">Bởi:
+                                                                                                                    ${note.salesName}</small>
+                                                                                                            </div>
+                                                                                                        </c:forEach>
+                                                                                                    </div>
+                                                                                                </c:if>
+                                                                                            </div>
+                                                                                        </c:if>
 
                                         </div><%-- /container-fluid --%>
 
@@ -1054,7 +1477,7 @@
                                         id: '${p.id}',
                                     price: '${p.unitPrice}',
                                     name: '${fn:escapeXml(p.name)}'
-                                });
+            });
                                 </c:forEach>
 
                                 var productOptionsStr = '<option value="">-- Chọn --</option>';
@@ -1112,11 +1535,142 @@
 
                                 // Reset form và dropdown khi mở modal tạo mới bao gia
                                 document.getElementById('createQuoteModal').addEventListener('show.bs.modal', function () {
-                                    document.getElementById('quoteProductsBody').innerHTML = '';
-                                    addProductRow();
+                                    const tbody = document.getElementById('quoteProductsBody');
+                                    tbody.innerHTML = '';
+
+                                    <c:choose>
+                                        <c:when test="${not empty oppProducts}">
+                                            <c:forEach var="op" items="${oppProducts}">
+                                                (function () {
+                    const tr = document.createElement('tr');
+                                                let html = '';
+                                                html += '<td>';
+                                                    html += '    <select name="productId" class="form-select form-select-sm product-select" required onchange="updateProductRow(this)">';
+                                                        html += productOptionsStr;
+                                                        html += '    </select>';
+                                                    html += '</td>';
+                                                html += '<td><input type="number" name="unitPrice" class="form-control form-control-sm price-input" value="${op.salesPrice}" readonly></td>';
+                                                html += '<td><input type="number" name="quantity" class="form-control form-control-sm qty-input" value="${op.quantity}" min="1" required onchange="calculateTotal()"></td>';
+                                                html += '<td><input type="number" class="form-control form-control-sm row-total" value="${op.totalAmount}" readonly></td>';
+                                                html += '<td class="text-center align-middle"><button type="button" class="btn btn-sm btn-outline-danger px-2 py-0" onclick="removeProductRow(this)"><i class="fa fa-times"></i></button></td>';
+                                                tr.innerHTML = html;
+
+                                                // Set selected value
+                                                const select = tr.querySelector('select');
+                                                select.value = '${op.productId}';
+
+                                                tbody.appendChild(tr);
+                })();
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            addProductRow();
+                                        </c:otherwise>
+                                    </c:choose>
+
                                     calculateTotal();
                                 });
                             </script>
+
+                            <%-- Modal control functions - always rendered --%>
+                                <script>
+                                    function showStageModal() {
+                                        var select = document.getElementById('quickStageSelect');
+                                        var stage = select.value;
+                                        document.getElementById('modalStageInput').value = stage;
+                                        document.getElementById('modalStageDisplay').innerText = stage;
+                                        var modal = new bootstrap.Modal(document.getElementById('changeStageModal'));
+                                        modal.show();
+                                    }
+                                </script>
+
+                                <%-- Change Stage Notes Modal --%>
+                                    <div class="modal fade" id="changeStageModal" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content border-0 shadow">
+                                                <div class="modal-header bg-primary text-white border-0">
+                                                    <h5 class="modal-title">Ghi chú Chuyển Giai đoạn</h5>
+                                                    <button type="button" class="btn-close btn-close-white"
+                                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form
+                                                    action="${pageContext.request.contextPath}/sales/opportunity-detail"
+                                                    method="post">
+                                                    <input type="hidden" name="action" value="update_stage">
+                                                    <input type="hidden" name="id" value="${opp.id}">
+                                                    <input type="hidden" name="stage" id="modalStageInput">
+
+                                                    <div class="modal-body p-4">
+                                                        <p class="mb-3">Bạn đang chuyển cơ hội sang giai đoạn: <strong
+                                                                id="modalStageDisplay" class="text-primary"></strong>
+                                                        </p>
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Xin hãy để lại Ghi chú /
+                                                                Lý do
+                                                                <span class="text-danger">*</span></label>
+                                                            <textarea name="notes" class="form-control" rows="3"
+                                                                placeholder="Ví dụ: Khách đồng ý xem báo giá, đang chuẩn bị..."
+                                                                required></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-0 justify-content-center pb-4">
+                                                        <button type="button" class="btn btn-light px-4"
+                                                            data-bs-dismiss="modal">Hủy</button>
+                                                        <button type="submit" class="btn btn-primary px-4">Lưu Ghi chú &
+                                                            Chuyển</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <%-- Add Note Modal --%>
+                                        <div class="modal fade" id="addNoteModal" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content border-0 shadow">
+                                                    <div class="modal-header bg-info text-white border-0">
+                                                        <h5 class="modal-title">Thêm Tương tác Mới</h5>
+                                                        <button type="button" class="btn-close btn-close-white"
+                                                            data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form
+                                                        action="${pageContext.request.contextPath}/sales/opportunity-detail"
+                                                        method="post">
+                                                        <input type="hidden" name="action" value="add_note">
+                                                        <input type="hidden" name="opportunityId" value="${opp.id}">
+
+                                                        <div class="modal-body p-4">
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Loại Tương tác</label>
+                                                                <select name="noteType" class="form-select">
+                                                                    <option value="General">Ghi chú chung (Note)
+                                                                    </option>
+                                                                    <option value="Call">Gọi điện (Call)</option>
+                                                                    <option value="Meeting">Gặp mặt (Meeting)</option>
+                                                                    <option value="Email">Gửi Email</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Nội dung <span
+                                                                        class="text-danger">*</span></label>
+                                                                <textarea name="noteContent" class="form-control"
+                                                                    rows="3"
+                                                                    placeholder="Nhập tóm tắt trao đổi với khách..."
+                                                                    required></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer border-0 justify-content-center pb-4">
+                                                            <button type="button" class="btn btn-light px-4"
+                                                                data-bs-dismiss="modal">Hủy</button>
+                                                            <button type="submit"
+                                                                class="btn btn-info text-white px-4">Lưu
+                                                                Tương tác</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
                     </body>
 
                     </html>

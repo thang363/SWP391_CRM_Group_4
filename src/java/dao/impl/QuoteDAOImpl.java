@@ -86,9 +86,9 @@ public class QuoteDAOImpl implements QuoteDAO {
         // Tạo quote_number tự động: Q-{oppId}-{timestamp}
         String quoteNumber = "Q-" + opportunityId + "-" + System.currentTimeMillis();
         String sql = "INSERT INTO Quotes (opportunity_id, quote_number, subject, subtotal, discount_amount, tax_amount, grand_total, status, valid_until, created_by, created_at) " +
-                     "VALUES (?, ?, ?, ?, 0, 0, ?, 'Draft', ?, ?, GETDATE()); SELECT SCOPE_IDENTITY();";
+                     "VALUES (?, ?, ?, ?, 0, 0, ?, 'Draft', ?, ?, GETDATE())";
         try (Connection conn = dbUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, opportunityId);
             ps.setString(2, quoteNumber);
             ps.setString(3, subject);
@@ -100,9 +100,11 @@ public class QuoteDAOImpl implements QuoteDAO {
                 ps.setNull(6, Types.DATE);
             }
             ps.setInt(7, createdBy);
-            try (ResultSet rs = ps.executeQuery()) {
+            
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    return rs.getBigDecimal(1).intValue();
                 }
             }
         } catch (Exception e) {

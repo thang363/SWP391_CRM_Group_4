@@ -150,12 +150,21 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
 
     @Override
     public Opportunity getById(int id) {
-        String sql = "SELECT * FROM Opportunities WHERE id = ?";
+        String sql = """
+                     SELECT o.* , 
+                     (select COUNT(*) FROM Quotes q WHERE q.opportunity_id = o.id ) AS quote_count  
+                     FROM Opportunities o 
+                     WHERE o.id = ?
+                     """;
         try (Connection conn = dbUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapResultSetToOpportunity(rs);
+                if (rs.next()){
+                    Opportunity opp = mapResultSetToOpportunity(rs);
+                    opp.setQuoteCount(rs.getInt("quote_count"));
+                    return opp;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -201,6 +210,19 @@ public class OpportunitiesDaoImpl implements OpportunityDAO {
             e.printStackTrace();
         } finally {
             closeResources(null, ps, conn);
+        }
+    }
+
+    @Override
+    public void updateExpectedValue(int id, java.math.BigDecimal value) {
+        String sql = "UPDATE Opportunities SET expected_value = ? WHERE id = ?";
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBigDecimal(1, value);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
