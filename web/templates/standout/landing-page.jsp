@@ -506,123 +506,110 @@
                     <div class="col-full">
 
                         <!-- Contact Form -->
-                        <c:choose>
-                            <c:when
-                                test="${campaignStatus == 'Paused' || campaignStatus == 'Finished' || campaignStatus == 'Cancelled'}">
-                                <div class="alert alert-warning"
-                                    style="text-align: center; padding: 30px; background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 30px;">
-                                    <h3 style="color: #4b5563; margin-bottom: 10px;">Chiến dịch đã khép lại</h3>
-                                    <p style="color: #6b7280; font-size: 1.6rem; margin-bottom: 0;">Cảm ơn bạn đã quan
-                                        tâm! Chiến dịch này hiện đã kết thúc hoặc đang tạm dừng, không thể nhận thêm
-                                        đăng ký.</p>
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <!-- Form CSS Enhancements -->
-                                <style>
-                                    .contact-form .form-field {
-                                        margin-bottom: 2.4rem;
-                                        position: relative;
-                                    }
-                                    .contact-form input[type="text"],
-                                    .contact-form input[type="email"],
-                                    .contact-form input[type="tel"],
-                                    .contact-form textarea {
-                                        width: 100%;
-                                        padding: 1.6rem 2.2rem;
-                                        background-color: #f8fafc;
-                                        border: 2px solid #e2e8f0;
-                                        border-radius: 8px;
-                                        font-size: 1.5rem;
-                                        color: #334155;
-                                        transition: all 0.25s ease;
-                                        outline: none;
-                                        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-                                        font-family: inherit;
-                                        height: auto;
-                                    }
-                                    .contact-form input::placeholder,
-                                    .contact-form textarea::placeholder {
-                                        color: #94a3b8;
-                                    }
-                                    .contact-form input:focus,
-                                    .contact-form textarea:focus {
-                                        border-color: #00a650;
-                                        background-color: #ffffff;
-                                        box-shadow: 0 0 0 4px rgba(0, 166, 80, 0.1);
-                                    }
-                                    .contact-form textarea {
-                                        resize: vertical;
-                                        min-height: 16rem;
-                                    }
-                                    .contact-form .btn {
-                                        border-radius: 8px;
-                                        padding: 1.8rem 3.5rem;
-                                        font-size: 1.6rem;
-                                        font-weight: 700;
-                                        text-transform: uppercase;
-                                        letter-spacing: 1.2px;
-                                        transition: all 0.3s ease;
-                                        background-color: #00a650;
-                                        border: none;
-                                        color: white;
-                                    }
-                                    .contact-form .btn:hover {
-                                        transform: translateY(-2px);
-                                        box-shadow: 0 8px 15px rgba(0, 166, 80, 0.3);
-                                        background-color: #008f45;
-                                    }
-                                    #charCount {
-                                        position: absolute;
-                                        bottom: 1.5rem;
-                                        right: 2.2rem;
-                                        font-size: 1.2rem;
-                                        color: #94a3b8;
-                                        pointer-events: none;
-                                        background: transparent;
-                                        margin: 0;
-                                    }
-                                </style>
+                        <!-- Form CSS Enhancements -->
+                        <style>
+                            .contact-form .form-field {
+                                margin-bottom: 2.4rem;
+                                position: relative;
+                            }
+                            .contact-form input[type="text"],
+                            .contact-form input[type="email"],
+                            .contact-form input[type="tel"],
+                            .contact-form textarea {
+                                width: 100%;
+                                padding: 1.6rem 2.2rem;
+                                background-color: #f8fafc;
+                                border: 2px solid #e2e8f0;
+                                border-radius: 8px;
+                                font-size: 1.5rem;
+                                color: #334155;
+                                transition: all 0.25s ease;
+                                outline: none;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+                                font-family: inherit;
+                                height: auto;
+                            }
+                            .contact-form input::placeholder,
+                            .contact-form textarea::placeholder {
+                                color: #94a3b8;
+                            }
+                            .contact-form input:focus,
+                            .contact-form textarea:focus {
+                                border-color: #00a650;
+                                background-color: #ffffff;
+                                box-shadow: 0 0 0 4px rgba(0, 166, 80, 0.1);
+                            }
+                            .contact-form textarea {
+                                resize: vertical;
+                                min-height: 16rem;
+                            }
+                            .contact-form .btn {
+                                border-radius: 8px;
+                                padding: 1.8rem 3.5rem;
+                                font-size: 1.6rem;
+                                font-weight: 700;
+                                text-transform: uppercase;
+                                letter-spacing: 1.2px;
+                                transition: all 0.3s ease;
+                                background-color: #00a650;
+                                border: none;
+                                color: white;
+                            }
+                            .contact-form .btn:hover {
+                                transform: translateY(-2px);
+                                box-shadow: 0 8px 15px rgba(0, 166, 80, 0.3);
+                                background-color: #008f45;
+                            }
+                            #charCount {
+                                position: absolute;
+                                bottom: 1.5rem;
+                                right: 2.2rem;
+                                font-size: 1.2rem;
+                                color: #94a3b8;
+                                pointer-events: none;
+                                background: transparent;
+                                margin: 0;
+                            }
+                        </style>
 
-                                <form id="contactForm" method="POST"
-                                    action="${pageContext.request.contextPath}/lp/submit" class="contact-form">
-                                    <input type="hidden" name="landingPageId" value="${landingPageId}">
+                        <form id="contactForm" method="POST"
+                            action="${pageContext.request.contextPath}/lp/submit" class="contact-form">
+                            <input type="hidden" name="landingPageId" value="${landingPageId}">
 
-                                    <div class="form-field">
-                                        <input name="fullName" type="text" id="contactName" placeholder="Your Name *"
-                                            required>
-                                    </div>
+                            <div class="form-field">
+                                <input name="fullName" type="text" id="contactName" placeholder="Your Name *"
+                                    required>
+                            </div>
 
-                                    <div class="form-field">
-                                        <input name="email" type="email" id="contactEmail" placeholder="Your Email *"
-                                            required>
-                                    </div>
+                            <div class="form-field">
+                                <input name="email" type="email" id="contactEmail" placeholder="Your Email *"
+                                    required>
+                            </div>
 
-                                    <div class="form-field">
-                                        <input name="phone" type="tel" id="contactPhone" placeholder="Your Phone">
-                                    </div>
+                            <div class="form-field">
+                                <input name="phone" type="tel" id="contactPhone" placeholder="Your Phone">
+                            </div>
 
-                                    <div class="form-field" style="position: relative;">
-                                        <textarea name="message" id="contactMessage" placeholder="Your Message" rows="6"
-                                            maxlength="1000"></textarea>
-                                        <div id="charCount">0/1000</div>
-                                    </div>
+                            <div class="form-field" style="position: relative;">
+                                <textarea name="message" id="contactMessage" placeholder="Your Message" rows="6"
+                                    maxlength="1000"></textarea>
+                                <div id="charCount">0/1000</div>
+                            </div>
 
-                                    <div class="form-field">
-                                        <button type="submit" class="btn btn--primary large full-width">Send
-                                            Message</button>
-                                    </div>
+                            <div class="form-field">
+                                <button type="submit" class="btn btn--primary large full-width">Send
+                                    Message</button>
+                            </div>
 
-                                    <div class="message-warning" style="display: none;">
-                                        Something went wrong. Please try again.
-                                    </div>
+                            <div class="message-warning" style="display: none;">
+                                Something went wrong. Please try again.
+                            </div>
 
-                                    <div class="message-success" style="display: none;">
-                                        Your message was sent, thank you!<br>We'll get back to you soon.
-                                    </div>
-                                </form>
-                            </c:otherwise>
-                        </c:choose>
+                            <div class="message-success" style="display: none;">
+                                Your message was sent, thank you!<br>We'll get back to you soon.
+                            </div>
+                        </form>
+
 
                     </div>
                 </div>

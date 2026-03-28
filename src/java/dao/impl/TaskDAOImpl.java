@@ -20,7 +20,7 @@ public class TaskDAOImpl implements TaskDAO {
     public List<Task> findByUser(int userId) {
         String sql = "SELECT t.id, t.title, t.description, t.due_date, t.status, " +
                 "t.assigned_to, t.related_to_entity, t.related_record_id, " +
-                "t.care_program_id, t.task_type, t.created_at, " +
+                "t.task_type, t.created_at, " +
                 "u.full_name AS assigned_to_name, " +
                 "c.company_name AS customer_name " +
                 "FROM Tasks t " +
@@ -54,7 +54,7 @@ public class TaskDAOImpl implements TaskDAO {
     public List<Task> findAll() {
         String sql = "SELECT t.id, t.title, t.description, t.due_date, t.status, " +
                 "t.assigned_to, t.related_to_entity, t.related_record_id, " +
-                "t.care_program_id, t.task_type, t.created_at, " +
+                "t.task_type, t.created_at, " +
                 "u.full_name AS assigned_to_name, " +
                 "c.company_name AS customer_name " +
                 "FROM Tasks t " +
@@ -86,7 +86,7 @@ public class TaskDAOImpl implements TaskDAO {
     public Task findById(int id) {
         String sql = "SELECT t.id, t.title, t.description, t.due_date, t.status, " +
                 "t.assigned_to, t.related_to_entity, t.related_record_id, " +
-                "t.care_program_id, t.task_type, t.created_at, " +
+                "t.task_type, t.created_at, " +
                 "u.full_name AS assigned_to_name, " +
                 "c.company_name AS customer_name " +
                 "FROM Tasks t " +
@@ -117,8 +117,8 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public int create(Task task) {
         String sql = "INSERT INTO Tasks (title, description, due_date, status, assigned_to, " +
-                "related_to_entity, related_record_id, care_program_id, task_type) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "related_to_entity, related_record_id, task_type) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -152,13 +152,7 @@ public class TaskDAOImpl implements TaskDAO {
                 stmt.setNull(7, Types.INTEGER);
             }
 
-            if (task.getCareProgramId() != null) {
-                stmt.setInt(8, task.getCareProgramId());
-            } else {
-                stmt.setNull(8, Types.INTEGER);
-            }
-
-            stmt.setString(9, task.getTaskType());
+            stmt.setString(8, task.getTaskType());
 
             int affected = stmt.executeUpdate();
             if (affected > 0) {
@@ -213,8 +207,6 @@ public class TaskDAOImpl implements TaskDAO {
         task.setRelatedRecordId(rs.wasNull() ? null : relatedId);
         task.setCustomerName(rs.getString("customer_name"));
 
-        int careProgramId = rs.getInt("care_program_id");
-        task.setCareProgramId(rs.wasNull() ? null : careProgramId);
 
         task.setTaskType(rs.getString("task_type"));
         task.setCreatedAt(rs.getTimestamp("created_at"));

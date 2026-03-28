@@ -215,26 +215,30 @@ public class PublicLandingPageServlet extends HttpServlet {
             if(lp != null && lp.getCampaignId() != null) {
                 submission.setCampaignId(lp.getCampaignId());
                 
-                // --- Campaign Status Validation ---
+                // --- Validation ---
                 model.entity.Campaign campaign = campaignDAO.findById(lp.getCampaignId());
-                if (campaign != null) {
-                    String status = campaign.getStatus();
-                    if ("Paused".equalsIgnoreCase(status) || "Finished".equalsIgnoreCase(status)) {
+                boolean isCampaignActive = campaign != null && "Active".equalsIgnoreCase(campaign.getStatus());
+                boolean isLPPublic = "Public".equalsIgnoreCase(lp.getStatus()) || "active".equalsIgnoreCase(lp.getStatus());
+                
+                // Allow testing for logged-in staff (Draft LP or Draft Campaign)
+                boolean isLoggedIn = request.getSession(false) != null && 
+                                     request.getSession(false).getAttribute(util.Constants.SESSION_USER_ID) != null;
+
+                if (!isLoggedIn) {
+                    if (!isCampaignActive || !isLPPublic) {
                         result.addProperty("success", false);
-                        result.addProperty("message", "Chiến dịch đã kết thúc hoặc đang tạm dừng, hiện không nhận đăng ký mới.");
+                        result.addProperty("message", "Trang đích hoặc Chiến dịch hiện không hoạt động. Không thể nhận đăng ký.");
                         out.print(gson.toJson(result));
                         return;
                     }
-                    
-                    if ("Draft".equalsIgnoreCase(status)) {
-                        // Mark as test lead
-                        submission.setSource("Internal Test");
-                    } else {
-                        // All other active/public states
-                        submission.setSource("Landing Page");
-                    }
-                } else {
                     submission.setSource("Landing Page");
+                } else {
+                    // For logged-in users submitting on non-public LPs/Campaigns
+                    if (isCampaignActive && isLPPublic) {
+                        submission.setSource("Landing Page");
+                    } else {
+                        submission.setSource("Internal Test");
+                    }
                 }
             } else {
                  result.addProperty("success", false);
