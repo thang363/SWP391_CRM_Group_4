@@ -237,6 +237,22 @@ public class QuoteDAOImpl implements QuoteDAO {
         return false;
     }
 
+    @Override
+    public void updateExpiredQuotes(int opportunityId) {
+        // Chỉ cập nhật các quote chưa kết thúc (không phải Accepted, Rejected, Expired) 
+        // và đã quá ngày valid_until
+        String sql = "UPDATE Quotes SET status = 'Expired' " +
+                     "WHERE opportunity_id = ? AND valid_until < CAST(GETDATE() AS DATE) " +
+                     "AND status NOT IN ('Accepted', 'Rejected', 'Expired')";
+        try (Connection conn = dbUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, opportunityId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private Quote mapRow(ResultSet rs) throws SQLException {
         Quote q = new Quote();
         q.setId(rs.getInt("id"));
