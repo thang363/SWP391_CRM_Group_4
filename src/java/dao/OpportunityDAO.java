@@ -31,5 +31,7 @@ public interface OpportunityDAO {
 
     /** Search and filter opportunities */
     List<Opportunity> searchOpportunities(int salesId, String search, String stage);
+
+    void updateExpectedValue(int id, java.math.BigDecimal value);
 }
 
