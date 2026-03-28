@@ -293,20 +293,7 @@
                                                         </div>
                                                         <div class="d-flex justify-content-between align-items-center">
                                                             <!-- Internal Note: Chỉ Support và Manager mới thấy -->
-                                                            <c:if
-                                                                test="${sessionScope.userRole.name == 'SUPPORT' or sessionScope.userRole.name == 'MANAGER'}">
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox"
-                                                                        name="isInternal" value="true"
-                                                                        id="internalNoteCheck">
-                                                                    <label class="form-check-label text-danger"
-                                                                        for="internalNoteCheck">
-                                                                        <i class="fa fa-lock me-1"></i>Internal Note
-                                                                        (Chỉ
-                                                                        nội bộ)
-                                                                    </label>
-                                                                </div>
-                                                            </c:if>
+                                                            
                                                             <c:if
                                                                 test="${sessionScope.userRole.name != 'SUPPORT' and sessionScope.userRole.name != 'MANAGER'}">
                                                                 <div></div> <!-- Spacer for layout -->

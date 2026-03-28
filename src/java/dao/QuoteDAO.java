@@ -51,4 +51,7 @@ public interface QuoteDAO {
 
     /** Kiểm tra xem opportunity đã có quote nào đang Sent chưa */
     boolean hasActiveSent(int opportunityId);
+
+    /** Cập nhật trạng thái 'Expired' cho các báo giá đã hết hạn của 1 Opportunity */
+    void updateExpiredQuotes(int opportunityId);
 }

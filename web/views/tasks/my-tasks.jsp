@@ -37,9 +37,9 @@
                                 color: #212529;
                             }
 
-                            .badge-upsell {
-                                background-color: #198754;
-                                color: white;
+                            .badge-care {
+                                background-color: #0dcaf0;
+                                color: #212529;
                             }
 
                             .badge-open {
@@ -271,11 +271,11 @@
                                                                                             </span>
                                                                                         </c:when>
                                                                                         <c:when
-                                                                                            test="${task.taskType == 'Upsell'}">
+                                                                                            test="${task.taskType == 'Care'}">
                                                                                             <span
-                                                                                                class="badge badge-upsell">
+                                                                                                class="badge badge-care">
                                                                                                 <i
-                                                                                                    class="fa fa-arrow-up me-1"></i>Upsell
+                                                                                                    class="fa fa-heart me-1"></i>Care
                                                                                             </span>
                                                                                         </c:when>
                                                                                         <c:otherwise>
@@ -293,22 +293,19 @@
                                                                                             test="${task.status == 'Pending'}">
                                                                                             <span
                                                                                                 class="badge badge-open"><i
-                                                                                                    class="fa fa-clock me-1"></i>Chờ
-                                                                                                xử lý</span>
+                                                                                                    class="fa fa-clock me-1"></i>Pending</span>
                                                                                         </c:when>
                                                                                         <c:when
                                                                                             test="${task.status == 'Overdue'}">
                                                                                             <span
                                                                                                 class="badge badge-inprogress"><i
-                                                                                                    class="fa fa-spinner me-1"></i>Đang
-                                                                                                làm</span>
+                                                                                                    class="fa fa-spinner me-1"></i>Overdue</span>
                                                                                         </c:when>
                                                                                         <c:when
                                                                                             test="${task.status == 'Completed'}">
                                                                                             <span
                                                                                                 class="badge badge-done"><i
-                                                                                                    class="fa fa-check me-1"></i>Hoàn
-                                                                                                thành</span>
+                                                                                                    class="fa fa-check me-1"></i>Completed</span>
                                                                                         </c:when>
                                                                                         <c:otherwise>
                                                                                             <span
@@ -342,25 +339,7 @@
                                                                                             </button>
                                                                                         </form>
                                                                                     </c:if>
-                                                                                    <c:if
-                                                                                        test="${task.status == 'Completed'}">
-                                                                                        <form method="post"
-                                                                                            action="${pageContext.request.contextPath}/my-tasks"
-                                                                                            style="display:inline">
-                                                                                            <input type="hidden"
-                                                                                                name="action"
-                                                                                                value="reopen">
-                                                                                            <input type="hidden"
-                                                                                                name="taskId"
-                                                                                                value="${task.id}">
-                                                                                            <button type="submit"
-                                                                                                class="btn btn-outline-secondary btn-action">
-                                                                                                <i
-                                                                                                    class="fa fa-redo me-1"></i>Mở
-                                                                                                lại
-                                                                                            </button>
-                                                                                        </form>
-                                                                                    </c:if>
+
                                                                                     <c:if test="${task.status != 'Completed'}">
                                                                                         <button type="button" class="btn btn-outline-info btn-action ms-1"
                                                                                             onclick="showTaskDetail('${task.id}', '${task.title}', '${task.description}', '${task.customerName}', '${task.taskType}', '${task.status}', '${task.relatedRecordId}')">
@@ -448,8 +427,6 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Đóng</button>
-                                            <a href="#" id="viewFullProfileBtn" class="btn btn-primary">Xem hồ sơ đầy
-                                                đủ</a>
                                         </div>
                                     </div>
                                 </div>
@@ -511,25 +488,25 @@
                                                             <i class="fa fa-times-circle me-1"></i>Khách hủy dịch vụ
                                                         </button>
                                                     </form>
+                                                    <form method="post" action="${pageContext.request.contextPath}/my-tasks" style="display:inline"
+                                                        onsubmit="return submitWithToast(this, 'Hệ thống đang tạo Opportunity mới và chuyển cho Sales phụ trách.');">
+                                                        <input type="hidden" name="action" value="transfer_to_sales">
+                                                        <input type="hidden" name="taskId" id="renewalTransferTaskId">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <i class="fa fa-share me-1"></i>Chuyển sang Opportunity Sales
+                                                        </button>
+                                                    </form>
                                                 </div>
                                             </div>
 
-                                            <!-- Upsell Actions -->
-                                            <div id="upsellActions" style="display:none;">
+                                            <!-- Care Actions -->
+                                            <div id="careActions" style="display:none;">
                                                 <div class="d-flex gap-2 flex-wrap">
                                                     <form method="post" action="${pageContext.request.contextPath}/my-tasks" style="display:inline">
                                                         <input type="hidden" name="action" value="mark_called">
                                                         <input type="hidden" name="taskId" id="calledTaskId">
                                                         <button type="submit" class="btn btn-success">
-                                                            <i class="fa fa-phone-alt me-1"></i>Đã gọi chăm sóc
-                                                        </button>
-                                                    </form>
-                                                    <form method="post" action="${pageContext.request.contextPath}/my-tasks" style="display:inline"
-                                                        onsubmit="return submitWithToast(this, 'Hệ thống đang tạo Opportunity mới và chuyển cho Sales phụ trách.');">
-                                                        <input type="hidden" name="action" value="transfer_to_sales">
-                                                        <input type="hidden" name="taskId" id="transferTaskId">
-                                                        <button type="submit" class="btn btn-primary">
-                                                            <i class="fa fa-share me-1"></i>Chuyển cho Sales
+                                                            <i class="fa fa-heart me-1"></i>Đã chăm sóc
                                                         </button>
                                                     </form>
                                                 </div>
@@ -664,9 +641,9 @@
                             if (taskType === 'Renewal') {
                                 typeEl.textContent = 'Renewal (Gia hạn)';
                                 typeEl.className = 'badge badge-renewal';
-                            } else if (taskType === 'Upsell') {
-                                typeEl.textContent = 'Upsell (Tư vấn)';
-                                typeEl.className = 'badge badge-upsell';
+                            } else if (taskType === 'Care') {
+                                typeEl.textContent = 'Chăm sóc KH';
+                                typeEl.className = 'badge badge-care';
                             } else {
                                 typeEl.textContent = taskType || '—';
                                 typeEl.className = 'badge bg-secondary';
@@ -687,18 +664,18 @@
 
                             // Toggle action sections
                             var renewalActions = document.getElementById('renewalActions');
-                            var upsellActions = document.getElementById('upsellActions');
+                            var careActions = document.getElementById('careActions');
                             renewalActions.style.display = 'none';
-                            upsellActions.style.display = 'none';
+                            careActions.style.display = 'none';
 
                             if (taskType === 'Renewal') {
                                 renewalActions.style.display = 'block';
                                 document.getElementById('renewalTaskId').value = taskId;
                                 document.getElementById('cancelTaskId').value = taskId;
-                            } else if (taskType === 'Upsell') {
-                                upsellActions.style.display = 'block';
+                                document.getElementById('renewalTransferTaskId').value = taskId;
+                            } else if (taskType === 'Care') {
+                                careActions.style.display = 'block';
                                 document.getElementById('calledTaskId').value = taskId;
-                                document.getElementById('transferTaskId').value = taskId;
                             }
 
                             // Show modal
