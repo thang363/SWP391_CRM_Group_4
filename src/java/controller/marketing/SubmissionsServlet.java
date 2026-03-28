@@ -184,8 +184,6 @@ public class SubmissionsServlet extends HttpServlet {
     private void handleConvert(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String idStr = request.getParameter("id");
-        String forceStr = request.getParameter("force");
-        boolean force = "true".equals(forceStr);
 
         if (idStr == null || idStr.isEmpty()) {
             sendJsonResponse(response, false, "ID không hợp lệ", null);
@@ -219,15 +217,13 @@ public class SubmissionsServlet extends HttpServlet {
                 }
             }
 
-            // --- Check Duplicate ---
-            if (!force) {
-                boolean isDuplicate = leadDAO.checkDuplicate(submission.getEmail(), submission.getPhone(), submitCampaignId);
-                if (isDuplicate) {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("code", "DUPLICATE");
-                    sendJsonResponse(response, false, "Email hoặc số điện thoại đã tồn tại trong chiến dịch này.", data);
-                    return;
-                }
+            // --- Check Duplicate (Mandatory) ---
+            boolean isDuplicate = leadDAO.checkDuplicate(submission.getEmail(), submission.getPhone(), submitCampaignId);
+            if (isDuplicate) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("code", "DUPLICATE");
+                sendJsonResponse(response, false, "Email hoặc số điện thoại đã tồn tại trong chiến dịch này.", data);
+                return;
             }
 
             // --- Create Lead ---

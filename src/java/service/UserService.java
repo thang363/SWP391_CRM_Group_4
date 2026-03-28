@@ -46,4 +46,6 @@ public interface UserService {
     User createUser(String username, String password, String email, String fullName, String phone, Role role);
     
     List<UserViewModel> searchUsers(String query, String roleStr, String status);
+    
+    boolean phoneExists(String phone);
 }

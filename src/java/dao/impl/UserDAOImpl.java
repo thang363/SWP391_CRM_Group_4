@@ -279,6 +279,30 @@ public class UserDAOImpl implements UserDAO {
     }
     
     @Override
+    public boolean phoneExists(String phone) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM users WHERE phone = ?";
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = dbUtil.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, phone);
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+            return false;
+            
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+    }
+    
+    
+    @Override
     public int countAll() throws SQLException {
         String sql = "SELECT COUNT(*) FROM users";
         Connection conn = null;

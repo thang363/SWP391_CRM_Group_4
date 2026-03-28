@@ -88,42 +88,37 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public boolean markCalled(int taskId) {
-        boolean updated = taskDAO.updateStatus(taskId, "Completed");
-        if (updated) {
-            Task task = taskDAO.findById(taskId);
-            if (task != null && "Customer".equals(task.getRelatedToEntity()) && task.getRelatedRecordId() != null) {
-                customerDAO.updateLastCareDate(task.getRelatedRecordId(),
-                        new java.sql.Timestamp(System.currentTimeMillis()));
-            }
-        }
-        return updated;
+        // Chỉ đóng task, không cập nhật last_care_date
+        return taskDAO.updateStatus(taskId, "Completed");
     }
 
     @Override
     public boolean transferToSales(int taskId) {
         Task task = taskDAO.findById(taskId);
         if (task == null || !"Customer".equals(task.getRelatedToEntity()) || task.getRelatedRecordId() == null) {
-            return false;
+            // Nếu task không hợp lệ, vẫn đóng task
+            return taskDAO.updateStatus(taskId, "Completed");
         }
 
         Customer customer = customerDAO.getCustomerById(task.getRelatedRecordId());
-        if (customer == null || customer.getAssignedTo() == null) {
-            return false;
+
+        // Tạo Opportunity nếu có Sales assigned
+        if (customer != null && customer.getAssignedTo() != null) {
+            opportunityDAO.createFromCustomer(
+                    customer.getId(),
+                    customer.getCompanyName(),
+                    customer.getAssignedTo()
+            );
         }
 
-        // Tạo Opportunity gán cho Sales đã assigned_to trong Customers
-        opportunityDAO.createFromCustomer(
-                customer.getId(),
-                customer.getCompanyName(),
-                customer.getAssignedTo()
-        );
-
-        // Hoàn thành task
+        // Luôn hoàn thành task
         taskDAO.updateStatus(taskId, "Completed");
 
         // Cập nhật last_care_date
-        customerDAO.updateLastCareDate(customer.getId(),
-                new java.sql.Timestamp(System.currentTimeMillis()));
+        if (customer != null) {
+            customerDAO.updateLastCareDate(customer.getId(),
+                    new java.sql.Timestamp(System.currentTimeMillis()));
+        }
 
         return true;
     }

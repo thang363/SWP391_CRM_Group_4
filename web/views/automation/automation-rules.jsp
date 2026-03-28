@@ -154,16 +154,14 @@
                                                                                                     <span
                                                                                                         class="badge badge-expiring">
                                                                                                         <i
-                                                                                                            class="fa fa-clock me-1"></i>Sắp
-                                                                                                        hết hạn
+                                                                                                            class="fa fa-clock me-1"></i>Expiring
                                                                                                     </span>
                                                                                                 </c:when>
                                                                                                 <c:otherwise>
                                                                                                     <span
                                                                                                         class="badge badge-highpotential">
                                                                                                         <i
-                                                                                                            class="fa fa-star me-1"></i>Tiềm
-                                                                                                        năng
+                                                                                                            class="fa fa-heart me-1"></i>Care
                                                                                                     </span>
                                                                                                 </c:otherwise>
                                                                                             </c:choose>
@@ -297,11 +295,10 @@
                                             <div class="col-md-6">
                                                 <label class="form-label fw-bold">Loại đối tượng <span
                                                         class="text-danger">*</span></label>
-                                                <select class="form-select" id="targetType" name="targetType" required>
+                                                <select class="form-select" id="targetType" name="targetType" required onchange="onTargetTypeChange(this.value)">
                                                     <option value="">-- Chọn --</option>
-                                                    <option value="Expiring">Khách sắp hết hạn (Expiring)</option>
-                                                    <option value="HighPotential">Khách tiềm năng (High Potential)
-                                                    </option>
+                                                    <option value="Expiring">Khách sắp hết hạn</option>
+                                                    <option value="HighPotential">Chăm sóc khách hàng</option>
                                                 </select>
                                             </div>
 
@@ -310,20 +307,18 @@
                                                 <label class="form-label fw-bold">Hành động tự động <span
                                                         class="text-danger">*</span></label>
                                                 <select class="form-select" id="actionType" name="actionType" required>
-                                                    <option value="">-- Chọn --</option>
-                                                    <option value="CreateTask">Tự động tạo Task</option>
-                                                    <option value="SendEmail">Tự động gửi Email cảnh báo</option>
+                                                    <option value="CreateTask" selected>Tự động tạo Task</option>
                                                 </select>
                                             </div>
 
                                             <!-- Conditions -->
-                                            <div class="col-md-12">
+                                            <div class="col-md-12" id="conditionsSection" style="display:none">
                                                 <label class="form-label fw-bold">Điều kiện kích hoạt</label>
                                                 <div id="conditionsContainer">
                                                     <!-- Dynamic condition rows will be added here -->
                                                 </div>
                                                 <button type="button" class="btn btn-outline-secondary btn-sm mt-2"
-                                                    onclick="addConditionRow()">
+                                                    id="addCondBtn" onclick="addConditionRow()" style="display:none">
                                                     <i class="fa fa-plus me-1"></i>Thêm điều kiện
                                                 </button>
                                             </div>
@@ -397,30 +392,105 @@
                                 }
 
                                 // ======= CONDITION ROWS =======
-                                function addConditionRow(field, operator, value) {
+                                const TIER_OPTIONS = ['Standard', 'Silver', 'Gold', 'Platinum', 'VIP'];
+
+                                // Called when Loại đối tượng changes
+                                function onTargetTypeChange(targetType) {
+                                    const section = document.getElementById('conditionsSection');
+                                    const addBtn = document.getElementById('addCondBtn');
+                                    const container = document.getElementById('conditionsContainer');
+                                    container.innerHTML = '';
+
+                                    if (!targetType) {
+                                        section.style.display = 'none';
+                                        return;
+                                    }
+                                    section.style.display = '';
+
+                                    if (targetType === 'Expiring') {
+                                        addBtn.style.display = '';
+                                        addConditionRow('lastCareDays', null, null, 'Expiring');
+                                    } else if (targetType === 'HighPotential') {
+                                        addBtn.style.display = 'none';
+                                        addConditionRow('foundedDate', '=', 'TODAY', 'HighPotential');
+                                    }
+                                }
+
+                                function buildValueInput(field, value) {
+                                    if (field === 'tier') {
+                                        let opts = TIER_OPTIONS.map(t =>
+                                            '<option value="' + t + '"' + (value === t ? ' selected' : '') + '>' + t + '</option>'
+                                        ).join('');
+                                        return '<select class="form-select form-select-sm cond-value" style="width:40%">' + opts + '</select>';
+                                    } else {
+                                        return '<input type="number" min="0" class="form-control form-control-sm cond-value" style="width:40%" placeholder="Số ngày (VD: 30)" value="' + (value || '') + '">';
+                                    }
+                                }
+
+                                function buildOperatorSelect(field, operator) {
+                                    if (field === 'tier') {
+                                        return '<select class="form-select form-select-sm cond-operator" style="width:15%">' +
+                                            '<option value="="' + (!operator || operator === '=' ? ' selected' : '') + '>=</option>' +
+                                            '<option value="!="' + (operator === '!=' ? ' selected' : '') + '>!=</option>' +
+                                            '</select>';
+                                    } else {
+                                        return '<select class="form-select form-select-sm cond-operator" style="width:15%">' +
+                                            '<option value=">="' + (operator === '>=' ? ' selected' : '') + '>&gt;=</option>' +
+                                            '<option value="<="' + (operator === '<=' ? ' selected' : '') + '>&lt;=</option>' +
+                                            '<option value="="' + (operator === '=' ? ' selected' : '') + '>=</option>' +
+                                            '<option value="!="' + (operator === '!=' ? ' selected' : '') + '>!=</option>' +
+                                            '<option value=">"' + (operator === '>' ? ' selected' : '') + '>&gt;</option>' +
+                                            '<option value="<"' + (operator === '<' ? ' selected' : '') + '>&lt;</option>' +
+                                            '</select>';
+                                    }
+                                }
+
+                                function addConditionRow(field, operator, value, targetType) {
+                                    // Infer targetType from current select if not provided
+                                    if (!targetType) {
+                                        targetType = document.getElementById('targetType').value;
+                                    }
+
                                     const container = document.getElementById('conditionsContainer');
                                     const row = document.createElement('div');
                                     row.className = 'condition-row d-flex align-items-center gap-2';
-                                    row.innerHTML =
-                                        '<select class="form-select form-select-sm cond-field" style="width:35%">' +
-                                        '<option value="lastCareDays"' + (field === 'lastCareDays' ? ' selected' : '') + '>Ngày chưa care (lastCareDays)</option>' +
-                                        '<option value="status"' + (field === 'status' ? ' selected' : '') + '>Trạng thái KH (status)</option>' +
-                                        '<option value="tier"' + (field === 'tier' ? ' selected' : '') + '>Hạng KH (tier)</option>' +
-                                        '<option value="totalRevenue"' + (field === 'totalRevenue' ? ' selected' : '') + '>Doanh thu (totalRevenue)</option>' +
-                                        '</select>' +
-                                        '<select class="form-select form-select-sm cond-operator" style="width:15%">' +
-                                        '<option value=">="' + (operator === '>=' ? ' selected' : '') + '>&gt;=</option>' +
-                                        '<option value="<="' + (operator === '<=' ? ' selected' : '') + '>&lt;=</option>' +
-                                        '<option value="="' + (operator === '=' ? ' selected' : '') + '>=</option>' +
-                                        '<option value="!="' + (operator === '!=' ? ' selected' : '') + '>!=</option>' +
-                                        '<option value=">"' + (operator === '>' ? ' selected' : '') + '>&gt;</option>' +
-                                        '<option value="<"' + (operator === '<' ? ' selected' : '') + '>&lt;</option>' +
-                                        '</select>' +
-                                        '<input type="text" class="form-control form-control-sm cond-value" style="width:40%" placeholder="Giá trị (VD: 30, Active, VIP)" value="' + (value || '') + '">' +
-                                        '<button type="button" class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">' +
-                                        '<i class="fa fa-times"></i>' +
-                                        '</button>';
+
+                                    if (targetType === 'HighPotential') {
+                                        // Fixed: founded_date = TODAY — show as info badge, no editable inputs
+                                        row.innerHTML =
+                                            '<span class="badge bg-info text-dark fs-6 py-2 px-3" style="width:100%">' +
+                                            '<i class="fa fa-birthday-cake me-2"></i>' +
+                                            'Kỷ niệm thành lập: <strong>founded_date = Ngày hiện tại</strong>' +
+                                            '</span>' +
+                                            '<input type="hidden" class="cond-field" value="foundedDate">' +
+                                            '<input type="hidden" class="cond-operator" value="=">' +
+                                            '<input type="hidden" class="cond-value" value="TODAY">';
+                                    } else {
+                                        // Expiring: lastCareDays or tier
+                                        const selectedField = field || 'lastCareDays';
+                                        row.innerHTML =
+                                            '<select class="form-select form-select-sm cond-field" style="width:35%" onchange="onCondFieldChange(this)">' +
+                                            '<option value="lastCareDays"' + (selectedField === 'lastCareDays' ? ' selected' : '') + '>Ngày chưa care (Last Care Date)</option>' +
+                                            '<option value="tier"' + (selectedField === 'tier' ? ' selected' : '') + '>Hạng KH (Tier)</option>' +
+                                            '</select>' +
+                                            buildOperatorSelect(selectedField, operator) +
+                                            buildValueInput(selectedField, value) +
+                                            '<button type="button" class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">' +
+                                            '<i class="fa fa-times"></i>' +
+                                            '</button>';
+                                    }
                                     container.appendChild(row);
+                                }
+
+                                function onCondFieldChange(selectEl) {
+                                    const row = selectEl.parentElement;
+                                    const field = selectEl.value;
+                                    // Replace operator
+                                    const oldOp = row.querySelector('.cond-operator');
+                                    oldOp.outerHTML = buildOperatorSelect(field, null);
+                                    // Replace value input
+                                    const oldVal = row.querySelector('.cond-value');
+                                    oldVal.outerHTML = buildValueInput(field, null);
                                 }
 
                                 function getConditionsJson() {
@@ -437,13 +507,13 @@
                                     return JSON.stringify(conditions);
                                 }
 
-                                function loadConditions(conditionsJsonStr) {
+                                function loadConditions(conditionsJsonStr, targetType) {
                                     document.getElementById('conditionsContainer').innerHTML = '';
                                     if (!conditionsJsonStr) return;
                                     try {
                                         const conditions = JSON.parse(conditionsJsonStr);
                                         conditions.forEach(function (c) {
-                                            addConditionRow(c.field, c.operator, c.value);
+                                            addConditionRow(c.field, c.operator, c.value, targetType);
                                         });
                                     } catch (e) {
                                         console.error('Error parsing conditions:', e);
@@ -456,7 +526,8 @@
                                     document.getElementById('ruleForm').reset();
                                     document.getElementById('ruleId').value = '';
                                     document.getElementById('conditionsContainer').innerHTML = '';
-                                    addConditionRow();
+                                    document.getElementById('conditionsSection').style.display = 'none';
+                                    document.getElementById('addCondBtn').style.display = 'none';
                                     ruleModal.show();
                                 }
 
@@ -481,8 +552,15 @@
                                                     document.getElementById('assignToUser').value = d.assignToUser;
                                                 }
 
+                                                // Show conditions section
+                                                document.getElementById('conditionsSection').style.display = '';
+                                                if (d.targetType === 'HighPotential') {
+                                                    document.getElementById('addCondBtn').style.display = 'none';
+                                                } else {
+                                                    document.getElementById('addCondBtn').style.display = '';
+                                                }
                                                 // Load conditions
-                                                loadConditions(JSON.stringify(d.conditionsJson));
+                                                loadConditions(JSON.stringify(d.conditionsJson), d.targetType);
 
                                                 ruleModal.show();
                                             } else {

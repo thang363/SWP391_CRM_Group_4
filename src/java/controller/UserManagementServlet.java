@@ -36,6 +36,13 @@ public class UserManagementServlet extends HttpServlet {
             return;
         }
 
+        // AJAX: check duplicate username or email
+        String action = request.getParameter("action");
+        if ("checkDuplicate".equals(action)) {
+            handleCheckDuplicate(request, response);
+            return;
+        }
+
         String searchQuery = request.getParameter("searchQuery");
         String roleParam = request.getParameter("role");
         String statusParam = request.getParameter("status");
@@ -65,6 +72,29 @@ public class UserManagementServlet extends HttpServlet {
         }
 
         request.getRequestDispatcher(Constants.PAGE_USER_MANAGEMENT).forward(request, response);
+    }
+
+    private void handleCheckDuplicate(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        String field = request.getParameter("field"); // "username", "email", or "phone"
+        String value = request.getParameter("value");
+
+        boolean exists = false;
+        if (value != null && !value.trim().isEmpty()) {
+            if ("username".equals(field)) {
+                User u = userService.getUserByUsername(value.trim());
+                exists = (u != null);
+            } else if ("email".equals(field)) {
+                User u = userService.getUserByEmail(value.trim());
+                exists = (u != null);
+            } else if ("phone".equals(field)) {
+                exists = userService.phoneExists(value.trim());
+            }
+        }
+
+        response.getWriter().write("{\"exists\":" + exists + "}");
     }
 
     @Override

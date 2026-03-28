@@ -24,6 +24,8 @@ public class SystemJobLogServlet extends HttpServlet {
         this.logService = new SystemJobLogServiceImpl();
     }
 
+    private static final int PAGE_SIZE = 10;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -33,10 +35,33 @@ public class SystemJobLogServlet extends HttpServlet {
             return;
         }
 
-        List<SystemJobLog> logs = logService.findAll();
-        request.setAttribute("logs", logs);
+        List<SystemJobLog> allLogs = logService.findAll();
+
+        // --- Pagination ---
+        int totalLogs = allLogs.size();
+        int totalPages = (int) Math.ceil((double) totalLogs / PAGE_SIZE);
+        if (totalPages == 0) totalPages = 1;
+
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            try {
+                page = Integer.parseInt(pageParam);
+            } catch (NumberFormatException ignored) {}
+        }
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+
+        int fromIndex = (page - 1) * PAGE_SIZE;
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, totalLogs);
+        List<SystemJobLog> pagedLogs = allLogs.subList(fromIndex, toIndex);
+
+        request.setAttribute("logs", pagedLogs);
         request.setAttribute("currentPage", "system-job-logs");
         request.setAttribute("pageTitle", "System Job Logs");
+        request.setAttribute("logPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalLogs", totalLogs);
         request.getRequestDispatcher("/views/automation/system-job-logs.jsp").forward(request, response);
     }
 
