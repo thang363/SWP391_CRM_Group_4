@@ -207,9 +207,13 @@ public class LandingPageServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Global role check is too strict here. 
-        // Individual handlers should check permissions.
-        // if (!isManager(request)) { ... }
+        // Session verification for POST actions
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute(Constants.SESSION_USER_ID) == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            sendJsonResponse(response, false, "Session đã hết hạn. Vui lòng đăng nhập lại.", null);
+            return;
+        }
 
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
@@ -257,6 +261,16 @@ public class LandingPageServlet extends HttpServlet {
 
             Integer campaignId = Integer.parseInt(campaignIdStr);
             Integer marketingId = Integer.parseInt(marketingIdStr);
+            
+            // Centralized Security Check
+            HttpSession session = request.getSession(false);
+            Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
+            Role userRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
+
+            if (!hasCampaignPermission(currentUserId, userRole, campaignId)) {
+                sendJsonResponse(response, false, "Bạn không có quyền tạo Landing Page cho chiến dịch này", null);
+                return;
+            }
 
             boolean success = lpService.assignMarketing(campaignId, marketingId, brief);
 
@@ -287,6 +301,19 @@ public class LandingPageServlet extends HttpServlet {
             }
 
             Integer id = Integer.parseInt(idStr);
+            LandingPage lp = ((LandingPageServiceImpl) lpService).getLandingPageById(id);
+            
+            if (lp == null) {
+                sendJsonResponse(response, false, "Landing Page không tồn tại", null);
+                return;
+            }
+            
+            // Security check
+            if (!hasAccessPermission(request, lp)) {
+                sendJsonResponse(response, false, "Bạn không có quyền xóa Landing Page này", null);
+                return;
+            }
+
             boolean deleted = ((LandingPageServiceImpl) lpService).getLandingPageDAO().delete(id);
 
             if (deleted) {
@@ -322,6 +349,12 @@ public class LandingPageServlet extends HttpServlet {
                 return;
             }
             
+            // Security check
+            if (!hasAccessPermission(request, lp)) {
+                sendJsonResponse(response, false, "Bạn không có quyền truy cập Landing Page này", null);
+                return;
+            }
+            
             // Parse data config to extract hero fields
             Map<String, Object> data = new HashMap<>();
             data.put("id", lp.getId());
@@ -334,20 +367,10 @@ public class LandingPageServlet extends HttpServlet {
             try {
                 if (lp.getDataConfig() != null) {
                     com.google.gson.JsonObject json = gson.fromJson(lp.getDataConfig(), com.google.gson.JsonObject.class);
-                    // Dynamically add all properties from JSON to the data map
+                   
                     for (java.util.Map.Entry<String, com.google.gson.JsonElement> entry : json.entrySet()) {
                         if (!entry.getValue().isJsonNull()) {
-                            // Convert key to camelCase if needed, or just keep as is.
-                            // The frontend expects camelCase for some, but we can standardise on specific keys.
-                            // For simplicity, we'll map specific keys to frontend expected keys if they differ,
-                            // or just pass them through.
-                            // Let's pass them through as is, and Frontend should handle mapping if needed.
-                            // Actually, handlePreview maps HERO_TITLE -> heroTitle for JSP.
-                            // Ideally we should adhere to one naming convention.
-                            // Let's use the keys as stored in DB (UPPER_SNAKE_CASE or whatever)
-                            // But legacy code used heroTitle in params.
                             
-                            // Let's explicity map known fields for consistency with existing frontend code
                             String key = entry.getKey();
                             String value = entry.getValue().getAsString();
                             
@@ -389,38 +412,23 @@ public class LandingPageServlet extends HttpServlet {
             Integer id = Integer.parseInt(idStr);
             boolean isManager = isManager(request);
             
-            // Check status constraints
             LandingPage lp = ((LandingPageServiceImpl) lpService).getLandingPageById(id);
             if (lp == null) {
                 sendJsonResponse(response, false, "Landing Page không tìm thấy", null);
                 return;
             }
             
-            // Security Check
             if (isManager) {
                 sendJsonResponse(response, false, "Manager không được phép chỉnh sửa nội dung Landing Page. Vui lòng sử dụng tính năng Góp ý khi duyệt bài.", null);
                 return;
             }
-
-            // Marketing checks
-            HttpSession session = request.getSession(false);
-            Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
-            if (currentUserId != null && !currentUserId.equals(lp.getCreatedBy())) { 
-                 // Simple ownership check
-            }
-
-            /* - REMOVED FOR SIMPLIFIED FLOW
-            if ("Pending".equals(lp.getStatus())) {
-                sendJsonResponse(response, false, "Không thể sửa khi đang chờ duyệt (Pending)", null);
+            
+            if (!hasAccessPermission(request, lp)) {
+                sendJsonResponse(response, false, "Bạn không có quyền chỉnh sửa Landing Page này", null);
                 return;
             }
-            if ("Approved".equals(lp.getStatus())) {
-                sendJsonResponse(response, false, "Không thể sửa bài đã duyệt (Approved). Vui lòng liên hệ quản lý.", null);
-                return;
-            }
-            */
 
-            // Collect Content Fields
+           
             java.util.Map<String, String> contentFields = new HashMap<>();
             contentFields.put("HERO_TITLE", heroTitle);
             contentFields.put("HERO_DESC", heroDesc);
@@ -458,33 +466,36 @@ public class LandingPageServlet extends HttpServlet {
             Integer id = Integer.parseInt(request.getParameter("id"));
             String newStatus = request.getParameter("status");
             
-            // Validation
+             
             if (newStatus == null || newStatus.isEmpty()) {
                 sendJsonResponse(response, false, "Trạng thái không hợp lệ", null);
                 return;
             }
 
-            // Permission Check
             boolean isManager = isManager(request);
             
-            // Get current LP to check validity of transition
-            // Ideally should check via service, but for prototype checking logic here
-            // However, we can just enforce role rules:
+            LandingPage lp = lpService.getLandingPageById(id);
+            if (lp == null) {
+                sendJsonResponse(response, false, "Landing Page không tồn tại", null);
+                return;
+            }
+            
+            if (!hasAccessPermission(request, lp)) {
+                sendJsonResponse(response, false, "Bạn không có quyền thực hiện thao tác này", null);
+                return;
+            }
             
             if (isManager) {
-                // Manager only deletes now, cannot change status via UI natively
-                sendJsonResponse(response, false, "Manager không được đổi trạng thái thông qua UI này", null);
+                sendJsonResponse(response, false, "Manager không được đổi trạng thái ", null);
                 return;
             } else {
-                // Marketing can set Public (Publish)
                 if (!"Public".equals(newStatus) && !"Draft".equals(newStatus)) {
                      sendJsonResponse(response, false, "Staff chỉ có thể Công khai hoặc Lưu nháp", null);
                      return;
                 }
                 
                 if ("Public".equals(newStatus)) {
-                    LandingPage lp = lpService.getLandingPageById(id);
-                    if (lp == null || lp.getCampaignId() == null) {
+                    if (lp.getCampaignId() == null) {
                         sendJsonResponse(response, false, "Không tìm thấy thông tin Chiến dịch", null);
                         return;
                     }
@@ -532,14 +543,18 @@ public class LandingPageServlet extends HttpServlet {
                 return;
             }
             
-            // Parse data_config JSON to get hero title and description
-            // Parse data_config JSON and set all attributes
+            if (!hasAccessPermission(request, lp)) {
+                 response.setContentType("text/html;charset=UTF-8");
+                 response.getWriter().println("<h1>Forbidden: You don't have access to this page</h1>");
+                 return;
+            }
+            
+            
             if (lp.getDataConfig() != null && !lp.getDataConfig().trim().isEmpty()) {
                 try {
                     com.google.gson.JsonObject json = gson.fromJson(lp.getDataConfig(), com.google.gson.JsonObject.class);
                     for (java.util.Map.Entry<String, com.google.gson.JsonElement> entry : json.entrySet()) {
                          if (!entry.getValue().isJsonNull()) {
-                             // Map keys to attributes with camelCase/friendly names for JSP
                              String key = entry.getKey();
                              String value = entry.getValue().getAsString();
                              
@@ -555,10 +570,8 @@ public class LandingPageServlet extends HttpServlet {
                     e.printStackTrace();
                 }
             }
-            // Set attributes for JSP (Defaults if missing handled by JSP EL or above loop logic if we prepopulate defaults)
             request.setAttribute("landingPageId", id);
             request.setAttribute("pageTitle", lp.getName());
-            // Individual attributes set inside loop above. JSP handles defaults.
             
             // Forward to JSP template
             request.getRequestDispatcher("/templates/standout/landing-page.jsp").forward(request, response);
@@ -593,6 +606,45 @@ public class LandingPageServlet extends HttpServlet {
         out.print(gson.toJson(jsonResponse));
         out.flush();
     }
+    private boolean hasAccessPermission(HttpServletRequest request, LandingPage lp) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return false;
+        
+        Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
+        Role userRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
+        
+        if (currentUserId == null || userRole == null) return false;
+        
+        // 1. Manager Check: Can only access LPs within Campaigns they manage
+        if (Role.MANAGER.equals(userRole)) {
+            return hasCampaignPermission(currentUserId, userRole, lp.getCampaignId());
+        } 
+        
+        // 2. Marketing Check: Can only access LPs explicitly assigned to them
+        if (Role.MARKETING.equals(userRole)) {
+            return currentUserId.equals(lp.getCreatedBy());
+        }
+        
+        return false;
+    }
+
+    /**
+     * Helper to verify if a user has management/collaboration rights on a campaign.
+     */
+    private boolean hasCampaignPermission(Integer userId, Role role, Integer campaignId) {
+        if (userId == null || role == null || campaignId == null) return false;
+        
+        if (Role.MANAGER.equals(role)) {
+            Campaign campaign = campaignService.getCampaignById(campaignId);
+            return campaign != null && userId.equals(campaign.getManagerId());
+        }
+        
+        // Add logic for Marketing if they ever need campaign-level creation/access
+        // Currently, they can only access what is assigned to them via LandingPage.createdBy
+        
+        return false;
+    }
+
     private String toCamelCase(String snakeCase) {
         StringBuilder sb = new StringBuilder();
         boolean nextUpper = false;

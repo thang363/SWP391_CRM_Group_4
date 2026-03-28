@@ -45,7 +45,11 @@ function copyPublicLink(id) {
 
 // Edit LP Functions
 function openEditModal(id) {
-    fetch(contextPath + '/landing-pages?action=detail&id=' + id)
+    fetch(contextPath + '/landing-pages?action=detail&id=' + id, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
         .then(res => res.json())
         .then(result => {
             if (result.success) {
@@ -111,6 +115,7 @@ function updateLsStatus(id, newStatus) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: params
             })
@@ -138,17 +143,6 @@ function submitEditForm() {
     const brief = document.getElementById('editLpBrief').value;
     const status = document.getElementById('editLpStatus').value;
 
-    // Extra confirmation for Approved status
-    /* - REMOVED FOR SIMPLIFIED FLOW
-    if (status === 'Approved') {
-        showConfirmDialog(
-            '<strong>LƯU Ý:</strong> Landing Page đang Approved. Việc lưu sẽ chuyển trạng thái về <strong>DRAFT</strong> (gỡ public). Tiếp tục?',
-            function () { doSubmitEditForm(); },
-            { title: 'Cảnh báo', confirmText: 'Tiếp tục lưu', confirmClass: 'btn-warning' }
-        );
-        return;
-    }
-    */
 
     doSubmitEditForm();
 }
@@ -180,7 +174,10 @@ function doSubmitEditForm() {
 
     fetch(contextPath + '/landing-pages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: params
     })
         .then(res => res.json())
@@ -220,7 +217,10 @@ function submitCreateLP() {
 
     fetch(contextPath + '/landing-pages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: params
     })
         .then(res => res.json())
@@ -252,7 +252,10 @@ function confirmDelete(id, name) {
 
             fetch(contextPath + '/landing-pages', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: params
             })
                 .then(res => res.json())

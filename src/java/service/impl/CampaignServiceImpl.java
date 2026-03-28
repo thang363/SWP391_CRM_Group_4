@@ -231,8 +231,13 @@ public class CampaignServiceImpl implements CampaignService {
         }
         
         // Validate budget
-        if (campaign.getBudget() != null && campaign.getBudget().compareTo(BigDecimal.ZERO) < 0) {
-            return "Ngân sách không được âm";
+        if (campaign.getBudget() != null) {
+            if (campaign.getBudget().compareTo(java.math.BigDecimal.ZERO) < 0) {
+                return "Ngân sách không được âm";
+            }
+            if (campaign.getBudget().compareTo(util.Constants.MAX_BUDGET) > 0) {
+                return "Ngân sách vượt quá giới hạn cho phép (1,000 tỷ)";
+            }
         }
         
         // Validate status

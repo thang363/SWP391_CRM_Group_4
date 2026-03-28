@@ -18,7 +18,6 @@ public class LeadSubmission {
     private String fullName;
     private String email;
     private String phone;
-    private String rawData; // JSON string containing all form fields
     private Boolean isProcessed; // true if converted to Lead, false otherwise
     private Timestamp submittedAt;
 
@@ -98,14 +97,6 @@ public class LeadSubmission {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public String getRawData() {
-        return rawData;
-    }
-
-    public void setRawData(String rawData) {
-        this.rawData = rawData;
     }
 
     public Boolean getIsProcessed() {

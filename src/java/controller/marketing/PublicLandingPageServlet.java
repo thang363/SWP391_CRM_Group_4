@@ -196,15 +196,6 @@ public class PublicLandingPageServlet extends HttpServlet {
             
             Integer lpId = Integer.parseInt(lpIdStr);
             
-            // Create JSON object for rawData
-            JsonObject rawData = new JsonObject();
-            rawData.addProperty("fullName", fullName);
-            rawData.addProperty("email", email);
-            rawData.addProperty("phone", phone != null ? phone : "");
-            rawData.addProperty("message", message != null ? message : "");
-            rawData.addProperty("userAgent", request.getHeader("User-Agent"));
-            rawData.addProperty("ipAddress", request.getRemoteAddr());
-            
             // Create submission entity
             LeadSubmission submission = new LeadSubmission();
             submission.setLandingPageId(lpId);
@@ -250,7 +241,6 @@ public class PublicLandingPageServlet extends HttpServlet {
             submission.setFullName(fullName);
             submission.setEmail(email);
             submission.setPhone(phone);
-            submission.setRawData(gson.toJson(rawData)); // Create rawData JSON string
             
             // Checking LeadSubmission.java from previous step... 
             // It has: id, landingPageId, source, fullName, email, phone. NO RAW DATA.

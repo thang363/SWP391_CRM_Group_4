@@ -17,22 +17,6 @@ ALTER DATABASE [CRM] SET RECOVERY SIMPLE
 GO
 USE [CRM]
 GO
-/****** Object:  Table [dbo].[ActivityTypes]    Script Date: 2/23/2026 10:28:54 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[ActivityTypes](
-	[id] [int] IDENTITY(1,1) NOT NULL,
-	[name] [varchar](50) NOT NULL,
-	[description] [nvarchar](255) NULL,
-	[is_active] [bit] NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
 /****** Object:  Table [dbo].[Attachments]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
@@ -241,42 +225,6 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[LeadAssignments]    Script Date: 2/23/2026 10:28:54 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[LeadAssignments](
-	[id] [int] IDENTITY(1,1) NOT NULL,
-	[lead_id] [int] NULL,
-	[manager_id] [int] NULL,
-	[sales_id] [int] NULL,
-	[assigned_at] [datetime] NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[LeadInteractions]    Script Date: 2/23/2026 10:28:54 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[LeadInteractions](
-	[id] [int] IDENTITY(1,1) NOT NULL,
-	[lead_id] [int] NULL,
-	[campaign_id] [int] NULL,
-	[activity_type_id] [int] NULL,
-	[reference_url] [nvarchar](max) NULL,
-	[score_change] [int] NULL,
-	[created_at] [datetime] NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
 /****** Object:  Table [dbo].[LeadNotes]    Script Date: 2/23/2026 10:28:54 AM ******/
 SET ANSI_NULLS ON
 GO
@@ -349,24 +297,6 @@ CREATE TABLE [dbo].[LeadSources](
 	[description] [nvarchar](255) NULL,
 	[is_active] [bit] NULL,
 	[created_at] [datetime] NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[LeadStatusHistory]    Script Date: 2/23/2026 10:28:54 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[LeadStatusHistory](
-	[id] [int] IDENTITY(1,1) NOT NULL,
-	[lead_id] [int] NOT NULL,
-	[old_status] [varchar](20) NULL,
-	[new_status] [varchar](20) NULL,
-	[changed_by] [int] NULL,
-	[changed_at] [datetime] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
@@ -690,7 +620,6 @@ CREATE NONCLUSTERED INDEX [IX_LPSub_Phone] ON [dbo].[LeadSubmissions]
 	[phone] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-ALTER TABLE [dbo].[ActivityTypes] ADD  DEFAULT ((1)) FOR [is_active]
 GO
 ALTER TABLE [dbo].[Attachments] ADD  DEFAULT (getdate()) FOR [created_at]
 GO
@@ -730,9 +659,7 @@ ALTER TABLE [dbo].[LandingPages] ADD  DEFAULT (getdate()) FOR [created_at]
 GO
 ALTER TABLE [dbo].[LandingPages] ADD  DEFAULT ((0)) FOR [view_count]
 GO
-ALTER TABLE [dbo].[LeadAssignments] ADD  DEFAULT (getdate()) FOR [assigned_at]
 GO
-ALTER TABLE [dbo].[LeadInteractions] ADD  DEFAULT (getdate()) FOR [created_at]
 GO
 ALTER TABLE [dbo].[LeadNotes] ADD  DEFAULT ('General') FOR [note_type]
 GO
@@ -751,8 +678,6 @@ GO
 ALTER TABLE [dbo].[LeadSources] ADD  DEFAULT ((1)) FOR [is_active]
 GO
 ALTER TABLE [dbo].[LeadSources] ADD  DEFAULT (getdate()) FOR [created_at]
-GO
-ALTER TABLE [dbo].[LeadStatusHistory] ADD  DEFAULT (getdate()) FOR [changed_at]
 GO
 ALTER TABLE [dbo].[LeadSubmissions] ADD  DEFAULT ((0)) FOR [is_processed]
 GO
@@ -863,35 +788,7 @@ REFERENCES [dbo].[Users] ([id])
 GO
 ALTER TABLE [dbo].[LandingPages] CHECK CONSTRAINT [FK_LandingPages_Users]
 GO
-ALTER TABLE [dbo].[LeadAssignments]  WITH CHECK ADD  CONSTRAINT [FK_Assignments_Lead] FOREIGN KEY([lead_id])
-REFERENCES [dbo].[Leads] ([id])
 GO
-ALTER TABLE [dbo].[LeadAssignments] CHECK CONSTRAINT [FK_Assignments_Lead]
-GO
-ALTER TABLE [dbo].[LeadAssignments]  WITH CHECK ADD  CONSTRAINT [FK_Assignments_Manager] FOREIGN KEY([manager_id])
-REFERENCES [dbo].[Users] ([id])
-GO
-ALTER TABLE [dbo].[LeadAssignments] CHECK CONSTRAINT [FK_Assignments_Manager]
-GO
-ALTER TABLE [dbo].[LeadAssignments]  WITH CHECK ADD  CONSTRAINT [FK_Assignments_Sales] FOREIGN KEY([sales_id])
-REFERENCES [dbo].[Users] ([id])
-GO
-ALTER TABLE [dbo].[LeadAssignments] CHECK CONSTRAINT [FK_Assignments_Sales]
-GO
-ALTER TABLE [dbo].[LeadInteractions]  WITH CHECK ADD  CONSTRAINT [FK_Interactions_Campaign] FOREIGN KEY([campaign_id])
-REFERENCES [dbo].[Campaigns] ([id])
-GO
-ALTER TABLE [dbo].[LeadInteractions] CHECK CONSTRAINT [FK_Interactions_Campaign]
-GO
-ALTER TABLE [dbo].[LeadInteractions]  WITH CHECK ADD  CONSTRAINT [FK_Interactions_Lead] FOREIGN KEY([lead_id])
-REFERENCES [dbo].[Leads] ([id])
-GO
-ALTER TABLE [dbo].[LeadInteractions] CHECK CONSTRAINT [FK_Interactions_Lead]
-GO
-ALTER TABLE [dbo].[LeadInteractions]  WITH CHECK ADD  CONSTRAINT [FK_Interactions_Type] FOREIGN KEY([activity_type_id])
-REFERENCES [dbo].[ActivityTypes] ([id])
-GO
-ALTER TABLE [dbo].[LeadInteractions] CHECK CONSTRAINT [FK_Interactions_Type]
 GO
 ALTER TABLE [dbo].[LeadNotes]  WITH CHECK ADD  CONSTRAINT [FK_LeadNotes_Lead] FOREIGN KEY([lead_id])
 REFERENCES [dbo].[Leads] ([id])
@@ -928,15 +825,6 @@ REFERENCES [dbo].[ScoringRules] ([id])
 GO
 ALTER TABLE [dbo].[LeadScoreHistory] CHECK CONSTRAINT [FK_LeadScore_Rule]
 GO
-ALTER TABLE [dbo].[LeadStatusHistory]  WITH CHECK ADD  CONSTRAINT [FK_StatusHistory_Lead] FOREIGN KEY([lead_id])
-REFERENCES [dbo].[Leads] ([id])
-GO
-ALTER TABLE [dbo].[LeadStatusHistory] CHECK CONSTRAINT [FK_StatusHistory_Lead]
-GO
-ALTER TABLE [dbo].[LeadStatusHistory]  WITH CHECK ADD  CONSTRAINT [FK_StatusHistory_User] FOREIGN KEY([changed_by])
-REFERENCES [dbo].[Users] ([id])
-GO
-ALTER TABLE [dbo].[LeadStatusHistory] CHECK CONSTRAINT [FK_StatusHistory_User]
 GO
 ALTER TABLE [dbo].[LeadSubmissions]  WITH CHECK ADD  CONSTRAINT [FK_LeadSubmissions_Campaigns] FOREIGN KEY([campaign_id])
 REFERENCES [dbo].[Campaigns] ([id])

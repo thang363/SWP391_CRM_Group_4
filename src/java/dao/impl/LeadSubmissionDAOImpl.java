@@ -21,7 +21,7 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
     
     @Override
     public LeadSubmission create(LeadSubmission submission) {
-        String sql = "INSERT INTO LeadSubmissions (landing_page_id, campaign_id, source, full_name, email, phone, raw_data, is_processed, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO LeadSubmissions (landing_page_id, campaign_id, source, full_name, email, phone, is_processed, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -35,9 +35,8 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
             stmt.setString(4, submission.getFullName());
             stmt.setString(5, submission.getEmail());
             stmt.setString(6, submission.getPhone());
-            stmt.setString(7, submission.getRawData());
-            stmt.setBoolean(8, submission.getIsProcessed());
-            stmt.setTimestamp(9, submission.getSubmittedAt());
+            stmt.setBoolean(7, submission.getIsProcessed());
+            stmt.setTimestamp(8, submission.getSubmittedAt());
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {

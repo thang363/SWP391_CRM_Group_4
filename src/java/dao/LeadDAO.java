@@ -101,13 +101,6 @@ public interface LeadDAO {
      */
     List<Lead> getHotUnassignedLeads(Integer campaignId, String searchQuery, String dateFilter, int limit);
     
-    /**
-     * Get recent interactions for feed.
-     * @param campaignId Campaign ID (null for all campaigns)
-     * @param limit Maximum number of records to return
-     * @return List of LeadInteractionViewModel
-     */
-    List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Integer campaignId, int limit);
     
     boolean assignLeadToSales(int leadId, int salesId, int managerId);
 

@@ -19,7 +19,6 @@ import model.entity.Campaign;
 import model.entity.Lead;
 import model.entity.Role;
 import model.entity.User;
-import model.viewmodel.LeadInteractionViewModel;
 import model.viewmodel.MonitorKPIsViewModel;
 import util.Constants;
 
@@ -84,9 +83,6 @@ public class MonitorLeadsServlet extends HttpServlet {
             List<Lead> hotLeads = leadDAO.getHotUnassignedLeads(campaignId, searchQuery, dateFilter, 50);
             request.setAttribute("hotLeads", hotLeads);
 
-            // Recent Interactions (limit 20)
-            List<LeadInteractionViewModel> interactions = leadDAO.getRecentInteractions(campaignId, 20);
-            request.setAttribute("interactions", interactions);
 
             // Keep selected filter in view
             request.setAttribute("selectedCampaignId", campaignId);
