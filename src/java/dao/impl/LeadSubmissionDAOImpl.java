@@ -134,7 +134,6 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
 
             List<Object> params = new ArrayList<>();
             
-            // --- Role-based Filtering ---
             if (marketingId != null) {
                 sql.append(" AND (lp.created_by = ? OR c.manager_id = ?) ");
                 params.add(marketingId);
@@ -150,7 +149,7 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
             }
             
             if (campaignId != null && campaignId > 0) {
-                sql.append("AND ls.campaign_id = ? "); // Changed from lp.campaign_id to ls.campaign_id
+                sql.append("AND ls.campaign_id = ? "); 
                 params.add(campaignId);
             }
             
@@ -220,7 +219,6 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
             
             List<Object> params = new ArrayList<>();
             
-            // --- Role-based Filtering ---
             if (marketingId != null) {
                 sql.append(" AND (lp.created_by = ? OR c.manager_id = ?) ");
                 params.add(marketingId);
@@ -236,7 +234,7 @@ public class LeadSubmissionDAOImpl implements LeadSubmissionDAO {
             }
             
             if (campaignId != null && campaignId > 0) {
-                sql.append("AND ls.campaign_id = ? "); // Changed from lp.campaign_id to ls.campaign_id
+                sql.append("AND ls.campaign_id = ? ");
                 params.add(campaignId);
             }
             

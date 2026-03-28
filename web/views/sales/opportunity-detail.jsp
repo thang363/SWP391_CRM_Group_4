@@ -477,6 +477,12 @@
                                                                                                                                     class="badge bg-danger">Từ
                                                                                                                                     chối</span>
                                                                                                                             </c:when>
+                                                                                                                            <c:when
+                                                                                                                                test="${q.status == 'Expired'}">
+                                                                                                                                <span
+                                                                                                                                    class="badge bg-danger">Hết
+                                                                                                                                    hạn</span>
+                                                                                                                            </c:when>
                                                                                                                             <c:otherwise>
                                                                                                                                 <span
                                                                                                                                     class="badge bg-light text-dark">${q.status}</span>
@@ -527,7 +533,7 @@
                                                                                                                             </c:if>
 
                                                                                                                             <c:if
-                                                                                                                                test="${q.status == 'Draft' && !hasActiveSent && opp.stage != 'Won' && opp.stage != 'Lost'}">
+                                                                                                                                test="${q.status == 'Draft' && !hasActiveSent && opp.stage != 'Won' && opp.stage != 'Lost' && q.status != 'Expired'}">
                                                                                                                                 <button
                                                                                                                                     type="button"
                                                                                                                                     class="btn btn-sm btn-outline-info"
@@ -554,7 +560,7 @@
                                                                                                                             </c:if>
 
                                                                                                                             <c:if
-                                                                                                                                test="${q.status == 'Sent'}">
+                                                                                                                                test="${q.status == 'Sent' && q.status != 'Expired'}">
                                                                                                                                 <button
                                                                                                                                     type="button"
                                                                                                                                     class="btn btn-sm btn-success"
@@ -579,7 +585,7 @@
                                                                                                                                     type="button"
                                                                                                                                     class="btn btn-sm btn-outline-secondary"
                                                                                                                                     title="Xóa bản nháp"
-                                                                                                                                    onclick="showQuoteConfirmModal('delete', ${q.id}, '${fn:escapeXml(q.quoteNumber)}')">
+                                                                                                                                    onclick="showQuoteConfirmModal('delete', '${q.id}', '${fn:escapeXml(q.quoteNumber)}')">
                                                                                                                                     <i
                                                                                                                                         class="fa fa-trash"></i>
                                                                                                                                 </button>
@@ -1025,6 +1031,7 @@
                                                                                                                     <input
                                                                                                                         type="number"
                                                                                                                         name="salesPrice"
+                                                                                                                        readonly
                                                                                                                         id="addSalesPrice"
                                                                                                                         class="form-control"
                                                                                                                         required
@@ -1405,6 +1412,14 @@
                                     if (spinner) {
                                         spinner.classList.remove('show');
                                     }
+
+                                    // Thiết lập ngày tối thiểu cho 'Có hiệu lực đến' là hôm nay
+                                    const validUntilInput = document.querySelector('input[name="validUntil"]');
+                                    if (validUntilInput) {
+                                        const today = new Date().toISOString().split('T')[0];
+                                        validUntilInput.setAttribute('min', today);
+                                        validUntilInput.value = today; // Mặc định là hôm nay
+                                    }
                                 });
                                 function showQuoteConfirmModal(action, quoteId, quoteNumber) {
                                     const title = document.getElementById('confirmTitle');
@@ -1549,9 +1564,9 @@
                                                         html += productOptionsStr;
                                                         html += '    </select>';
                                                     html += '</td>';
-                                                html += '<td><input type="number" name="unitPrice" class="form-control form-control-sm price-input" value="${op.salesPrice}" readonly></td>';
-                                                html += '<td><input type="number" name="quantity" class="form-control form-control-sm qty-input" value="${op.quantity}" min="1" required onchange="calculateTotal()"></td>';
-                                                html += '<td><input type="number" class="form-control form-control-sm row-total" value="${op.totalAmount}" readonly></td>';
+                                                html += '<td><input type="number" name="unitPrice" class="form-control form-control-sm price-input" value="${op.salesPrice}" readonly /></td>';
+                                                html += '<td><input type="number" name="quantity" class="form-control form-control-sm qty-input" value="${op.quantity}" min="1" required onchange="calculateTotal()" /></td>';
+                                                html += '<td><input type="number" class="form-control form-control-sm row-total" value="${op.totalAmount}" readonly /></td>';
                                                 html += '<td class="text-center align-middle"><button type="button" class="btn btn-sm btn-outline-danger px-2 py-0" onclick="removeProductRow(this)"><i class="fa fa-times"></i></button></td>';
                                                 tr.innerHTML = html;
 

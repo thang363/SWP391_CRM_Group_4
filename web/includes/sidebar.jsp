@@ -46,8 +46,7 @@
                            class="dropdown-item">Opportunity</a>
                         <c:if test="${sessionScope.userRole == 'MANAGER'}">
                             <a href="${pageContext.request.contextPath}/manager/quotes"
-                               class="dropdown-item ${currentPage == 'manager-quotes' ? 'active' : ''} ">Duyệt
-                                Báo giá</a>
+                               class="dropdown-item ${currentPage == 'manager-quotes' ? 'active' : ''} ">Approve quote</a>
                             </c:if>
                     </div>
                 </div>
@@ -122,7 +121,7 @@
                     </a>
                     <div class="dropdown-menu bg-transparent border-0">
                         <a href="${pageContext.request.contextPath}/sales/customers"
-                           class="dropdown-item">Danh sách KH</a>
+                           class="dropdown-item">Customer</a>
                     </div>
                 </div>
             </c:if>

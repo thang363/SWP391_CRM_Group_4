@@ -427,8 +427,6 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Đóng</button>
-                                            <a href="#" id="viewFullProfileBtn" class="btn btn-primary">Xem hồ sơ đầy
-                                                đủ</a>
                                         </div>
                                     </div>
                                 </div>

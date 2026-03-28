@@ -44,6 +44,9 @@ public class OpportunityDetailServlet extends HttpServlet {
                 return;
             }
 
+            // Cập nhật trạng thái 'Hết hạn' trước khi lấy danh sách
+            quoteDAO.updateExpiredQuotes(oppId);
+
             List<Quote> quotes = quoteDAO.getByOpportunityId(oppId);
             
             // Nạp thêm chi tiết sản phẩm vào mỗi quote để show modal
