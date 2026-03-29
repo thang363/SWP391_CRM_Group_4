@@ -139,10 +139,45 @@ function updateLsStatus(id, newStatus) {
 
 function submitEditForm() {
     const id = document.getElementById('editLpId').value;
-    const name = document.getElementById('editLpName').value;
-    const brief = document.getElementById('editLpBrief').value;
-    const status = document.getElementById('editLpStatus').value;
+    const name = document.getElementById('editLpName').value.trim();
+    const heroTitle = document.getElementById('editHeroTitle').value.trim();
+    const heroDesc = document.getElementById('editHeroDesc').value.trim();
+    const brief = document.getElementById('editLpBrief').value.trim();
 
+    // Mandatory Checks
+    if (!name) {
+        showAlert('warning', 'Tên Landing Page không được để trống');
+        return;
+    }
+    if (!heroTitle) {
+        showAlert('warning', 'Tiêu đề Hero không được để trống');
+        return;
+    }
+
+    // Length Checks
+    if (name.length > 200) {
+        showAlert('warning', 'Tên Landing Page quá dài (tối đa 200 ký tự)');
+        return;
+    }
+    if (heroTitle.length > 200) {
+        showAlert('warning', 'Tiêu đề Hero quá dài (tối đa 200 ký tự)');
+        return;
+    }
+    if (heroDesc.length > 1000) {
+        showAlert('warning', 'Mô tả Hero quá dài (tối đa 1000 ký tự)');
+        return;
+    }
+    if (brief.length > 500) {
+        showAlert('warning', 'Mô tả công việc quá dài (tối đa 500 ký tự)');
+        return;
+    }
+
+    // Optional fields length check
+    const aboutTitle = document.getElementById('editAboutTitle').value.trim();
+    if (aboutTitle.length > 200) {
+        showAlert('warning', 'Tiêu đề giới thiệu quá dài (tối đa 200 ký tự)');
+        return;
+    }
 
     doSubmitEditForm();
 }

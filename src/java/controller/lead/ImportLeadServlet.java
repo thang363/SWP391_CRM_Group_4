@@ -85,12 +85,11 @@ public class ImportLeadServlet extends HttpServlet {
             }
             Integer campaignId = Integer.parseInt(campaignIdStr);
 
-            String fileName = filePart.getSubmittedFileName();
+            String fileName = filePart.getContentType();
             if (sourceInput == null || sourceInput.trim().isEmpty()) {
                 sourceInput = "File: " + fileName; // Default source name
             }
 
-            // Read file content into memory
             byte[] fileContent = filePart.getInputStream().readAllBytes();
 
             // 5. Parse CSV & Create Submissions
@@ -104,7 +103,6 @@ public class ImportLeadServlet extends HttpServlet {
                  throw new Exception("File quá lớn (> 1000 dòng). Vui lòng chia nhỏ file.");
             }
 
-            // 6. Insert to DB with Duplicate Check
             int successCount = 0;
             int skipCount = 0;
             int errorCount = 0;

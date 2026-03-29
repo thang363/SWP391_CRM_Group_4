@@ -327,14 +327,14 @@
                                 <!-- Hero Tab -->
                                 <div class="tab-pane fade show active" id="tab-hero" role="tabpanel">
                                     <div class="mb-3">
-                                        <label class="form-label">Tiêu đề chính (Hero Title)</label>
-                                        <input type="text" class="form-control" id="editHeroTitle" name="heroTitle"
-                                               required>
+                                        <label class="form-label">Tiêu đề chính (Hero Title) <span class="text-danger">*</span></label>
+                                         <input type="text" class="form-control" id="editHeroTitle" name="heroTitle"
+                                                required maxlength="200">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Mô tả chính (Hero Description)</label>
-                                        <textarea class="form-control" id="editHeroDesc" name="heroDesc"
-                                                  rows="3"></textarea>
+                                         <textarea class="form-control" id="editHeroDesc" name="heroDesc"
+                                                   rows="3" maxlength="1000"></textarea>
                                     </div>
                                 </div>
 
@@ -342,13 +342,13 @@
                                 <div class="tab-pane fade" id="tab-about" role="tabpanel">
                                     <div class="mb-3">
                                         <label class="form-label">Tiêu đề Giới thiệu (About Title)</label>
-                                        <input type="text" class="form-control" id="editAboutTitle"
-                                               name="aboutTitle">
+                                         <input type="text" class="form-control" id="editAboutTitle"
+                                                name="aboutTitle" maxlength="200">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Nội dung Giới thiệu (About Description)</label>
-                                        <textarea class="form-control" id="editAboutDesc" name="aboutDesc"
-                                                  rows="5"></textarea>
+                                         <textarea class="form-control" id="editAboutDesc" name="aboutDesc"
+                                                   rows="5" maxlength="2000"></textarea>
                                     </div>
                                 </div>
 
@@ -357,30 +357,30 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <h6 class="text-primary">Feature 1</h6>
-                                            <div class="mb-2">
-                                                <input type="text" class="form-control form-control-sm mb-1"
-                                                       id="editFeatureTitle1" placeholder="Title 1">
-                                                <textarea class="form-control form-control-sm" id="editFeatureDesc1"
-                                                          rows="3" placeholder="Description 1"></textarea>
-                                            </div>
+                                             <div class="mb-2">
+                                                 <input type="text" class="form-control form-control-sm mb-1"
+                                                        id="editFeatureTitle1" placeholder="Title 1" maxlength="100">
+                                                 <textarea class="form-control form-control-sm" id="editFeatureDesc1"
+                                                           rows="3" placeholder="Description 1" maxlength="500"></textarea>
+                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <h6 class="text-primary">Feature 2</h6>
-                                            <div class="mb-2">
-                                                <input type="text" class="form-control form-control-sm mb-1"
-                                                       id="editFeatureTitle2" placeholder="Title 2">
-                                                <textarea class="form-control form-control-sm" id="editFeatureDesc2"
-                                                          rows="3" placeholder="Description 2"></textarea>
-                                            </div>
+                                             <div class="mb-2">
+                                                 <input type="text" class="form-control form-control-sm mb-1"
+                                                        id="editFeatureTitle2" placeholder="Title 2" maxlength="100">
+                                                 <textarea class="form-control form-control-sm" id="editFeatureDesc2"
+                                                           rows="3" placeholder="Description 2" maxlength="500"></textarea>
+                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <h6 class="text-primary">Feature 3</h6>
-                                            <div class="mb-2">
-                                                <input type="text" class="form-control form-control-sm mb-1"
-                                                       id="editFeatureTitle3" placeholder="Title 3">
-                                                <textarea class="form-control form-control-sm" id="editFeatureDesc3"
-                                                          rows="3" placeholder="Description 3"></textarea>
-                                            </div>
+                                             <div class="mb-2">
+                                                 <input type="text" class="form-control form-control-sm mb-1"
+                                                        id="editFeatureTitle3" placeholder="Title 3" maxlength="100">
+                                                 <textarea class="form-control form-control-sm" id="editFeatureDesc3"
+                                                           rows="3" placeholder="Description 3" maxlength="500"></textarea>
+                                             </div>
                                         </div>
 
                                     </div>
@@ -389,14 +389,14 @@
                                 <!-- Settings Tab -->
                                 <div class="tab-pane fade" id="tab-settings" role="tabpanel">
                                     <div class="mb-3">
-                                        <label class="form-label">Tên Landing Page (Nội bộ)</label>
-                                        <input type="text" class="form-control" id="editLpName" name="name" required
-                                               ${isManager ? '' : 'readonly' }>
+                                         <label class="form-label">Tên Landing Page (Nội bộ) <span class="text-danger">*</span></label>
+                                         <input type="text" class="form-control" id="editLpName" name="name" required
+                                                ${isManager ? '' : 'readonly' } maxlength="200">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Mô tả</label>
-                                        <textarea class="form-control" id="editLpBrief" name="brief" rows="2"
-                                                  ${isManager ? '' : 'readonly' }></textarea>
+                                         <label class="form-label">Mô tả Công việc</label>
+                                         <textarea class="form-control" id="editLpBrief" name="brief" rows="2"
+                                                   ${isManager ? '' : 'readonly' } maxlength="500"></textarea>
                                     </div>
                                 </div>
                             </div>

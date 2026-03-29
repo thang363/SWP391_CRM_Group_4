@@ -404,8 +404,13 @@ public class LandingPageServlet extends HttpServlet {
             String heroTitle = request.getParameter("heroTitle");
             String heroDesc = request.getParameter("heroDesc");
 
-            if (idStr == null || name == null) {
-                sendJsonResponse(response, false, "Thiếu thông tin bắt buộc", null);
+            if (idStr == null || name == null || name.trim().isEmpty()) {
+                sendJsonResponse(response, false, "Tên Landing Page không được để trống", null);
+                return;
+            }
+
+            if (heroTitle == null || heroTitle.trim().isEmpty()) {
+                sendJsonResponse(response, false, "Tiêu đề Hero không được để trống", null);
                 return;
             }
 
@@ -428,21 +433,38 @@ public class LandingPageServlet extends HttpServlet {
                 return;
             }
 
-           
+            // Length validation
+            if (name.length() > 200) {
+                 sendJsonResponse(response, false, "Tên Landing Page quá dài (tối đa 200 ký tự)", null);
+                 return;
+            }
+            if (heroTitle.length() > 200) {
+                 sendJsonResponse(response, false, "Tiêu đề Hero quá dài (tối đa 200 ký tự)", null);
+                 return;
+            }
+            if (heroDesc != null && heroDesc.length() > 1000) {
+                 sendJsonResponse(response, false, "Mô tả Hero quá dài (tối đa 1000 ký tự)", null);
+                 return;
+            }
+            if (brief != null && brief.length() > 500) {
+                 sendJsonResponse(response, false, "Mô tả nội bộ quá dài (tối đa 500 ký tự)", null);
+                 return;
+            }
+
             java.util.Map<String, String> contentFields = new HashMap<>();
-            contentFields.put("HERO_TITLE", heroTitle);
-            contentFields.put("HERO_DESC", heroDesc);
+            contentFields.put("HERO_TITLE", heroTitle.trim());
+            contentFields.put("HERO_DESC", heroDesc != null ? heroDesc.trim() : "");
             
-            // Collect other fields safely
-            addIfPresent(request, contentFields, "aboutTitle", "ABOUT_TITLE");
-            addIfPresent(request, contentFields, "aboutDesc", "ABOUT_DESC");
+            // Collect other fields safely with length limits
+            addIfPresent(request, contentFields, "aboutTitle", "ABOUT_TITLE", 200);
+            addIfPresent(request, contentFields, "aboutDesc", "ABOUT_DESC", 2000);
             
-            addIfPresent(request, contentFields, "featureTitle1", "FEATURE_TITLE_1");
-            addIfPresent(request, contentFields, "featureDesc1", "FEATURE_DESC_1");
-            addIfPresent(request, contentFields, "featureTitle2", "FEATURE_TITLE_2");
-            addIfPresent(request, contentFields, "featureDesc2", "FEATURE_DESC_2");
-            addIfPresent(request, contentFields, "featureTitle3", "FEATURE_TITLE_3");
-            addIfPresent(request, contentFields, "featureDesc3", "FEATURE_DESC_3");
+            addIfPresent(request, contentFields, "featureTitle1", "FEATURE_TITLE_1", 100);
+            addIfPresent(request, contentFields, "featureDesc1", "FEATURE_DESC_1", 500);
+            addIfPresent(request, contentFields, "featureTitle2", "FEATURE_TITLE_2", 100);
+            addIfPresent(request, contentFields, "featureDesc2", "FEATURE_DESC_2", 500);
+            addIfPresent(request, contentFields, "featureTitle3", "FEATURE_TITLE_3", 100);
+            addIfPresent(request, contentFields, "featureDesc3", "FEATURE_DESC_3", 500);
 
             boolean success = lpService.updateLandingPage(id, name, brief, contentFields, isManager);
 
@@ -628,9 +650,7 @@ public class LandingPageServlet extends HttpServlet {
         return false;
     }
 
-    /**
-     * Helper to verify if a user has management/collaboration rights on a campaign.
-     */
+   
     private boolean hasCampaignPermission(Integer userId, Role role, Integer campaignId) {
         if (userId == null || role == null || campaignId == null) return false;
         
@@ -639,8 +659,7 @@ public class LandingPageServlet extends HttpServlet {
             return campaign != null && userId.equals(campaign.getManagerId());
         }
         
-        // Add logic for Marketing if they ever need campaign-level creation/access
-        // Currently, they can only access what is assigned to them via LandingPage.createdBy
+       
         
         return false;
     }
@@ -663,10 +682,14 @@ public class LandingPageServlet extends HttpServlet {
         return sb.toString();
     }
 
-    private void addIfPresent(HttpServletRequest request, java.util.Map<String, String> map, String paramName, String keyName) {
+    private void addIfPresent(HttpServletRequest request, java.util.Map<String, String> map, String paramName, String keyName, int maxLength) {
         String value = request.getParameter(paramName);
         if (value != null) {
-            map.put(keyName, value);
+            String trimmed = value.trim();
+            if (maxLength > 0 && trimmed.length() > maxLength) {
+                trimmed = trimmed.substring(0, maxLength); // Soft truncate or handle as error? For JSON, we can truncate but Servlet check is better
+            }
+            map.put(keyName, trimmed);
         }
     }
 }

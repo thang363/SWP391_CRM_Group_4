@@ -28,12 +28,14 @@ public class PublicLandingPageServlet extends HttpServlet {
     private LandingPageDAO lpDAO;
     private LeadSubmissionDAO submissionDAO;
     private dao.CampaignDAO campaignDAO;
+    private Gson gson;
     
     @Override
     public void init() {
         lpDAO = new LandingPageDAOImpl();
         submissionDAO = new LeadSubmissionDAOImpl();
         campaignDAO = new dao.impl.CampaignDAOImpl();
+        gson = new Gson();
     }
     
     @Override
@@ -68,54 +70,50 @@ public class PublicLandingPageServlet extends HttpServlet {
             model.entity.Campaign campaign = campaignDAO.findById(lp.getCampaignId());
             String campaignStatus = (campaign != null) ? campaign.getStatus() : "";
 
-            // Check Visibility Logic
-            // Campaign MUST be Active
-            // LP can be Active OR Public (as per user request)
+           
             boolean isCampaignActive = "Active".equalsIgnoreCase(campaignStatus);
             boolean isLPPublic = "active".equalsIgnoreCase(lp.getStatus()) || "Public".equalsIgnoreCase(lp.getStatus());
             
             boolean isPubliclyVisible = isCampaignActive && isLPPublic;
             
-            // Access Control:
-            // 1. Public Client: Only if isPubliclyVisible
-            // 2. Internal User (Logged in): ALWAYS ALLOW (View as Manager/Marketing)
+          
             
             boolean isLoggedIn = request.getSession(false) != null && 
                                  request.getSession(false).getAttribute(util.Constants.SESSION_USER) != null;
 
             if (!isPubliclyVisible && !isLoggedIn) {
-                // Not visible public and user not logged in -> Block
+               
                  response.sendError(HttpServletResponse.SC_FORBIDDEN, "This landing page is not currently active.");
                  return;
             }
             
-            // Allow view...
+          
 
-            // Parse data_config JSON to get hero title and description
-            String dataConfig = lp.getDataConfig();
-            String heroTitle = "Standout App";
-            String heroDesc = "An Amazing App That Does It All.";
-            
-            if (dataConfig != null && !dataConfig.trim().isEmpty()) {
+            // Parse data_config JSON and set all attributes dynamically
+            if (lp.getDataConfig() != null && !lp.getDataConfig().trim().isEmpty()) {
                 try {
-                    Gson gson = new Gson();
-                    JsonObject json = gson.fromJson(dataConfig, JsonObject.class);
-                    if (json.has("heroTitle")) {
-                        heroTitle = json.get("heroTitle").getAsString();
+                    com.google.gson.JsonObject json = gson.fromJson(lp.getDataConfig(), com.google.gson.JsonObject.class);
+                    for (java.util.Map.Entry<String, com.google.gson.JsonElement> entry : json.entrySet()) {
+                         if (!entry.getValue().isJsonNull()) {
+                             String key = entry.getKey();
+                             String value = entry.getValue().getAsString();
+                             
+                             if ("HERO_TITLE".equals(key)) request.setAttribute("heroTitle", value);
+                             else if ("HERO_DESC".equals(key)) request.setAttribute("heroDesc", value);
+                             else if ("ABOUT_TITLE".equals(key)) request.setAttribute("aboutTitle", value);
+                             else if ("ABOUT_DESC".equals(key)) request.setAttribute("aboutDesc", value);
+                             else if (key.startsWith("FEATURE_")) request.setAttribute(toCamelCase(key), value);
+                             else request.setAttribute(key, value);
+                         }
                     }
-                    if (json.has("heroDesc")) {
-                        heroDesc = json.get("heroDesc").getAsString();
-                    }
-                } catch (JsonSyntaxException e) {
-                    // Use defaults if JSON parsing fails
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             
             // Set attributes for JSP
             request.setAttribute("landingPageId", lpId);
             request.setAttribute("pageTitle", lp.getName());
-            request.setAttribute("heroTitle", heroTitle);
-            request.setAttribute("heroDesc", heroDesc);
             request.setAttribute("campaignStatus", campaignStatus);
             
             // Forward to JSP template
@@ -268,5 +266,22 @@ public class PublicLandingPageServlet extends HttpServlet {
         }
         
         out.print(gson.toJson(result));
+    }
+    private String toCamelCase(String snakeCase) {
+        StringBuilder sb = new StringBuilder();
+        boolean nextUpper = false;
+        for (char c : snakeCase.toLowerCase().toCharArray()) {
+            if (c == '_') {
+                nextUpper = true;
+            } else {
+                if (nextUpper) {
+                    sb.append(Character.toUpperCase(c));
+                    nextUpper = false;
+                } else {
+                    sb.append(c);
+                }
+            }
+        }
+        return sb.toString();
     }
 }
