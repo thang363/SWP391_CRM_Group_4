@@ -70,8 +70,6 @@ public class CampaignTransferServiceImpl implements CampaignTransferService {
         CampaignTransfer transfer = new CampaignTransfer(campaignId, fromManagerId, toManagerId, reason);
         Integer id = transferDAO.insert(transfer);
         transfer.setId(id);
-
-        
         return transfer;
     }
 

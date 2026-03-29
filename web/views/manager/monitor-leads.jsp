@@ -60,7 +60,8 @@
                                 <div class="container-fluid pt-4 px-4">
 
                                     <div class="d-flex align-items-center justify-content-between mb-4">
-                                        <h4 class="mb-0 text-primary"><i class="fa fa-chart-pie me-2"></i>Monitor Leads
+                                        <h4 class="mb-0 text-primary"><i class="fa fa-chart-pie me-2"></i>Giao Lead mới
+                                            cho Sale
                                         </h4>
                                         <form method="get"
                                             action="${pageContext.request.contextPath}/marketing/monitor-leads"
@@ -165,8 +166,8 @@
                                                 <div class="bg-white text-center rounded p-4 h-100 shadow-sm">
                                                     <div class="d-flex align-items-center justify-content-between mb-4">
                                                         <h6 class="mb-0 fw-bold text-dark"><i
-                                                                class="fa fa-fire text-danger me-2"></i>Hot Leads Need
-                                                            Assignment</h6>
+                                                                class="fa fa-fire text-danger me-2"></i>Lead mới cần
+                                                            được giao</h6>
                                                         <span class="text-muted"><small>Ưu tiên xử lý từ trên xuống
                                                                 dưới</small></span>
                                                     </div>
@@ -210,7 +211,7 @@
                                                                                 onchange="toggleSelectAll()">
                                                                         </div>
                                                                     </th>
-                                                                    <th scope="col" style="min-width: 180px;">Khách hàng
+                                                                    <th scope="col" style="min-width: 180px;">Lead
                                                                     </th>
                                                                     <th scope="col">Chiến dịch</th>
                                                                     <th scope="col" class="text-center">Tiềm năng</th>
@@ -275,8 +276,11 @@
                                                                                         </c:choose>
                                                                                     </td>
                                                                                     <td class="text-center">
-                                                                                        <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm">
-                                                                                            <i class="fa fa-fire me-1"></i> HOT 🔥
+                                                                                        <span
+                                                                                            class="badge bg-danger rounded-pill px-3 py-2 shadow-sm">
+                                                                                            <i
+                                                                                                class="fa fa-fire me-1"></i>
+                                                                                            HOT 🔥
                                                                                         </span>
                                                                                     </td>
                                                                                     <td class="text-nowrap">${lead.phone
@@ -288,15 +292,18 @@
                                                                                             name="singleSalesId_${lead.id}"
                                                                                             class="form-select form-select-sm"
                                                                                             onchange="quickAssign(${lead.id}, this.value)">
-                                                                                            <option value="">-- Chọn --</option>
-                                                                                            <c:forEach var="sale" items="${salesUsers}">
-                                                                                                <option value="${sale.id}">
+                                                                                            <option value="">-- Chọn --
+                                                                                            </option>
+                                                                                            <c:forEach var="sale"
+                                                                                                items="${salesUsers}">
+                                                                                                <option
+                                                                                                    value="${sale.id}">
                                                                                                     ${sale.fullName}
                                                                                                 </option>
                                                                                             </c:forEach>
                                                                                         </select>
                                                                                     </td>
-                                                                                      <td class="text-center pe-2">
+                                                                                    <td class="text-center pe-2">
                                                                                         <button type="button"
                                                                                             class="btn btn-sm btn-outline-danger p-1 px-2 ms-1"
                                                                                             onclick="handleDeleteLead(${lead.id})"
@@ -319,7 +326,7 @@
                                 </div>
                                 <!-- Monitor Leads End -->
                                 <%@ include file="/includes/confirm-modal.jsp" %>
-                                <%@ include file="/includes/footer.jsp" %>
+                                    <%@ include file="/includes/footer.jsp" %>
 
                         </div>
                         <!-- Content End -->
@@ -405,10 +412,10 @@
                             form.submit();
                         }
 
-                         function handleDeleteLead(leadId) {
+                        function handleDeleteLead(leadId) {
                             showConfirmDialog(
                                 'Bạn có chắc chắn muốn xóa Lead #<strong>' + leadId + '</strong>? Hành động này không thể hoàn tác.',
-                                function() {
+                                function () {
                                     const form = document.createElement('form');
                                     form.method = 'post';
                                     form.action = '${pageContext.request.contextPath}/marketing/monitor-leads';
@@ -446,13 +453,13 @@
                                     document.body.appendChild(form);
                                     form.submit();
                                 },
-                                { 
-                                    title: 'Xóa Lead', 
-                                    confirmText: 'Xóa', 
-                                    confirmClass: 'btn-danger' 
+                                {
+                                    title: 'Xóa Lead',
+                                    confirmText: 'Xóa',
+                                    confirmClass: 'btn-danger'
                                 }
                             );
-                         }
+                        }
                     </script>
             </body>
 

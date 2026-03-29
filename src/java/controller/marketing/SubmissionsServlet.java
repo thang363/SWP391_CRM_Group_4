@@ -58,6 +58,9 @@ public class SubmissionsServlet extends HttpServlet {
         String keyword = request.getParameter("keyword");
         String campaignIdStr = request.getParameter("campaignId");
         String status = request.getParameter("status");
+        if (status == null || status.trim().isEmpty()) {
+            status = "PENDING"; // Default to only showing unprocessed items
+        }
         String fromDateStr = request.getParameter("fromDate");
         String toDateStr = request.getParameter("toDate");
 
@@ -89,19 +92,15 @@ public class SubmissionsServlet extends HttpServlet {
         // Source filter is not exposed in UI yet, pass null
         String source = null;
 
-        // --- User Role check ---
+        // --- Role check (Marketing Only) ---
         model.entity.User currentUser = (model.entity.User) request.getSession().getAttribute(Constants.SESSION_USER);
-        Integer marketingId = null;
-        boolean isManagerView = false;
-        
-        if (currentUser != null) {
-            model.entity.Role role = currentUser.getRole();
-            if (model.entity.Role.MARKETING.equals(role)) {
-                marketingId = currentUser.getId();
-            } else if (model.entity.Role.MANAGER.equals(role)) {
-                isManagerView = true;
-            }
+        if (currentUser == null || !model.entity.Role.MARKETING.equals(currentUser.getRole())) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            request.setAttribute("errorMessage", "Chỉ nhân viên Marketing mới được truy cập dữ liệu Leads.");
+            request.getRequestDispatcher("/views/error.jsp").forward(request, response);
+            return;
         }
+        Integer marketingId = currentUser.getId();
 
         // --- Fetch data ---
         int totalItems = submissionDAO.count(marketingId, keyword, campaignId, source, status, fromDate, toDate);
@@ -112,10 +111,7 @@ public class SubmissionsServlet extends HttpServlet {
             offset = (page - 1) * pageSize;
         }
 
-        List<LeadSubmission> submissions = new java.util.ArrayList<>();
-        if (!isManagerView) {
-            submissions = submissionDAO.findAll(marketingId, keyword, campaignId, source, status, fromDate, toDate, offset, pageSize);
-        }
+        List<LeadSubmission> submissions = submissionDAO.findAll(marketingId, keyword, campaignId, source, status, fromDate, toDate, offset, pageSize);
 
         // Campaigns for dropdown filter
         List<Campaign> campaigns = campaignDAO.findAll();
@@ -128,13 +124,14 @@ public class SubmissionsServlet extends HttpServlet {
         // --- Set attributes ---
         request.setAttribute("submissions", submissions);
         request.setAttribute("campaigns", campaigns);
+        request.setAttribute("selectedStatus", status); // Pass back for UI selection
         request.setAttribute("currentPageNumber", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalItems", totalItems);
         request.setAttribute("statTotal", statTotal);
         request.setAttribute("statPending", statPending);
         request.setAttribute("statToday", statToday);
-        request.setAttribute("isManagerView", isManagerView); // Pass flag to JSP
+        request.setAttribute("statToday", statToday);
 
         // For sidebar active highlight
         request.setAttribute("currentPage", "submissions");
@@ -146,6 +143,14 @@ public class SubmissionsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // --- Role check (Strictly Marketing) ---
+        model.entity.User currentUser = (model.entity.User) request.getSession().getAttribute(Constants.SESSION_USER);
+        if (currentUser == null || !model.entity.Role.MARKETING.equals(currentUser.getRole())) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            sendJsonResponse(response, false, "Bạn không có quyền thực hiện hành động này.", null);
+            return;
+        }
 
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
@@ -179,8 +184,6 @@ public class SubmissionsServlet extends HttpServlet {
     private void handleConvert(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String idStr = request.getParameter("id");
-        String forceStr = request.getParameter("force");
-        boolean force = "true".equals(forceStr);
 
         if (idStr == null || idStr.isEmpty()) {
             sendJsonResponse(response, false, "ID không hợp lệ", null);
@@ -214,15 +217,13 @@ public class SubmissionsServlet extends HttpServlet {
                 }
             }
 
-            // --- Check Duplicate ---
-            if (!force) {
-                boolean isDuplicate = leadDAO.checkDuplicate(submission.getEmail(), submission.getPhone(), submitCampaignId);
-//                if (isDuplicate) {
-//                    Map<String, Object> data = new HashMap<>();
-//                    data.put("code", "DUPLICATE");
-//                    sendJsonResponse(response, false, "Email hoặc số điện thoại đã tồn tại trong chiến dịch này.", data);
-//                    return;
-//                }
+            // --- Check Duplicate (Mandatory) ---
+            boolean isDuplicate = leadDAO.checkDuplicate(submission.getEmail(), submission.getPhone(), submitCampaignId);
+            if (isDuplicate) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("code", "DUPLICATE");
+                sendJsonResponse(response, false, "Email hoặc số điện thoại đã tồn tại trong chiến dịch này.", data);
+                return;
             }
 
             // --- Create Lead ---
@@ -269,8 +270,7 @@ public class SubmissionsServlet extends HttpServlet {
             boolean updateSuccess = submissionDAO.markAsProcessed(id);
             if (updateSuccess) {
                 // Send automated Thank You email
-                service.EmailService.sendThankYouEmailAsync(lead.getEmail(), lead.getFullName());
-                
+               
                 sendJsonResponse(response, true, "Đã tạo Lead và gửi email cảm ơn thành công!", null);
             } else {
                 sendJsonResponse(response, false, "Đã tạo Lead nhưng lỗi khi cập nhật trạng thái submission", null);

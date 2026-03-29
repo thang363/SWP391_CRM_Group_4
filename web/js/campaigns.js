@@ -163,7 +163,11 @@ function editCampaign(id) {
     }
 
     // Fetch campaign data
-    fetch(`${contextPath}/campaigns?action=get&id=${id}`)
+    fetch(`${contextPath}/campaigns?action=get&id=${id}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
         .then(response => response.json())
         .then(result => {
             if (result.success && result.data) {
@@ -228,6 +232,14 @@ function saveCampaign() {
         return;
     }
 
+    // Validate maximum budget
+    const budgetValue = parseFloat(document.getElementById('campaignBudget').value);
+    const MAX_BUDGET = 1000000000000;
+    if (budgetValue > MAX_BUDGET) {
+        showFormError('Ngân sách vượt quá giới hạn cho phép (1,000 tỷ)');
+        return;
+    }
+
     // Prepare form data
     const params = new URLSearchParams();
     new FormData(form).forEach((value, key) => params.append(key, value));
@@ -243,7 +255,8 @@ function saveCampaign() {
     fetch(`${contextPath}/campaigns`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: params
     })
@@ -289,7 +302,8 @@ function deleteCampaign(id, name) {
             fetch(`${contextPath}/campaigns`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: params
             })
@@ -352,7 +366,8 @@ function submitTransfer() {
     fetch(`${contextPath}/transfers`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: params
     })
@@ -409,6 +424,24 @@ function resetFilters() {
     document.getElementById('filterEndDate').value = '';
     document.getElementById('pageInput').value = '1';
     document.getElementById('filterForm').submit();
+}
+
+/**
+ * Handle delete button click using data attributes
+ */
+function handleDeleteCampaign(btn) {
+    const id = btn.getAttribute('data-id');
+    const name = btn.getAttribute('data-name');
+    deleteCampaign(id, name);
+}
+
+/**
+ * Handle transfer button click using data attributes
+ */
+function handleOpenTransferModal(btn) {
+    const id = btn.getAttribute('data-id');
+    const name = btn.getAttribute('data-name');
+    openTransferModal(id, name);
 }
 
 // ============================================

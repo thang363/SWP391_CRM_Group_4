@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Kiểm thử Backend Guard - CRM Marketing</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .alert-info {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+        }
+
+        .card h3 i {
+            margin-right: 12px;
+            color: var(--primary);
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-danger { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .btn-danger:hover { background-color: #fecaca; }
+
+        .console-box {
+            margin-top: 40px;
+            background: #1e293b;
+            color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            min-height: 200px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            position: relative;
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+
+        .console-header span {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+        }
+
+        .btn-clear {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #output {
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .success-res { color: #4ade80; }
+        .error-res { color: #f87171; }
+        .info-res { color: #60a5fa; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Backend Guard Test Kit</h1>
+            <p>Xác thực các quy tắc nghiệp vụ CRM Marketing tại Servlet Layer</p>
+        </header>
+
+        <div class="alert-info">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Hướng dẫn:</strong> Đăng nhập với các tài khoản khác nhau (Manager / Marketing) trước khi thực hiện test để thấy sự khác biệt của cơ chế Role Check.
+        </div>
+
+        <div class="grid">
+            <!-- Test LP creation constraint -->
+            <div class="card">
+                <h3><i class="fas fa-user-shield"></i> Tạo LP (Role Check)</h3>
+                <p>Thử tạo Landing Page khi đang đăng nhập quyền <strong>Marketing/Sale</strong>. Mong đợi: Lỗi quyền hạn.</p>
+                <div class="input-group">
+                    <label>Campaign ID</label>
+                    <input type="number" id="lpCampaignId" value="1">
+                </div>
+                <button class="btn btn-primary" onclick="testLPCreate()">
+                    <i class="fas fa-plus"></i> Run Test
+                </button>
+            </div>
+
+            <!-- Test Edit Finished Campaign -->
+            <div class="card">
+                <h3><i class="fas fa-history"></i> Sửa Campaign (Status Check)</h3>
+                <p>Thử sửa một chiến dịch đã trạng thái <strong>Finished</strong>. Mong đợi: Hệ thống chặn cập nhật.</p>
+                <div class="input-group">
+                    <label>Finished Campaign ID</label>
+                    <input type="number" id="campaignIdFinished" value="1">
+                </div>
+                <button class="btn btn-primary" onclick="testCampaignEditFinished()">
+                    <i class="fas fa-save"></i> Run Test
+                </button>
+            </div>
+
+            <!-- Test Publish LP vs non-active campaign -->
+            <div class="card">
+                <h3><i class="fas fa-globe"></i> Công khai LP (Dependency Check)</h3>
+                <p>Thử đổi trạng thái LP sang <strong>Public</strong> nhưng Campaign mẹ đang <strong>Draft/Paused</strong>. Mong đợi: Lỗi logic.</p>
+                <div class="input-group">
+                    <label>Landing Page ID</label>
+                    <input type="number" id="lpIdStatus" value="1">
+                </div>
+                <button class="btn btn-primary" onclick="testLPStatusChange()">
+                    <i class="fas fa-check-circle"></i> Run Test
+                </button>
+            </div>
+
+            <!-- Test Mass Assign check -->
+             <div class="card">
+                <h3><i class="fas fa-users-cog"></i> Phân công Lead (Auth Check)</h3>
+                <p>Thử gọi API phân công Lead khi không phải <strong>Manager</strong>. Mong đợi: 401 Unauthorized.</p>
+                <button class="btn btn-danger" onclick="testMassAssign()">
+                    <i class="fas fa-exclamation-triangle"></i> Run Security Test
+                </button>
+            </div>
+        </div>
+
+        <div class="console-box">
+            <div class="console-header">
+                <span><i class="fas fa-terminal"></i> Response Console</span>
+                <button class="btn-clear" onclick="clearConsole()">Clear</button>
+            </div>
+            <pre id="output">Sẵn sàng nhận tín hiệu...</pre>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const logClass = type + '-res';
+            output.innerHTML += `<div class="${logClass}">[${timestamp}] ${message}</div>`;
+            // Auto scroll
+            const box = document.querySelector('.console-box');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('output').innerHTML = '';
+        }
+
+        async function triggerAPI(url, params) {
+            log(`Gửi request tới: ${url}...`, 'info');
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params
+                });
+                
+                if (response.status === 401) {
+                    log("Lỗi: 401 Unauthorized (Bạn có thể chưa đăng nhập hoặc bị AuthFilter chặn)", "error");
+                    return;
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    log(`THÀNH CÔNG: ${data.message}`, 'success');
+                } else {
+                    log(`BỊ CHẶN: ${data.message}`, 'error');
+                }
+                
+                if(data.data) {
+                    console.log('Server Data:', data.data);
+                }
+            } catch (error) {
+                log(`Lỗi kết nối: ${error.message}`, 'error');
+            }
+        }
+
+        // 1. Tạo LP (Manager Only)
+        function testLPCreate() {
+            const campaignId = document.getElementById('lpCampaignId').value;
+            triggerAPI('landing-pages', `action=create&campaignId=${campaignId}&marketingId=1&brief=Test`);
+        }
+
+        // 2. Sửa campaign Finished
+        function testCampaignEditFinished() {
+            const id = document.getElementById('campaignIdFinished').value;
+            triggerAPI('campaigns', `action=update&id=${id}&name=TryToHack&status=Active`);
+        }
+
+        // 3. Status change LP vs Campaign status
+        function testLPStatusChange() {
+            const id = document.getElementById('lpIdStatus').value;
+            triggerAPI('landing-pages', `action=change-status&id=${id}&status=Public`);
+        }
+
+        // 4. Mass Assign (Security check)
+        function testMassAssign() {
+            triggerAPI('monitor-leads', `action=massAssign&leadIds=1,2&salesId=1`);
+        }
+    </script>
+</body>
+</html>

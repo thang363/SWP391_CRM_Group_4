@@ -115,8 +115,8 @@
                                                             <div
                                                                 class="d-flex justify-content-between align-items-center">
                                                                 <h3 class="mb-0"><i
-                                                                        class="fa fa-clipboard-list me-2"></i>List
-                                                                    Submissions</h3>
+                                                                        class="fa fa-clipboard-list me-2"></i>Xử lý dữ
+                                                                    liệu leads</h3>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -149,7 +149,6 @@
                                                     </div>
 
                                                     <!-- Filter Section -->
-                                                    <c:if test="${not isManagerView}">
                                                         <div class="filter-section">
                                                             <form id="filterForm" method="get"
                                                                 action="${pageContext.request.contextPath}/marketing/submissions">
@@ -182,14 +181,15 @@
                                                                         <label class="form-label">Trạng thái</label>
                                                                         <select class="form-select" name="status"
                                                                             id="filterStatus">
-                                                                            <option value="">Tất cả</option>
+                                                                            <option value="" ${empty selectedStatus
+                                                                                ? 'selected' : '' }>Tất cả</option>
                                                                             <option value="PENDING"
-                                                                                ${param.status=='PENDING' ? 'selected'
+                                                                                ${selectedStatus=='PENDING' ? 'selected'
                                                                                 : '' }>Chưa xử lý
                                                                             </option>
                                                                             <option value="PROCESSED"
-                                                                                ${param.status=='PROCESSED' ? 'selected'
-                                                                                : '' }>Đã xử lý
+                                                                                ${selectedStatus=='PROCESSED'
+                                                                                ? 'selected' : '' }>Đã xử lý
                                                                             </option>
                                                                         </select>
                                                                     </div>
@@ -272,12 +272,22 @@
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     <c:choose>
-                                                                                                        <c:when test="${sub.source eq 'Internal Test'}">
-                                                                                                            <span class="badge bg-warning text-dark source-badge" title="Test Nội Bộ">
-                                                                                                                <i class="fa fa-flask me-1"></i>
-                                                                                                                Test Nội Bộ
-                                                                                                                <c:if test="${sub.landingPageId != null}">
-                                                                                                                    (<c:out value="${sub.landingPageName}" default="LP" />)
+                                                                                                        <c:when
+                                                                                                            test="${sub.source eq 'Internal Test'}">
+                                                                                                            <span
+                                                                                                                class="badge bg-warning text-dark source-badge"
+                                                                                                                title="Test Nội Bộ">
+                                                                                                                <i
+                                                                                                                    class="fa fa-flask me-1"></i>
+                                                                                                                Test Nội
+                                                                                                                Bộ
+                                                                                                                <c:if
+                                                                                                                    test="${sub.landingPageId != null}">
+                                                                                                                    (
+                                                                                                                    <c:out
+                                                                                                                        value="${sub.landingPageName}"
+                                                                                                                        default="LP" />
+                                                                                                                    )
                                                                                                                 </c:if>
                                                                                                             </span>
                                                                                                         </c:when>
@@ -496,20 +506,7 @@
                                                                     </c:if>
                                                                 </div>
                                                             </div>
-                                                    </c:if>
 
-                                                    <!-- Manager View Notice -->
-                                                    <c:if test="${isManagerView}">
-                                                        <div class="row mt-4">
-                                                            <div class="col-12 text-center text-muted">
-                                                                <i class="fa fa-chart-bar fa-3x mb-3"></i>
-                                                                <h5>Chế độ Quản lý</h5>
-                                                                <p>Bạn đang xem số liệu tổng hợp của toàn hệ thống. Để
-                                                                    xem và xử lý chi tiết từng lượt đăng ký, vui lòng sử
-                                                                    dụng tài khoản Marketing.</p>
-                                                            </div>
-                                                        </div>
-                                                    </c:if>
                                                 </div>
 
                                                 <%-- Include Footer --%>

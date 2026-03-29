@@ -72,34 +72,18 @@ public class LandingPageServiceImpl implements LandingPageService {
     @Override
     public boolean updateLandingPage(Integer lpId, String name, String brief, java.util.Map<String, String> contentFields, boolean isManager) {
         LandingPage lp = lpDAO.findById(lpId);
-        if (lp == null) return false;
-
-        // Check Logic: Approved -> Revert to Draft (Manager Only) - DEPRECATED FOR SIMPLIFIED FLOW
-        /*
-        if ("Approved".equals(lp.getStatus())) {
-            if (isManager) {
-                lp.setStatus("Draft"); // Revert status
-            } else {
-                return false; // Marketing cannot edit Approved
-            }
-        }
-        */
-        
+        if (lp == null) return false;             
         // Update Content
         lp.setName(name);
-        lp.setBrief(brief);
-        
-        // Update Data Config (JSON) using Gson
+        lp.setBrief(brief);              
         JsonObject json = new JsonObject();
         
-        // Add all fields from the map
+       
         if (contentFields != null) {
             for (java.util.Map.Entry<String, String> entry : contentFields.entrySet()) {
                 json.addProperty(entry.getKey(), entry.getValue() != null ? entry.getValue() : "");
             }
-        }
-        
-        // Ensure HERO_ALIGN is set if not present (or we can just let it be handled by frontend)
+        }              
         if (!json.has("HERO_ALIGN")) {
             json.addProperty("HERO_ALIGN", "text-left");
         }

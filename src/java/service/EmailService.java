@@ -50,21 +50,7 @@ public class EmailService {
         sendEmailHtml(toManagerEmail, subject, content.toString());
     }
 
-    public void sendThankYouEmail(String toEmail, String customerName) {
-        String subject = "[CRM] Cảm ơn bạn đã quan tâm đến dịch vụ của chúng tôi";
-        
-        StringBuilder content = new StringBuilder();
-        content.append("<html><body style='font-family: Arial, sans-serif;'>");
-        content.append("<h2>Chào ").append(customerName).append(",</h2>");
-        content.append("<p>Cảm ơn bạn đã để lại thông tin quan tâm đến dịch vụ của chúng tôi.</p>");
-        content.append("<p>Đội ngũ của chúng tôi đã nhận được thông tin của bạn và sẽ sớm có nhân viên liên hệ để tư vấn chi tiết hơn.</p>");
-        content.append("<p>Trong lúc chờ đợi, nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại phản hồi lại email này.</p>");
-        content.append("<br>");
-        content.append("<p>Trân trọng,<br>Đội ngũ CRM System</p>");
-        content.append("</body></html>");
-
-        sendEmailHtml(toEmail, subject, content.toString());
-    }
+    
 
     /**
      * Send a marketing email to a lead.
@@ -156,13 +142,7 @@ public class EmailService {
         });
     }
 
-    public static void sendThankYouEmailAsync(String toEmail, String customerName) {
-        CompletableFuture.runAsync(() -> {
-            EmailService mailer = new EmailService();
-            mailer.sendThankYouEmail(toEmail, customerName);
-            System.out.println("[Thank You Email] Successfully sent thank you email to: " + toEmail);
-        });
-    }
+    
 
     public static void sendOtpEmailAsync(String toEmail, String otp) {
         CompletableFuture.runAsync(() -> {

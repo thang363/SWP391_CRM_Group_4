@@ -57,8 +57,8 @@ public class CampaignServlet extends HttpServlet {
 
         // Get current user from session
         HttpSession session = request.getSession(false);
-        Integer currentUserId =  (Integer) session.getAttribute(Constants.SESSION_USER_ID);
-        Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
+        Integer currentUserId = (Integer) (session != null ? session.getAttribute(Constants.SESSION_USER_ID) : null);
+        Role currentUserRole = (Role) (session != null ? session.getAttribute(Constants.SESSION_ROLE) : null);
 
         String action = request.getParameter("action");
         if ("get".equals(action)) {
@@ -257,8 +257,8 @@ public class CampaignServlet extends HttpServlet {
 
             // Authorization check: Manager can only update their own campaigns
             HttpSession session = request.getSession(false);
-            Integer currentUserId = (Integer) session.getAttribute(Constants.SESSION_USER_ID);
-            Role currentUserRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
+            Integer currentUserId = (Integer) (session != null ? session.getAttribute(Constants.SESSION_USER_ID) : null);
+            Role currentUserRole = (Role) (session != null ? session.getAttribute(Constants.SESSION_ROLE) : null);
 
             Campaign existingCampaign = campaignService.getCampaignById(campaign.getId());
             if (existingCampaign == null) {
@@ -440,11 +440,7 @@ public class CampaignServlet extends HttpServlet {
         if (session == null) {
             return false;
         }
-
-        // Sửa dòng 301 trong CampaignServlet.java:
         Role userRole = (Role) session.getAttribute(Constants.SESSION_ROLE);
-
-// So sánh trực tiếp với hằng số Enum
         return Role.MANAGER.equals(userRole);
     }
 

@@ -95,7 +95,7 @@
                         <div class="row g-4 justify-content-center">
                             <div class="col-sm-12 col-xl-8">
                                 <div class="bg-light rounded h-100 p-4">
-                                    <h4 class="mb-4">Import Leads from File</h4>
+                                    <h4 class="mb-4">Nhập lead thô từ excel</h4>
 
                                     <c:if test="${not empty message}">
                                         <div class="alert alert-${messageType} alert-dismissible fade show"

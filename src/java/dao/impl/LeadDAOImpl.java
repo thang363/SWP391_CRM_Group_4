@@ -542,53 +542,6 @@ public class LeadDAOImpl implements LeadDAO {
         return list;
     }
 
-    @Override
-    public List<model.viewmodel.LeadInteractionViewModel> getRecentInteractions(Integer campaignId, int limit) {
-        List<model.viewmodel.LeadInteractionViewModel> list = new ArrayList<>();
-        String sql = "SELECT i.id, i.lead_id, l.full_name, l.email, a.name as activity_name, i.reference_url, i.created_at " +
-                     "FROM LeadInteractions i " +
-                     "JOIN Leads l ON i.lead_id = l.id " +
-                     "JOIN ActivityTypes a ON i.activity_type_id = a.id";
-
-        if (campaignId != null) {
-            sql += " WHERE i.campaign_id = ?";
-        }
-        sql += " ORDER BY i.created_at DESC";
-
-        if (limit > 0) {
-            sql = sql.replaceFirst("SELECT i.id", "SELECT TOP " + limit + " i.id");
-        }
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = dbUtil.getConnection();
-            stmt = conn.prepareStatement(sql);
-            if (campaignId != null) {
-                stmt.setInt(1, campaignId);
-            }
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                model.viewmodel.LeadInteractionViewModel vm = new model.viewmodel.LeadInteractionViewModel();
-                vm.setInteractionId(rs.getInt("id"));
-                vm.setLeadId(rs.getInt("lead_id"));
-                vm.setLeadName(rs.getString("full_name"));
-                vm.setLeadEmail(rs.getString("email"));
-                vm.setActivityName(rs.getString("activity_name"));
-                vm.setDetails(rs.getString("reference_url")); // reference_url acts as details
-                Timestamp ts = rs.getTimestamp("created_at");
-                vm.setCreatedAt(ts);
-                list.add(vm);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting recent interactions: " + e.getMessage());
-        } finally {
-            closeResources(rs, stmt, conn);
-        }
-        return list;
-    }
 
     @Override
     public boolean assignLeadToSales(int leadId, int salesId, int managerId) {
@@ -649,14 +602,6 @@ public class LeadDAOImpl implements LeadDAO {
                     return false;
                 }
 
-                // Insert Assignments
-                String sqlInsertC = "INSERT INTO LeadAssignments (lead_id, manager_id, sales_id, assigned_at) VALUES (?, ?, ?, GETDATE())";
-                try (PreparedStatement psInsertC = conn.prepareStatement(sqlInsertC)) {
-                    psInsertC.setInt(1, leadId);
-                    psInsertC.setInt(2, managerId);
-                    psInsertC.setInt(3, salesId);
-                    psInsertC.executeUpdate();
-                }
 
                 conn.commit();
                 return true;
@@ -677,22 +622,7 @@ public class LeadDAOImpl implements LeadDAO {
                 return false;
             }
 
-            // 2. Insert into LeadAssignments table
-            String sqlInsert = "INSERT INTO LeadAssignments (lead_id, manager_id, sales_id, assigned_at) VALUES (?, ?, ?, GETDATE())";
-            try (PreparedStatement psInsert = conn.prepareStatement(sqlInsert)) {
-                psInsert.setInt(1, leadId);
-                psInsert.setInt(2, managerId);
-                psInsert.setInt(3, salesId);
-                psInsert.executeUpdate();
-            }
 
-            // 3. Optional Insert status history
-            String sqlHistory = "INSERT INTO LeadStatusHistory (lead_id, old_status, new_status, changed_by, changed_at) VALUES (?, 'New', 'Assigned', ?, GETDATE())";
-            try (PreparedStatement psHist = conn.prepareStatement(sqlHistory)) {
-                psHist.setInt(1, leadId);
-                psHist.setInt(2, managerId);
-                psHist.executeUpdate();
-            }
 
             conn.commit();
             return true;
@@ -723,21 +653,7 @@ public class LeadDAOImpl implements LeadDAO {
             conn = dbUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Delete from LeadInteractions
-            String sqlInteractions = "DELETE FROM LeadInteractions WHERE lead_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sqlInteractions)) {
-                ps.setInt(1, leadId);
-                ps.executeUpdate();
-            }
-
-            // 2. Delete from LeadStatusHistory 
-            String sqlHistory = "DELETE FROM LeadStatusHistory WHERE lead_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sqlHistory)) {
-                ps.setInt(1, leadId);
-                ps.executeUpdate();
-            }
-
-            // 3. Delete from Leads - only if NOT assigned
+            // Delete from Leads - only if NOT assigned
             String sqlLead = "DELETE FROM Leads WHERE id = ? AND assigned_to IS NULL";
             int affected = 0;
             try (PreparedStatement ps = conn.prepareStatement(sqlLead)) {

@@ -1,13 +1,9 @@
 package controller.lead;
 
-import com.google.gson.Gson;
-import dao.ImportHistoryDAO;
 import dao.LeadSourceDAO;
 import dao.LeadSubmissionDAO;
-import dao.impl.ImportHistoryDAOImpl;
 import dao.impl.LeadSourceDAOImpl;
 import dao.impl.LeadSubmissionDAOImpl;
-import model.entity.ImportHistory;
 import model.entity.LeadSource;
 import model.entity.LeadSubmission;
 import util.Constants;
@@ -22,11 +18,8 @@ import jakarta.servlet.http.Part;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,14 +29,12 @@ import java.util.List;
                  maxRequestSize = 1024 * 1024 * 50)   // 50MB
 public class ImportLeadServlet extends HttpServlet {
 
-    private ImportHistoryDAO importHistoryDAO;
     private LeadSubmissionDAO submissionDAO;
     private LeadSourceDAO leadSourceDAO;
     private dao.CampaignDAO campaignDAO;
 
     @Override
     public void init() {
-        importHistoryDAO = new ImportHistoryDAOImpl();
         submissionDAO = new LeadSubmissionDAOImpl();
         leadSourceDAO = new LeadSourceDAOImpl();
         campaignDAO = new dao.impl.CampaignDAOImpl();
@@ -80,12 +71,6 @@ public class ImportLeadServlet extends HttpServlet {
         String messageType = "danger";
 
         try {
-            // 2. Rate Limit Check (Spam Protection)
-            int countToday = importHistoryDAO.countImportToday(userId);
-            if (countToday >= 5) { // Limit 5 imports per day
-                throw new Exception("Bạn đã vượt quá giới hạn import trong ngày (5 lần). Vui lòng quay lại vào ngày mai.");
-            }
-
             // 3. Get Part & Parameters
             Part filePart = request.getPart("file");
             String sourceInput = request.getParameter("source");
@@ -100,19 +85,13 @@ public class ImportLeadServlet extends HttpServlet {
             }
             Integer campaignId = Integer.parseInt(campaignIdStr);
 
-            String fileName = filePart.getSubmittedFileName();
+            String fileName = filePart.getContentType();
             if (sourceInput == null || sourceInput.trim().isEmpty()) {
                 sourceInput = "File: " + fileName; // Default source name
             }
 
-            // Read file content into memory
             byte[] fileContent = filePart.getInputStream().readAllBytes();
 
-            // 4. Checksum (Optional: Just log or use for history)
-            String checksum = calculateChecksum(fileContent);
-            // User requested to remove file-level blocking:
-            // if (importHistoryDAO.existsChecksum(checksum)) { ... }
-            
             // 5. Parse CSV & Create Submissions
             List<LeadSubmission> submissions = parseCSV(fileContent, sourceInput, campaignId);
             
@@ -124,7 +103,6 @@ public class ImportLeadServlet extends HttpServlet {
                  throw new Exception("File quá lớn (> 1000 dòng). Vui lòng chia nhỏ file.");
             }
 
-            // 6. Insert to DB with Duplicate Check
             int successCount = 0;
             int skipCount = 0;
             int errorCount = 0;
@@ -158,17 +136,6 @@ public class ImportLeadServlet extends HttpServlet {
                 }
             }
 
-            // 7. Log History
-            ImportHistory history = new ImportHistory();
-            history.setUserId(userId);
-            history.setFileName(fileName);
-            history.setChecksum(checksum);
-            history.setTotalRows(submissions.size());
-            history.setSuccessRows(successCount);
-            history.setErrorRows(errorCount);
-            
-            importHistoryDAO.insert(history);
-
             message = "Import hoàn tất! Thêm mới: " + successCount + ", Bỏ qua (trùng): " + skipCount + ", Lỗi: " + errorCount;
             messageType = "success";
 
@@ -189,18 +156,6 @@ public class ImportLeadServlet extends HttpServlet {
         request.getRequestDispatcher("/views/marketing/import-leads.jsp").forward(request, response);
     }
 
-    private String calculateChecksum(byte[] content) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("MD5");
-        byte[] hash = digest.digest(content);
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-        return hexString.toString();
-    }
-    
     private boolean isValidEmail(String email) {
         return email != null && email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
     }

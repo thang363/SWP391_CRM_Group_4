@@ -92,6 +92,7 @@ public class Constants {
     public static final int MAX_PAGE_SIZE = 100;
     
     public static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
+    public static final java.math.BigDecimal MAX_BUDGET = new java.math.BigDecimal("1000000000000"); // 1 Trillion
     public static final String UPLOAD_DIRECTORY = "uploads";
     
     private Constants() {

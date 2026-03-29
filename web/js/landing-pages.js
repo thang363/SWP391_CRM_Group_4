@@ -45,7 +45,11 @@ function copyPublicLink(id) {
 
 // Edit LP Functions
 function openEditModal(id) {
-    fetch(contextPath + '/landing-pages?action=detail&id=' + id)
+    fetch(contextPath + '/landing-pages?action=detail&id=' + id, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
         .then(res => res.json())
         .then(result => {
             if (result.success) {
@@ -111,6 +115,7 @@ function updateLsStatus(id, newStatus) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: params
             })
@@ -134,21 +139,45 @@ function updateLsStatus(id, newStatus) {
 
 function submitEditForm() {
     const id = document.getElementById('editLpId').value;
-    const name = document.getElementById('editLpName').value;
-    const brief = document.getElementById('editLpBrief').value;
-    const status = document.getElementById('editLpStatus').value;
+    const name = document.getElementById('editLpName').value.trim();
+    const heroTitle = document.getElementById('editHeroTitle').value.trim();
+    const heroDesc = document.getElementById('editHeroDesc').value.trim();
+    const brief = document.getElementById('editLpBrief').value.trim();
 
-    // Extra confirmation for Approved status
-    /* - REMOVED FOR SIMPLIFIED FLOW
-    if (status === 'Approved') {
-        showConfirmDialog(
-            '<strong>LƯU Ý:</strong> Landing Page đang Approved. Việc lưu sẽ chuyển trạng thái về <strong>DRAFT</strong> (gỡ public). Tiếp tục?',
-            function () { doSubmitEditForm(); },
-            { title: 'Cảnh báo', confirmText: 'Tiếp tục lưu', confirmClass: 'btn-warning' }
-        );
+    // Mandatory Checks
+    if (!name) {
+        showAlert('warning', 'Tên Landing Page không được để trống');
         return;
     }
-    */
+    if (!heroTitle) {
+        showAlert('warning', 'Tiêu đề Hero không được để trống');
+        return;
+    }
+
+    // Length Checks
+    if (name.length > 200) {
+        showAlert('warning', 'Tên Landing Page quá dài (tối đa 200 ký tự)');
+        return;
+    }
+    if (heroTitle.length > 200) {
+        showAlert('warning', 'Tiêu đề Hero quá dài (tối đa 200 ký tự)');
+        return;
+    }
+    if (heroDesc.length > 1000) {
+        showAlert('warning', 'Mô tả Hero quá dài (tối đa 1000 ký tự)');
+        return;
+    }
+    if (brief.length > 500) {
+        showAlert('warning', 'Mô tả công việc quá dài (tối đa 500 ký tự)');
+        return;
+    }
+
+    // Optional fields length check
+    const aboutTitle = document.getElementById('editAboutTitle').value.trim();
+    if (aboutTitle.length > 200) {
+        showAlert('warning', 'Tiêu đề giới thiệu quá dài (tối đa 200 ký tự)');
+        return;
+    }
 
     doSubmitEditForm();
 }
@@ -180,7 +209,10 @@ function doSubmitEditForm() {
 
     fetch(contextPath + '/landing-pages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: params
     })
         .then(res => res.json())
@@ -220,7 +252,10 @@ function submitCreateLP() {
 
     fetch(contextPath + '/landing-pages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: params
     })
         .then(res => res.json())
@@ -252,7 +287,10 @@ function confirmDelete(id, name) {
 
             fetch(contextPath + '/landing-pages', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: params
             })
                 .then(res => res.json())
